@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="id">
+<metadata>
+  <dc:rights>Public domain in the USA.</dc:rights>
+  <dc:identifier id="id" opf:scheme="URI">3300</dc:identifier>
+  <dc:creator opf:file-as="Smith, Adam">Adam Smith</dc:creator>
+  <dc:title>An Inquiry into the Nature and Causes of the Wealth of Nations</dc:title>
+  <dc:language xsi:type="dcterms:RFC4646">en</dc:language>
+  <dc:subject>Economics</dc:subject>
+  <dc:date opf:event="publication">2002-06-01</dc:date>
+ </metadata>
+<manifest>
+<item id="style" href="stylesheet.css" media-type="text/css"/>
+<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+<item id="fm01" href="fm01.html" media-type="application/xhtml+xml"/>
+<item id="fm02" href="fm02.html" media-type="application/xhtml+xml"/>
+<item id="bm01" href="bm01.html" media-type="application/xhtml+xml"/>
+<item id="bm02" href="bm02.html" media-type="application/xhtml+xml"/>
+<item id="bm03" href="bm03.html" media-type="application/xhtml+xml"/>
+<item id="bm04" href="bm04.html" media-type="application/xhtml+xml"/>
+<item id="bm05" href="bm05.html" media-type="application/xhtml+xml"/>
+<item id="bm06" href="bm06.html" media-type="application/xhtml+xml"/>
+<item id="bm07" href="bm07.html" media-type="application/xhtml+xml"/>
+<item id="bm08" href="bm08.html" media-type="application/xhtml+xml"/>
+<item id="bm09" href="bm09.html" media-type="application/xhtml+xml"/>
+<item id="bm10" href="bm10.html" media-type="application/xhtml+xml"/>
+<item id="bm11" href="bm11.html" media-type="application/xhtml+xml"/>
+<item id="bm12" href="bm12.html" media-type="application/xhtml+xml"/>
+<item id="bm13" href="bm13.html" media-type="application/xhtml+xml"/>
+<item id="bm14" href="bm14.html" media-type="application/xhtml+xml"/>
+<item id="bm15" href="bm15.html" media-type="application/xhtml+xml"/>
+<item id="bm16" href="bm16.html" media-type="application/xhtml+xml"/>
+<item id="bm17" href="bm17.html" media-type="application/xhtml+xml"/>
+<item id="bm18" href="bm18.html" media-type="application/xhtml+xml"/>
+<item id="bm19" href="bm19.html" media-type="application/xhtml+xml"/>
+<item id="bm20" href="bm20.html" media-type="application/xhtml+xml"/>
+<item id="bm21" href="bm21.html" media-type="application/xhtml+xml"/>
+<item id="bm22" href="bm22.html" media-type="application/xhtml+xml"/>
+<item id="bm23" href="bm23.html" media-type="application/xhtml+xml"/>
+<item id="bm24" href="bm24.html" media-type="application/xhtml+xml"/>
+<item id="bm25" href="bm25.html" media-type="application/xhtml+xml"/>
+<item id="bm26" href="bm26.html" media-type="application/xhtml+xml"/>
+<item id="bm27" href="bm27.html" media-type="application/xhtml+xml"/>
+<item id="bm28" href="bm28.html" media-type="application/xhtml+xml"/>
+<item id="bm29" href="bm29.html" media-type="application/xhtml+xml"/>
+<item id="bm30" href="bm30.html" media-type="application/xhtml+xml"/>
+<item id="bm31" href="bm31.html" media-type="application/xhtml+xml"/>
+<item id="bm32" href="bm32.html" media-type="application/xhtml+xml"/>
+<item id="bm33" href="bm33.html" media-type="application/xhtml+xml"/>
+<item id="bm34" href="bm34.html" media-type="application/xhtml+xml"/>
+<item id="bm35" href="bm35.html" media-type="application/xhtml+xml"/>
+<item id="bm36" href="bm36.html" media-type="application/xhtml+xml"/>
+<item id="bm37" href="bm37.html" media-type="application/xhtml+xml"/>
+<item id="bm38" href="bm38.html" media-type="application/xhtml+xml"/>
+<item id="bm39" href="bm39.html" media-type="application/xhtml+xml"/>
+<item id="bm40" href="bm40.html" media-type="application/xhtml+xml"/>
+<item id="bm41" href="bm41.html" media-type="application/xhtml+xml"/>
+<item id="bm42" href="bm42.html" media-type="application/xhtml+xml"/>
+<item id="bm43" href="bm43.html" media-type="application/xhtml+xml"/>
+<item id="bm44" href="bm44.html" media-type="application/xhtml+xml"/>
+<item id="bm45" href="bm45.html" media-type="application/xhtml+xml"/>
+<item id="bm46" href="bm46.html" media-type="application/xhtml+xml"/>
+<item id="bm47" href="bm47.html" media-type="application/xhtml+xml"/>
+<item id="bm48" href="bm48.html" media-type="application/xhtml+xml"/>
+<item id="bm49" href="bm49.html" media-type="application/xhtml+xml"/>
+<item id="bm50" href="bm50.html" media-type="application/xhtml+xml"/>
+<item id="bm51" href="bm51.html" media-type="application/xhtml+xml"/>
+<item id="bm52" href="bm52.html" media-type="application/xhtml+xml"/>
+<item id="bm53" href="bm53.html" media-type="application/xhtml+xml"/>
+<item id="bm53a" href="bm53a.html" media-type="application/xhtml+xml"/>
+<item id="bm54" href="bm54.html" media-type="application/xhtml+xml"/>
+<item id="bm55" href="bm55.html" media-type="application/xhtml+xml"/>
+<item id="bm56" href="bm56.html" media-type="application/xhtml+xml"/>
+<item id="bm57" href="bm57.html" media-type="application/xhtml+xml"/>
+<item id="bm58" href="bm58.html" media-type="application/xhtml+xml"/>
+<item id="bm59" href="bm59.html" media-type="application/xhtml+xml"/>
+<item id="bm60" href="bm60.html" media-type="application/xhtml+xml"/>
+<item id="embellishment" href="embellishment.png" media-type="image/png"/>
+</manifest>
+<spine toc="ncx">
+<itemref idref="fm01" linear="yes"/>
+<itemref idref="fm02" linear="yes"/>
+<itemref idref="bm01" linear="yes"/>
+<itemref idref="bm02" linear="yes"/>
+<itemref idref="bm03" linear="yes"/>
+<itemref idref="bm04" linear="yes"/>
+<itemref idref="bm05" linear="yes"/>
+<itemref idref="bm06" linear="yes"/>
+<itemref idref="bm07" linear="yes"/>
+<itemref idref="bm08" linear="yes"/>
+<itemref idref="bm09" linear="yes"/>
+<itemref idref="bm10" linear="yes"/>
+<itemref idref="bm11" linear="yes"/>
+<itemref idref="bm12" linear="yes"/>
+<itemref idref="bm13" linear="yes"/>
+<itemref idref="bm14" linear="yes"/>
+<itemref idref="bm15" linear="yes"/>
+<itemref idref="bm16" linear="yes"/>
+<itemref idref="bm17" linear="yes"/>
+<itemref idref="bm18" linear="yes"/>
+<itemref idref="bm19" linear="yes"/>
+<itemref idref="bm20" linear="yes"/>
+<itemref idref="bm21" linear="yes"/>
+<itemref idref="bm22" linear="yes"/>
+<itemref idref="bm23" linear="yes"/>
+<itemref idref="bm24" linear="yes"/>
+<itemref idref="bm25" linear="yes"/>
+<itemref idref="bm26" linear="yes"/>
+<itemref idref="bm27" linear="yes"/>
+<itemref idref="bm28" linear="yes"/>
+<itemref idref="bm29" linear="yes"/>
+<itemref idref="bm30" linear="yes"/>
+<itemref idref="bm31" linear="yes"/>
+<itemref idref="bm32" linear="yes"/>
+<itemref idref="bm33" linear="yes"/>
+<itemref idref="bm34" linear="yes"/>
+<itemref idref="bm35" linear="yes"/>
+<itemref idref="bm36" linear="yes"/>
+<itemref idref="bm37" linear="yes"/>
+<itemref idref="bm38" linear="yes"/>
+<itemref idref="bm39" linear="yes"/>
+<itemref idref="bm40" linear="yes"/>
+<itemref idref="bm41" linear="yes"/>
+<itemref idref="bm42" linear="yes"/>
+<itemref idref="bm43" linear="yes"/>
+<itemref idref="bm44" linear="yes"/>
+<itemref idref="bm45" linear="yes"/>
+<itemref idref="bm46" linear="yes"/>
+<itemref idref="bm47" linear="yes"/>
+<itemref idref="bm48" linear="yes"/>
+<itemref idref="bm49" linear="yes"/>
+<itemref idref="bm50" linear="yes"/>
+<itemref idref="bm51" linear="yes"/>
+<itemref idref="bm52" linear="yes"/>
+<itemref idref="bm53" linear="yes"/>
+<itemref idref="bm53a" linear="yes"/>
+<itemref idref="bm54" linear="yes"/>
+<itemref idref="bm55" linear="yes"/>
+<itemref idref="bm56" linear="yes"/>
+<itemref idref="bm57" linear="yes"/>
+<itemref idref="bm58" linear="yes"/>
+<itemref idref="bm59" linear="yes"/>
+<itemref idref="bm60" linear="yes"/>
+</spine>
+<guide>
+<reference href="fm01.html" type="title" title="title"/>
+<reference href="fm02.html" type="title" title="title"/>
+</guide>
+</package>

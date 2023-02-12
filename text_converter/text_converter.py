@@ -28,4 +28,4 @@ def getBook(bookname, outputname):
         text=chap2text(chapter)
         outputfile.write(text+"\n")
 
-getBook("MichaelSandel_JusticeWhatSTheRightThingToDo.epub", "test.txt")
+getBook("An Inquiry into the Nature and Causes of the Wealth of Nations.epub", "WoN.txt")

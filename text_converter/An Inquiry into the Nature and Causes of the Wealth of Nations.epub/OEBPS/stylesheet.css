@@ -1,0 +1,269 @@
+
+/* coverpage */
+#coverpage {
+	vertical-align: middle;
+	text-align: center;
+	background-color: white;
+	margin: 0em;
+}
+
+.coverimage {
+	height: 100%;
+	margin: 0em;
+}
+
+
+/* title page */
+#titlepage {
+	text-align: center;
+	margin-top: 10%;
+}
+
+.booktitle {
+	text-align: center;
+	padding-bottom: 1em;
+	letter-spacing: .08em;
+	font-size: 2em;
+}
+
+.subtitle {
+	padding-bottom: 1em;
+	text-align: center;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 1.5em;
+}
+
+p.embellish {
+	text-align: center;
+	text-indent: 0px;
+}
+
+.author {
+	padding-top: 1em;
+	text-align: center;
+	font-style: italic;
+	font-weight: normal;
+	font-size: 1.5em;
+}
+
+.illustrator {
+	padding-top: 1.2em;
+	text-align: center;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 1.2em;
+}
+
+
+/* copyright */
+.copyright {
+	padding-top: 10%;
+	text-align:center;
+}
+
+.copyrightText {
+	font-size: 1em;
+	font-weight: normal;
+}
+
+.publisher {
+	font-weight: bold;
+	line-height: .8em;
+	font-size: 1em;
+}
+
+.date {
+	font-weight: bold;
+	line-height: .8em;
+	font-size: 1em;
+}
+
+
+/* illustrations */
+.wrapper {
+	clear:both;
+	padding-bottom: 5%;
+	position:relative;
+	padding-top: 1em;
+}
+
+.leftImage {
+	float:left;
+	width: 45%;
+	padding-right : 10%;
+}
+
+.centerImage {
+	text-align: center;
+	height: 50%;
+}
+
+.rightImage {
+	float: right;
+	width: 45%;
+	padding-right : 10%;
+}
+
+.pictureText {
+	padding-top: 1em;}
+
+
+/* chapter */
+.part {
+	text-align: center;
+	font-weight: bold;
+	font-size: 2em;
+	text-transform: uppercase;
+	letter-spacing: .08em;
+}
+
+.chapterNumber, .introHeader, .dedHeader, .bibHeader {
+	text-align: center;
+	font-weight: bold;
+	font-size: 1.75em;
+	letter-spacing: .05em;
+	margin-bottom: .75em;
+}
+
+.chapterTitle, .introTitle, .dedTitle {
+	text-align: center;
+	font-style: italic;
+	font-variant: normal;
+	font-size: 1.2em;
+	padding-bottom: 1em;
+}
+
+p, p.chapterText, p.introText, p.dedText {
+ 	font-size: 1em;
+ 	text-indent:  2em;
+ 	margin-top: 0.1em;
+    margin-bottom: 0.1em
+}
+
+
+/* Bibliography */
+.bibliography {
+	padding-top: .1em;
+}
+
+
+.bibliographyEntry	{
+	padding-left: 1em;
+	margin-bottom: 0%;	
+	text-indent: -1em;
+}
+
+
+/* Poems and Plays */
+.act {
+	font-size: 1.2em;
+	margin: 1.5em 0 1em 0;
+	text-indent: 0em;	
+}
+.scene {
+	font-size: 1em;
+	margin: 0 0 1em 0;
+	text-indent: 0em;
+}
+.poem-title {
+	font-size: 1em;
+	margin: 2em 0 .8em 0;
+	text-indent: 0em;
+	font-weight: bold;
+}
+.indent {
+	margin-left: 1em;
+	margin-bottom: 1em;
+}
+.no-indent {
+	text-indent: 0em;
+	margin-bottom: 1em;
+}
+.character {
+	font-weight: bold;
+}
+
+/* Table */
+/* Tables should only be used for displaying data. Please do not use tables to layout images */
+table {
+	border:.2em solid black;
+	margin: 1em;
+	border-collapse:collapse;
+	width: 93%;
+}
+td {
+	border-right: .1em solid black;
+	border-left: .1em solid black;
+	padding: .4em;
+}	
+tr {
+	border: .1em solid black;
+}
+
+/* Cookbook */
+
+.cookbookTitlePage {
+	text-align: center;
+}
+.cookbookTitleContainer {
+	padding-top: 1.5em;
+	padding-bottom: 3.3em;
+}
+.cookbookTitle {
+	font-style: italic;
+	font-weight: normal;
+	text-align: center;
+	font-size: 2.5em;
+	margin: 0em 0 .1em 0;
+}
+.cookbookSubTitle{
+	font-style: normal;
+	font-weight: normal;
+	text-align: center;
+	font-size: 1.2em;
+	margin: 0 0 2.5em 0;
+	letter-spacing: .07em;
+}
+.cookbookAuthor {
+	font-style: normal;
+	font-weight: normal;
+	text-align: center;
+	font-size: 1.3em;
+	letter-spacing: .07em;
+}
+.sectionTitle {
+	font-style: italic;
+	font-weight: normal;
+	font-size: 2.5em;
+	margin: .2em 0 .1em 0;
+	text-align: center;
+}
+.recipe {
+	margin-bottom: 3em;
+}
+.recipe p {
+	margin-bottom: 1em;
+}
+.recipeTitle {
+	font-style: normal;
+	font-weight: normal;
+	font-size: 1.5em;
+	margin: .2em 0 .2em 0;
+}
+.ingredientList {
+	list-style: none;
+	padding-left: .2em;
+	font-style: italic;
+	font-weight: bold;
+	margin-top: 1em;
+}
+.dots {
+display: none;
+}
+div.hr {
+	height: 15px;
+	  background: #fff url("images/dot.png");
+	background-repeat: repeat-x;
+	margin-left: -.3em;
+}
