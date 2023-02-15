@@ -1,0 +1,848 @@
+Chapter 12
+TEXT ANALYTICS IN SOCIAL MEDIA
+Xia Hu
+Computer Science and Engineering
+Arizona State University
+xiahu@asu.edu
+Huan Liu
+Computer Science and Engineering
+Arizona State University
+huanliu@asu.edu
+Abstract The rapid growth of online social media in the form of collaboratively-
+created content presents new opportunities and challenges to both pro-
+ducers and consumers of information. With the large amount of data
+produced by various social media services, text analytics provides an
+eﬀective way to meet usres’ diverse information needs. In this chapter,
+we ﬁrst introduce the background of traditional text analytics and the
+distinct aspects of textual data in social media. We next discuss the
+research progress of applying text analytics in social media from diﬀer-
+ent perspectives, and show how to improve existing approaches to text
+representation in social media, using real-world examples.
+Keywords: Text Analytics, Social Media, Text Representation, Time Sensitivity,
+Short Text, Event Detection, Collaborative Question Answering, Social
+Tagging, Semantic Knowledge
+1. Introduction
+Social media such as blogs, microblogs, discussion forums and multi-
+mediasharingsitesareincreasinglyusedforuserstocommunicatebreak-
+ing news, participate in events, and connect to each other anytime, from
+anywhere. The social media sites play a very important role in current
+© Springer Science+Business Media, LLC 2012 385  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_12,386 MINING TEXT DATA
+web applications, which accounts for 50% of top 10 sites according to
+statistics from Alexa1, as shown in Table 12.1. Besides that, the Twitter
+messages are even archived in the US Library of Congress2. These so-
+cial media provides rich information of human interaction and collectivebehavior, thus attracting much attention from disciplines including so-ciology, business, psychology, politics, computer science, economics, and
+other cultural aspects of societies.
+Table 12.1. Internet Traﬃc Report by Alexa on March 3rd, 2011
+Rank Website Rank Website
+1 Google 6 Blogger
+2 Facebook 7 Baidu
+3 Youtube 8 Wikipedia
+4 Yahoo! 9 Twitter
+5Windows Live 10 QQ.com
+We present a deﬁnition of Social Media from a social media source,
+Wikipedia3,a sf o l l o w s :
+“Socialmediaaremediaforsocialinteraction,usinghighly
+accessible and scalable communication techniques. It is
+the use of web-based and mobile technologies to turn
+communication into interactive dialogue.”
+Moturu [43] deﬁnes social media as:
+“Social Media is the use of electronic and Internet toolsforthepurposeofsharinganddiscussinginformationandexperiences with other human beings in more eﬃcient
+ways.”
+Traditional media such as newspaper, television and radio follow a
+unidirectional delivery paradigm, from business to consumer. The infor-
+mation is produced from media sources or advertisers and transmittedto media consumers. Diﬀerent from this traditional way, web 2.0 tech-nologies are more like consumer to consumer services. They allow usersto interact and collaborate with each other in a social media dialogue ofuser-generated content in a virtual community. We categorize the most
+popular social media web sites into groups, shown in Table 12.2.
+1www.alexa.com
+2http://blogs.loc.gov/loc/2010/04/how-tweet-it-is-library-acquires-entire-twitter-archive/
+3http://en.wikipedia.org/wiki/Social media/Text Analytics in Social Media 387
+Table 12.2. Types of Social Media
+Category Representative Sites
+Wiki Wikipedia, Scholarpedia
+Blogging Blogger, LiveJournal, WordPress
+Social News Digg, Mixx, Slashdot
+Micro Blogging Twitter, Google Buzz
+Opinion & Reviews ePinions, Yelp
+Question Answering Yahoo! Answers, Baidu Zhidao
+Media Sharing Flickr ,Youtube
+Social Bookmarking Delicious, CiteULike
+Social Networking Facebook, LinkedIn, MySpace
+From the table 12.2, social media web sites contain various types of
+services and thus create diﬀerent formats of data, including text, image,
+videoetc. Forexample, themediasharingsitesFlickrandYoutubeallowtoobservewhat “ordinary” usersdowhen giventhe abilityto moreread-ily incorporate images and video in their everyday activity [55]. We areseeing people engaged in the creation and sharing of their personal pho-tography. Asaresult, alargeamountofimageandvideodataisarchived
+in the sites. Besides, in blogging sites, the users post frequently and cre-
+ate a huge number of textual / text-based data; in social bookmarkingsites, users share with each other tags and URLs.
+Among the various formats of data exchanged in social media, text
+plays a important role. The information in most social media sites (theoneswithboldfontin Table12.2)arestoredintextformat. Forexample,
+microblogging services allow users to post small amounts of text for
+communicating breaking news, information sharing, and participating
+in events. This emerging media has become a powerful communicationchannel, as evidenced by many recent events like “Egyptian Revolution”and the “Tohoku earthquake and tsunami”.
+On the other hand, there are also a lot of useful textual data con-
+taining in the sites (the ones without bold font in Table 12.2) which are
+concentrating on other domains. For instance, researchers proposed to
+utilize tag information in multimedia sharing sites to perform video re-
+trieval [63] and community detection [59]. Under these scenarios, how tomine useful information from textual data presents great opportunitiesto social media research and applications.
+Text Analytics (also as know as Text Mining) refers to the discovery
+of knowledge that can be found in text archives [49]. This ﬁeld hasreceived much attention due to its wide application as a multi-purpose
+tool, borrowing techniques from Natural Language Processing (NLP),388 MINING TEXT DATA
+Data Mining (DM), Machine Learning (ML), Information Retrieval (IR)
+etc.
+Text Analytics is deﬁned in Wikipedia as follows:
+“Text Analytics describes a set of linguistic, statistical,
+and machine learning techniques that model and struc-
+ture the information content of textual sources for busi-
+ness intelligence, exploratory data analysis, research, orinvestigation.”
+Text analytics techniques can help eﬃciently deal with textual data in
+social media for research and business purposes. The rest of this chapter
+is organized as follows: Section 2 introduces specialty for text analyticsin social media by analyzing the features of textual data. Section 3presents proposed approaches for several representative research issues.
+Section 4 introduces one example to illustrate in detail the process of
+text analytics methods to solve real world problems. Section 5 concludesthe chapter with some possible directions of future work.
+2. Distinct Aspects of Text in Social Media
+Textual data in social media gives us insights into social networks and
+groupsthatwerenotpreviouslypossibleinbothscaleandextent. Unfor-tunately, textual data in social media presents many new challenges due
+to its distinct characteristics. In this section, we ﬁrst review traditional
+processes of text analytics and then discuss the distinctive features oftext in social media, including Time Sensitivity, Short Length, Unstruc-
+tured Phrases, Abundant Information .
+2.1 A General Framework for Text Analytics
+In this subsection, we brieﬂy introduce the general framework of text
+analytics to process a text corpus. A traditional text analytics frame-workconsistsofthreeconsecutivephases: TextPreprocessing, TextRep-
+resentation and Knowledge Discovery, shown in Figure 12.1. We use an
+example to illustrate these methods in each step.
+Given a text corpus which contains three microblogging messages, as
+shown below:
+“watching the King’s Speech”
+“I like the King’s Speech”“they decide to watch a movie”
+Text Preprocessing: Text preprocessing aims to make the input
+documents more consistent to facilitate text representation, which isText Analytics in Social Media 389
+7H[W&RUSXV
+6WRS:RUGV5HPRYDO
+6WHPPLQJ
+7RNHQL]DWLRQ
+ĂĂ7ZLWWHU
+)DFHERRN
+%ORJJHU
+ĂĂ3UHSURFHVVLQJ
+9HFWRU6SDFH0RGHO
+%DJRI:RUGV
+7),')
+ĂĂ5HSUHVHQWDWLRQ
+&ODVVLILFDWLRQ
+&OXVWHULQJ
+6HQWLPHQW$QDO\VLV
+(YHQW'HWHFWLRQ
+ĂĂ.QRZOHGJH
+'LVFRYHU\
+Figure 12.1. A Traditional Framework for Text Analytics
+necessary for most text analytics tasks. Traditional text preprocessing
+methods include stop word removal andstemming . Stop word removal
+eliminates words using a stop word list4, in which the words are consid-
+ered more general and meaningless; Stemming [46] reduces inﬂected (orsometimes derived) words to their stem, base or root form. For exam-ple, “watch”, “watching”, “watched” are represented as “watch”, so the
+words with variant forms can be regarded as same feature. The output
+of text preprocessing for the three microblogging messages are:
+“watch King’ Speech”
+“King’ Speech”“decid watch movi”
+Preprocessing methods depend on speciﬁc application. In many appli-
+cations, such as Opinion Mining or NLP, they need to analyze the mes-
+sage from a syntactical point of view, which requires that the method
+retains the original sentence structure. Without this information, itis diﬃcult to distinguish “Which university did the president graduatefrom?” and “Which president is a graduate of Harvard University?”,which have overlapping vocabularies. In this case, we need to avoidremoving the syntax-containing words.
+Text Representation: Themostcommonwaytomodeldocuments
+istotransformthemintosparsenumericvectorsandthendealwiththemwith linear algebraic operations. This representation is called “Bag OfWords” (BOW) or “Vector Space Model” (VSM). In these basic textrepresentation models, the linguistic structure within the text is ignoredand thus leads to “structural curse”.
+In BOW model, a word is represented as a separate variable having
+numeric weight of varying importance. The most popular weighting
+4http://www.lextek.com/manuals/onix/390 MINING TEXT DATA
+schema is Term Frequency / Inverse Document Frequency (TF-IDF):
+tfidf(w)=tf∗logN
+df(w), (12.1)
+where:
+– tf(w) is term frequency (the number of word occurrences in a doc-
+ument)
+– df(w) is document frequency (the number of documents containing
+the word)
+– N is number of documents in the corpus– tﬁdf(w) is the relative weight of the feature in the vectorUsing BOW to model the three messages with a TF-IDF weight, the
+corpus can be represented as a words * documents matrix. Each rowrepresents a word (5 distinct words in total) and each column represents
+a message, as shown below:
+⎡
+⎢⎢⎢⎢⎣watch
+King
+/prime
+Speech
+decid
+movi⎤
+⎥⎥⎥⎥⎦=⎡
+⎢⎢⎢⎢⎣0.4055 0 0 .4055
+0.4055 0.4055 0
+0.4055 0.4055 0
+00 1 .0986
+00 1 .0986⎤
+⎥⎥⎥⎥⎦(12.2)
+Knowledge Discovery: When we successfully transform the text
+corpus into numeric vectors, we can apply the existing machine learningor data mining methods like classiﬁcation or clustering. For example,in machine learning, similarity is an important measure for many tasks.A widely used similarity measure between two messages V
+1andV2is
+cosine similarity, which can be computed as:
+similarity (V1,V2)=cos(θ)=V1∗V2
+||V1||||V2||, (12.3)
+By conducting text preprocessing, text representation and knowledge
+discovery methods, we can mine latent, useful information from the in-
+put text corpus, like similarity between two messages in our example.
+However, this presents challenges for traditional text analytics methodswhen applied directly to textual data in social media due to its distinctfeatures. Now we analyze the new features of textual data in socialmedia from four diﬀerent perspectives: Time Sensitivity, Short Length,Unstructured Phrases, and Abundant Information.
+2.2 Time Sensitivity
+An important and common feature of many social media services is
+theirreal-timenature. Particularly, bloggerstypicallyupdatetheirblogsText Analytics in Social Media 391
+every several days, while microblogging and social networking users may
+post news and information several times daily. Users may want to com-municate instantly with friends about “What are you doing?” (Twitter)
+or “What is on your mind” (Facebook). When submitting a query to
+Twitter, the returned results are only several minutes old.
+Besides communicating and sharing minds with each other, users post
+commentsonrecentevents, suchasnewproducts, movies, sports, games,political campaigns, etc. The large number of real-time updates containabundantinformation, whichprovidesalotofopportunitiesfordetectionand monitoring of an event. With these data, we are able to infer a
+user’s interest in an event [37], and track information provenance from
+the user’s communications [9]. For example, Sakaki et al. [47] investigatethe real-time interaction of events such as earthquakes, and they proposean algorithm to monitor tweets and to detect a target event.
+With the rapid evolution of content and communication styles in so-
+cial media, text is changing too. Diﬀerent from traditional textual data,the text in social media is not independent and identically distributed
+(i.i.d.) data anymore. A comment or post may reﬂect the user’s interest,
+and a user is connected and inﬂuenced by his friends. People will not beinterested in a movie after several months, while they may be interestedin another movie released several years ago because of the recommenda-tion from his friends; reviews of a product may change signiﬁcantly aftersome issues, like the comments on Toyota vehicles after the break prob-lem. All these problems originate from the time sensitivity of textual
+data in social media.
+2.3 Short Length
+Certain social media web sites restrict the length of user-created con-
+tent such as microblogging messages, product reviews, QA passages andimage captions, etc. Twitter allows users to post news quickly and thelength of each tweet is limited to 140 characters. Similarly, Picasa com-ments are limited to 512 characters, and personal status messages onWindows Live Messenger are restricted to 128 characters. As we can
+see, data with a short length is ubiquitous on the web at present. As
+a result, these short messages have played increasing important roles inapplicationsofsocialmedia. Successfulprocessingshorttextsisessentialto text analytics methods.
+Short messages, as the most important data format, make people
+more eﬃcient with their participate in social media applications. How-ever, this brings new challenges to traditional fundamental research top-
+ics in text analytics, such as text clustering, text classiﬁcation, infor-392 MINING TEXT DATA
+mation extraction and sentiment analysis. Unlike standard text with
+lots of words and their resulting statistics, short messages consist of fewphrases or sentences. They cannot provide suﬃcient context information
+for eﬀective similarity measure [45], the basis of many text processing
+methods [27].
+To tackle the data sparseness problem, several traditional text analyt-
+ics methods have been proposed, which can be generally categorized intotwo groups. The ﬁrst is the basic representation of texts called surfacerepresentation [32, 36], which exploits phrases in the original text fromdiﬀerent aspects to preserve the contextual information. However, NLP
+techniques such as parsing are not employed, as it is time consuming
+to apply such techniques to analyze the structure of standard text indetail. As a result, the methods fail to perform a deep understandingof the original text. Another limitation of such methods is that theydid not use external knowledge, which has been found to be useful indealing with the semantic gap in text representation [18]. For example,tag “Japan Earthquake” does not contain any words or phrases related
+to “Nuclear Crisis” while we learn that these two events are related
+from recent news. Because they have no common words or phrases, itis very diﬃcult for BOW-based models and methods to build semanticconnections between each other. One intuitive approach is to enrich thecontexts of basic text segments by exploiting external resources, andsuch methods have been found to be eﬀective in narrowing the semantic
+gapin diﬀerent tasks [20, 54].
+2.4 Unstructured Phrases
+An important diﬀerence between the text in social media and tra-
+ditional media is the variance in the quality of the content. First, thevariance of quality originates from people’s attitudes when posting a mi-croblogging message or answering a question in a forum. Some users areexperts for the topic and post information very carefully, while othersdo not post as high of quality. The main challenge posed by contentin social media sites is the fact that the distribution of quality has high
+variance: from very high-quality items to low-quality, sometimes abusive
+content. This makes the tasks of ﬁltering and ranking in such systemsmore complex than in other domains [5].
+Second, when composing a message, users may use or coin new ab-
+breviations or acronyms that seldom appear in conventional text docu-ments. For example, messages like “How r u?”, “Good 9t” are not reallywords, but they are intuitive and popular in social media. They provide
+users convenience in communicating with each other, however it is veryText Analytics in Social Media 393
+diﬃcult to accurately identify the semantic meaning of these messages.
+Besides the unstructured expressions, the text is sometimes “noisy” fora speciﬁc topic. For instance, one QA passage in Yahoo! Answers “I
+like sony” should be noisy data to a post that is talking about iPad 2
+release. It is diﬃcult to classify the passage into corresponding classeswithout considering its context information.
+2.5 Abundant Information
+Social media in general exhibit a rich variety of information sources.
+In addition to the content itself, there is a wide array of non-contentinformation available. For example, Twitter allows users to utilize the“#” symbol, called hashtag, to mark keywords or topics in a Tweet
+(tag information); an image is usually associated with multiple labels
+which are characterized by diﬀerent regions in the image [66]; users areable to build connection with others (link information) in Facebook andother social network sites; Wikipedia provides an eﬃcient way for usersto redirect to the ambiguity concept page or higher level concept page(semantic hierarchy information).
+All these external information presents opportunities for traditional
+tasks. Previous text analytics sources always appear as <user, content >
+structure, while the text analytics in social media is able to derive datafrom various aspects, which include user, content, link, tag, time stampetc. Recently, manyresearchworkutilizeslinkinformationinmicroblog-ging services to detect the popular event [37], distinguish the microblog-ging message is credible news or just rumor [42]. Also, with the usermetadata (e.g. tags) mined from blogosphere and bookmarking sites,
+Wang et al. [59] take advantage of networking information between users
+and tags to discover overlapping communities. These successful applica-tions motivated us to exploit more opportunities behind such abundantadditional information available in social media.
+3. Applying Text Analytics to Social Media
+It presents great challenges to apply traditional methods to process
+textual data in social media. Recently, a number of methods have beenproposed to handle the textual data with new features. In this section,
+we introduce a variety of applying text analytics to social media.
+3.1 Event Detection
+Event Detection aims to monitor a data source and detect the occur-
+rence of an event that is captured within that source [40]. These datasources include images, video, audio, spatio-temporal data, text docu-394 MINING TEXT DATA
+ments and relational data. Among them, event detection and evolution
+tracking of news articles [60], digital books [22] receives much attention.The volume of textual data in social media is increasing exponentially,
+thus providing us many opportunities for event detection and tracking.
+In some sense, social text streams are sensors of the real world [67].
+As the real-time nature of textual data in social media, a lot of work
+has been done to extract real world events from social text streams.One interesting application is to monitor real-time events. For example,when an earthquake or tsunami occurs, one convenient way to commu-nicate updated news with others is to post messages related to the event
+via microblogging. Therefore, it provides possibility for us to promptly
+detect the occurrence of earthquake or tsunami, simply by mining thecorresponding microblogging messages. Based on the above observa-tion, Sakaki et al. [47] investigate the real-time interaction of events onTwitter. They consider each user as a sensor to monitor tweets postedrecently and to detect earthquake or rainbow. To detect a target event,theworkﬂowisasfollows. First, aclassiﬁeristrainedbyusingkeywords,
+message length, and corresponding context as features to classify tweets
+into positive or negative cases. Second, they build a probabilistic spatio-temporal model for the target event to identify location of the event. Asan application, the authors constructed an earthquake-reporting systemin Japan, where has numerous earthquakes every year as well as a largenumber of active microblogging users.
+One important direction of event detection in social media is to im-
+prove traditional news detection. A large number of news stories aregenerated from various news channels day after day. Among them, onlya relatively few receive attention from users, which are recognized as“breaking news”. Traditionally, editors of newspapers and websites de-cide which stories can be ranked higher and assigned in an importantplace, like the front page. In a similar way, web-based news aggregatedservices, such as Google News
+5, give users access to broad perspectives
+on the important news stories being reported by grouping articles intorelated news events. Deciding automatically on which top stories toshow is a challenging problem [39]. A poll conducted by Technoratifound that 30% of bloggers consider themselves to be blogging aboutnews-related topics [41].
+Motivated by this observation, researchers proposed to utilize blogo-
+sphere to facilitate news detection and evaluation. Lee et al. present
+novel approaches to identify important news story headlines from the
+5http://news.google.com/Text Analytics in Social Media 395
+blogosphere for a given day [34]. The proposed system consists of two
+components based on the language model framework, the query likeli-hood and the news headline prior. For the query likelihood, the authorspropose several approaches to estimate the query language model andthe news headline language model. They also suggest several criteria toevaluate the importance or newsworthiness of the news headline for a
+given day.
+Tracking the diﬀusion and evolution of a popular event in social me-
+dia is another interesting direction in this ﬁeld. Diﬀerent from i.i.d.textual data in traditional media, user generated content in social me-dia is a mixture of a text stream and a network structure. Lin et al.take into account the burstiness of user interest, information diﬀusion inthe network structure and the evolution of textual topics to model the
+popularity of events over time [37]. They tackle the problem of popular
+event tracking in online communities by studying the interplay betweentextual content and social networks.
+Besides detecting events from pure textual data, some methods have
+been proposed to mine text information in social media to facilitateevent detection. Chen et al. is to detect events from photos on Flickrby analyzing the tag of the photos [13]. In the proposed framework, the
+authors ﬁrst analyze temporal and locational distributions of tag usage.
+Second, they identify tags related with events, and further distinguish ifthe tags are relevant to aperiodic events or periodic events. Afterwards,tags are clustered into their corresponding clusters. Each cluster repre-sents an event, and consists of tags with similar temporal and locationaldistribution patterns as well as with similar associated photos. Finally,for each tag cluster, photos corresponding to the represented event are
+extracted.
+3.2 Collaborative Question Answering
+Collaborative question answering services begin to emerge with the
+blooming of social media. They bring together a network of self-declared“experts” to answer questions posted by other people. A large volumeof questions are asked and answered every day on social Question andAnswering (QA) web sites such as Yahoo! Answers. Collaborative ques-tion answering portals are a popular destination for users looking for
+advice with a particular situation, for gathering opinions, for sharing
+technical knowledge, for entertainment, for community interaction, andfor satisfying one’s curiosity about a countless number of things.
+Over time, a tremendous amount of historical QA pairs have built
+up their databases, and this transformation gives users an alternative396 MINING TEXT DATA
+place to look for information, as opposed to a web search. Instead of
+looking through a list of potentially relevant documents from the Webor posting a new question in a forum, users may directly search for rel-
+evant historical questions or answers from QA archives. As a result, the
+corresponding best solutions could be explicitly extracted and returned.
+This problem could be considered from two sides. On one hand, the
+most relevant questions semantically related to the query are returned,so that users can ﬁnd similar questions and their corresponding answers.Wang et al. [57] propose a graph based approach to perform questionretrieval by segmenting multi-sentence questions. The authors ﬁrst at-
+tempt to detect question sentences using a classiﬁer built from both
+lexical and syntactic features, and use similarity and co-reference chainbased methods to measure the closeness score between the question andcontext sentences. On the other hand, systems provide correspondingquality QA pairs from answer’s point of view. Adamic et al. [1] evaluatethequalityofanswersforspeciﬁcquestionbyanalyzingYahoo! Answer’sknowledge sharing activity. First, forum categories are clustered ac-
+cording to the content characteristics and patterns of interaction among
+users. The interactions in diﬀerent categories reveal diﬀerent charac-teristics. Some categories are more like expertise sharing forums, whileothers incorporate discussion, everyday advice, and support. Similarly,some users focus narrowly on speciﬁc topics, while others participateacross categories. Second, the authors utilize this feature to map relatedcategories and characterize the entropy of the users’ interests. Both user
+attributes and answer characteristics are combined to predict, within a
+given category, whether a particular answer will be chosen as the bestanswer by the asker.
+In order to improve QA archives management, there are a number of
+worksdone by evaluatingthe quality of QA pairs. Harper et al. [25] triedto determine which questions and answers have archival value by analyz-ing the diﬀerences between conversational questions and informational
+questions. Informational questions refer to the questions with the intent
+of obtaining information the asker could learn from. An example is “Isdrinking Coke good for health?”. Conversational questions refer to thequestions with the intent of stimulating discussion. In these questions,the users may aim at getting opinions or self-expression. An example is“Do you like drinking Coke?”. The authors present evidence that con-versational questions typically have much lower potential archival value
+than informational questions. Further, they used machine learning tech-
+niques to automatically classify questions as conversational or informa-tional from perspectives of the process about categorical, linguistic, andsocial diﬀerences between diﬀerent question types. Agichtein et al. [5]Text Analytics in Social Media 397
+introduced a general classiﬁcation framework for combining the evidence
+from diﬀerent sources, that can be tuned automatically for quality pre-diction of QA pairs. In particular, they exploit features of QA pairs
+that are intuitively correlated with quality, including intrinsic content
+quality, interactions between content creators and users, as well as thecontent usage statistics. Then a classiﬁer is trained to appropriatelyselect and weight the features for each speciﬁc type of item, task, andquality deﬁnition.
+3.3 Social Tagging
+Social tagging is a method for Internet users to organize, store, man-
+age and search for tags / bookmarks (also as known as social bookmark-
+ing) of resources online. Unlike ﬁle sharing, the resources themselves
+aren’t shared, merely the tags that describes them or bookmarks thatreference them
+6. The rise of social tagging services presents a potential
+great deal of data for mining useful information on the web. The users oftagging services have created a large volume of tagging data which hasattracted recent attention from the research community. From oceansof tags, it is diﬃcult for a user to quickly locate the relevant resources
+he wants via browsing the tags. Typically, the tagging services provide
+keyword-based search which returns resources annotated by the giventags. However, the results returned by the search module are inade-quate for users to discover interesting resources due to the short andunstructured nature of tags. First, it is very diﬃcult to design an ef-fective tag ranking algorithm due to the short length and sparseness oftags. Second, current systems are designed for keywords based search,
+which failed to capture the semantic relationship between two semanti-
+cally related tags. For example, when a user searches for a recent event,such as “Egyptian Revolution”, the systems will return results that aretagged as “Egyptian” or “Revolution”. Among them, resources taggedwith “Mubarak’s resignation” and “Protest” which are highly related to“Egyptian Revolution” will be ignored. This “semantic gap” results inmany valuable and interesting results overlooked and buried in disorga-
+nized resources.
+Research work in social tagging services can be typically divided into
+two categories: one aims to improve the quality of tag recommendation
+and the other studies how to utilize social tagging resources to facilitateotherapplications. First, SigurbjornssonandVan[48]investigatehowtoassistusersduringthetaggingphaseinmultimediasharingsites(Flickr).
+6http://en.wikipedia.org/wiki/Social bookmarking/398 MINING TEXT DATA
+They present and evaluate tag recommendation strategies to support
+the user in the photo annotation task by recommending a set of tagsthat can be added to the photo. Yin et al. [61] address the problem of
+tag prediction by proposing a probabilistic model for personalized tag
+prediction. On the other hand, social tagging resources are exploited toimprove other web applications, including web object classiﬁcation [62],document recommendation [23], web search quality [26] etc.
+3.4 Bridging the Semantic Gap
+As we discussed in Section 2, the textual data in social media is short
+and unstructured. When processing this kind of data, traditional bag ofwords (BOW) approach is inherently limited, as it can only use pieces of
+information that are explicitly mentioned in the documents [18]. Con-
+sider one famous movie “The Dark Knight”. By mining the originalposts related to this movie, it is inadequate to build the semantic re-lationship with other relevant concepts due to the semantic gap .F o r
+example, “The Dark Knight” and “Batman” are diﬀerent names of one
+movie, but they cannot be linked as the same concept without addi-tional information from external knowledge. Speciﬁcally, this approach
+has no access to the wealth of world knowledge possessed by humans,
+and is easily puzzled by facts and terms not mentioned in the data set.Recently, researchers have proposed semantic knowledge bases to bridgethe widely extant semantic gap in short text representation.
+The aggregation of information in groups is often better than what
+couldhavebeenmadebyanysinglememberofthegroup[52]. Wikipediais a free, web-based, collaborative, multilingual encyclopedia project. Its
+18millionarticleshavebeenwrittencollaborativelybyvolunteersaround
+the world, and almost all of its articles can be edited by anyone withaccess to the site
+7. Unlike other standard ontologies, such as WordNet
+or Mesh, Wikipedia is not a structured thesaurus edited by experts, butit was contributed collaboratively by users on the web. It is compre-hensive, up to date and well-formed [29]. In Wikipedia, each articleconcentrates on one speciﬁc topic. The title of each article is a suc-
+cinct phrase that resembles an ontology term. Equivalent concepts are
+grouped together by redirected links. Meanwhile, Wikipedia contains ahierarchical categorization system, in which each article belongs to atleast one category. All these features are making Wikipedia a potentialontology for enhancing text representation.
+7http://en.wikipedia.org/wiki/Wikipedia/Text Analytics in Social Media 399
+Some methods were proposed to tackle the problems of data sparse-
+ness and the semantic gap in short texts clustering and classiﬁcation byexploiting semantic knowledge. Somnath et al. [8] proposed a method to
+enrichshorttextrepresentationwithadditionalfeaturesfromWikipedia.
+The method used titles of Wikipedia articles as additional external fea-tures, and it showed improvement in the accuracy of short texts cluster-ing. Phan et al. [45] presented a framework for building classiﬁers thatdeal with short texts from the Web and achieved qualitative enhance-ment. The underlying idea of the framework is to collect large-scale dataand then build a classiﬁer on both labeled data and external semantics
+for each classiﬁcation task. In addition, researchers [56, 18, 58] analyzed
+the documents and found related ontological concepts within WordNetand Wikipedia, in turn producing a set of features that augment stan-dard BOW. Towards improving the management of Google snippets,existing methods focus either on classifying the web texts into smallercategories [28] or assigning labels for each category [10] with the help ofWikipedia.
+3.5 Exploiting the Power of Abundant
+Information
+Abundant information associated with textual information is ubiq-
+uitous in social media. On Twitter, for example, two microblogging
+messages can be linked together via their authors’ follower, followee,retweet or reply relationship; two microblogging messages can be classi-ﬁed into the same or similar category when they share the same hashtagor contain same hyperlink; semantic similarity between two microblog-gingmessagescanbemeasuredbasedontheirpostingtime(timestamp),posting place (geotag), author’s personal information (proﬁle), etc. Sim-
+ilar phenomena can be observed in Facebook, LinkedIn, Wikipedia and
+other social media sites. Diﬀerent from i.i.d. documents in traditionalmedia, if one can utilize these abundant information available in socialmedia, performance of many text analytics methods may be signiﬁcantlyimproved.
+To utilize the abundant information appearing along with text con-
+tentinsocialmedia, recentmethodshavebeenproposedtointegratethis
+into text analytics tasks, including classiﬁcation, clustering etc.. Among
+these methods, a combination of link and text content for mining pur-poses is becoming popular. A major diﬀerence between these two kindsof methods is that traditional methods measure the similarity betweendocumentspurelybasedonattributesimilarity(e.g. cosinesimilaritybe-tween two attribute vectors); while the methods for text in social media400 MINING TEXT DATA
+measures document similarity based on connectivity (e.g. the number of
+possible paths between authors of the documents) and structural simi-larity (e.g. the number of shared neighbors) [68], besides the attributesimilarity of text content. Links clearly contain high-quality semanticalclues that are lost in purely text-based methods, but exploiting link in-formation is not easy. The major diﬃculty is the similarity measurement
+between each pair of objects, due to the characteristics of diﬀering social
+networks:
+Multi-dimensional social networks. The connections between users
+in social media are often multi-dimensional [53]. Users can connect
+to each other for diﬀerent reasons, e.g., alumni, colleagues, livingin the same community, sharing similar interests, etc. Diﬀerenttypes of links have diﬀerent semantic meanings associated withtheir respective latent social dimensions.
+Network representation. Traditional text analytics methods uti-
+lize local features or attributes to represent documents. However,there is no natural feature representation for all types of networkdata [31]. When we use an adjacency matrix to represent a net-work, the matrix will be very sparse, highly dimensional and its
+equal weights cannot reﬂect tie strength well. Moreover, obtain-
+ing labels of objects in social network, which is very important forsupervised learning methods, appears to be very expensive.
+Dynamic networks. Diﬀerent from constant news collections or a
+documents corpus, social media is evolving continuously, with newusers joining the network, extant users connecting with each otheror becoming dormant. It is imperative to update the acquiredcommunity structure. As a result, how to eﬃciently integrate theupdated network information is very important for many applica-
+tions.
+Many methods have been proposed to tackle the challenges and make
+use of link information sources. To our knowledge, the ﬁrst topic clas-
+siﬁcation system that simultaneously utilizes textual and link features
+was discussed in [11]. The authors aim to propose a statistical modeland a relaxation labeling technique to build a classiﬁer by exploiting linkinformation form neighbors of the documents. Similarly Furnkranz [17]found that it is possible to classify documents more reliably with infor-mation originating from pages that point to the document than withfeatures that are derived from the document itself. Later, Chakrabarti
+et al. [6] proposed a graph-based text classiﬁcation method by learningText Analytics in Social Media 401
+from their neighbors. The diﬀerence between these two kinds of tech-
+niques is that the latter one considered more factors in social networks,including the network evolution (dynamic network), pruning of edges
+from the neighborhood graph, and weighing the inﬂuence of edges and
+edges themselves by content similarity measures. Recently, Aggarwaland Li [3] presented an eﬃcient and scalable method to tackle the prob-lem of node classiﬁcation in dynamic information networks with bothtext content and links. To facilitate an eﬀective classiﬁcation process,diﬀerent from previous models, they use a random walk approach in con-junction with the content of the network. This design makes the model
+more robust to variations in content and linkage structure. Aside from
+classiﬁcation, link information has been also successfully integrated intothe applications of clustering [68] and topic modeling [50]. It shows thatthe use of both link and text information achieved more eﬀective resultsthan a method based purely on either of the two [4].
+In addition to integrating network information into text analytics
+tasks, researchers further exploit abundant information. In [51], a het-
+erogeneous information network is deﬁned as an information network
+composed of multiple types of object. The authors explored clusteringof multi-typed heterogeneous networks with a star network schema, al-though clustering on homogeneous networks has been well studied overdecades. Links across multi-typed objects are utilized to generate high-quality net-clusters. The general idea of the proposed framework is toavoid measuring the pairwise similarity between objects, which is hard
+in heterogeneous networks.Instead, it maps each target object into a
+low dimensional space deﬁned by current clustering results. Then ev-ery target object in these clusters will be readjusted based on the newmeasure. The clustering results will be improved in each iteration untilconvergence.
+3.6 Related Eﬀorts
+Aside from the topics discussed in the previous sections, even more
+attempts have been explored in mining social media resources. In Social
+Network Analysis, researchers utilize various information such as the
+posts, links, tags, etc., to identify inﬂuential users in the blogsphere [2]andmicroblogsphere[7], tounderstanduserbehaviorinmicroblogsphereby analyzing the user intentions associated at a community level [30,33]. In Sentiment Analysis, Conner et al. investigate several surveys onconsumer conﬁdence and political opinion, connect measures of publicopinion measured from polls with sentiment measured from text [14].
+Gerani et al. use a general opinion lexicon and propose using proximity402 MINING TEXT DATA
+information in order to capture opinion term relatedness to improve
+opinion retrieval in the blogsphere [21]. In Knowledge Management,Lerman and Hogg [35] use a model of social dynamics to predict the
+popularity of news. Incorporating aspects of web site design, the model
+improves on predictions based on simply extrapolating from early votes.Lu et al. exploit contextual information about the authors’ identitiesand social networks for improving review quality prediction [38]. Thismodel improves previous work, which addressed the problem by treatinga review as a stand-alone document, extracting features from the reviewtext, and learning a function based on these features for predicting the
+review quality.
+4. An Illustrative Example
+In this section, we present one real world application to further il-
+lustrate how to utilize text analytics to solve problems in social mediaapplications. We now introduce an eﬀective way to improve the shorttext representation quality by integrating semantic knowledge resources.
+As we discussed in Section 2, textual data in social media has the
+problems of data sparseness and semantic gap. One eﬀective way to
+solve these problems is to integrate semantic knowledge, which has been
+found to be useful in dealing with the semantic gap [18]. For example,the ﬁrst search result returned by Google using “Friday” as the querydoesnotcontainanywordsorphrasesrelatedto“RebeccaBlack”, whilewe learn that the singer creates overnight sensations by sharing the songvia YouTube. Because they have no words or phrases overlapping, thisresult can not be successfully build connection with Rebecca related
+content. Thus, one intuitive idea is to enrich the contexts of basic text
+representation by exploiting semantic resources.
+Now, we follow the basic idea proposed in [28] to illustrate three steps
+of feature generation in detail: Seed Phrase Extraction from the originaltext corpus, Semantic Features Generation based on seed phrases and
+Feature Space Construction.
+4.1 Seed Phrase Extraction
+Given a text corpus, features can be derived by employing diﬀerent
+techniques in NLP. The only requirement is that the extracted features
+could be informative to cover the key subtopics described in the shorttexts. Here we use shallow parsing [24] to divide sentences into a se-ries of words that together compose a grammatical unit. To ensure theextracted features are able to cover main topics, we use these phrasesgenerated by shallow parser, with the combination of sentences in theText Analytics in Social Media 403
+original text, to extract the seed phrases. However, there are redundan-
+cies between these two kinds of features. If we employ all these features
+asseed phrases, they would produce some duplicate information between
+each other. Therefore, to make the tradeoﬀ between informativeness andeﬀectiveness, weproposetomeasurethesemanticsimilaritybetweensen-tence level features and phrase level features to eliminate informationredundancy.
+Several methods have been proposed to calculate the semantic simi-
+larity between associations [12] using web search. However, along withthe increasing scale of the web, the page counts provided by some com-
+mercial search engines are not so reliable [15]. Thus instead of simply
+using the search engine page counts, we propose a phrase-phrase seman-tic similarity measuring algorithm using a co-occurrence double check inWikipedia to reduce the semantic duplicates. For Wikipedia, we down-load the XML corpus [16], remove xml tags and create a Solr
+8index of
+all XML articles.
+LetTdenote a sentence level feature,T={t1,t2,...,tn}, where tide-
+notes the phrase level feature contained in T.T h esentence level feature
+is too sparse to calculate its frequency directly. Therefore, we calculatethe semantic similarity between t
+iand{t1,t2,...,tn}asInfoScore( ti)
+instead. We select the phrase level feature which has the largest simi-
+larity with other features in Tand remove it as the redundant feature.
+Given two phrases tiandtj,w eu s e tiandtjseparately as a query
+to retrieve top C Wikipedia pages from the built index. The total oc-
+currences of tiin the top C Wikipedia pages retrieved by query tjis
+denoted as f(ti|tj); and we deﬁne f(tj|ti) in a similar manner. The total
+occurrences of tiin the top C Wikipedia pages retrieved by query tiis
+denoted as f(ti), and similarly for f(tj). The variants of three popular
+co-occurrence measures [15] are deﬁned as below:
+WikiDice (ti,tj)=⎧
+⎪⎪⎨
+⎪⎪⎩0i f f(ti|tj)=0
+orf(tj|ti)=0
+f(ti|tj)+f(tj|ti)
+f(ti)+f(tj)otherwise, (12.4)
+where WikiDice is a variant of the Dice coeﬃcient.
+WikiJaccard (ti,tj)=min(f(ti|tj),f(tj|ti))
+f(ti)+f(tj)−max(f(ti|tj),f(tj|ti)),(12.5)
+where WikiJaccard is a variant of the Jaccard coeﬃcient.
+8http://lucene.apache.org/solr/404 MINING TEXT DATA
+WikiOverlap (ti,tj)=min(f(ti|tj),f(tj|ti))
+min(f(ti),f(tj)), (12.6)
+where WikiOverlap is a variant of the Overlap(Simpson) coeﬃcient.
+For ease of comparison, all then2
+2WikiDice similarity scores are nor-
+malized into values in [0 ,1] range using the linear normalization formula
+deﬁned below:
+WD ij=WikiDice ij−min(WikiDice k)
+max(WikiDice k)−min(WikiDice k), (12.7)
+wherekis from 1 ton2
+2. We again deﬁne WJijandWOijin a similar
+manner. A linear combination is then used to incorporate the three sim-
+ilarity measures into an overall semantic similarity between two phrases
+tiandtj,a sf o l l o w s :
+WikiSem (ti,tj)=( 1−α−β)WD ij+αWJ ij+βWO ij, (12.8)
+whereαandβweight the importance of the three similarity measures.
+Text clustering is an unsupervised method where we do not have any
+labeled data to tune the parameters. We thus empirically set αandβ
+to equal weight.
+For each sentence level feature, we rank the information score deﬁned
+in Equation 12.9 for its child node features at phrase level .
+InfoScore (ti)=n/summationdisplay
+j=1,j/negationslash=iWikiSem (ti,tj). (12.9)
+Finally, we remove the phrase level featuret∗, which delegates the
+most information duplicates to the sentence level featureT, deﬁned as:
+t∗= arg max
+ti∈{t1,t2,...,t n}InfoScore (ti). (12.10)
+4.2 Semantic Feature Generation
+After extracting the seed phrases from the ﬁrst step, we obtain an
+informative and eﬀective basic representation of the input text corpus.In this step, we discuss an algorithm to generate semantic features basedon theseed phrases using Wikipedia as background knowledge.
+4.2.1 Background Knowledge Base. Wikipedia, as back-
+ground knowledge, has a wider knowledge coverage than other semanticknowledge bases and is regularly updated to reﬂect recent events. Underthis scenario, we take Wikipedia as the semantic knowledge source to
+generate semantic concepts.
+Gabrilovich and Markovitch [19], as well as Hu et al. [27] prepro-
+cessed the Wikipedia corpus to collect semantic concepts. PreprocessingText Analytics in Social Media 405
+Algorithm 1: GenerateFeatures( S)
+input: a setSofseed phrases
+output:semantic features SF
+SF←null
+forseed phrase s ∈Sdo
+ifs∈Sentence level then
+s.Query ←SolrSyntax( s,O R )
+else
+s.Query ←SolrSyntax( s, AND)
+WikiPages ←Retrive(s .Query)
+SF←SF+ Analyze(WikiPages)
+returnSF
+Figure 12.2. Semantic feature generation scheme
+Wikipedia is one way to build the concepts space. However, it ignores
+the valuable contextual information of Wikipedia plain texts and alwaysencounters problems when mapping the original text to appropriate con-cepts. Therefore, in this study we introduce another way to process theWikipedia corpus, it is to preserve the original pages of Wikipedia with
+the built-in Solr index.
+4.2.2 Feature Generator. Thesemantic feature generation
+algorithm is illustrated in Figure 12.2. Given a seed phrase, we retrieve
+corresponding Wikipedia pages with the help of the Solr search engine.Then we extract semantic concepts from the retrieved Wikipedia pages.
+In order to retrieve the appropriate pages from the large Wikipedia
+corpus, we derive queries based on seed phrase arising from sentence
+levelorphrase level separately. As the key information of seed phrases
+fromphrase level is more focused, we build the ”AND” query which
+requires the retrieved pages to contain every term in the phrase. On
+the other hand, the seed phrases fromsentence level are informative but
+sparse, we thus build ”OR” query
+9which means there is no guaran-
+tee that the retrieved Wikipedia pages will contain every term in thephrase. We use these two kinds of queries to retrieve the top ωarti-
+cles from the Wikipedia corpora. Similar to [8], we extract titles andbold terms (links) from the retrieved Wikipedia pages to serve as part
+9For more details about “AND” and “OR” query syntax, please refer to
+http://wiki.apache.org/solr /SolrQuerySyntax/406 MINING TEXT DATA
+of thesemantic features . To discover the intrinsic concepts hidden in
+the plain texts, we adopt an eﬀective key phrase extraction algorithm —Lingo [44], which uses algebraic transformations of the term-document
+matrix and implements frequent phrase extraction using suﬃx arrays.
+The key phrases extracted from the Wikipedia pages are added to thesemantic feature space. By utilizing this method, we may obtain extrin-
+sic concepts “Friday” for the phrase “Rebecca Black” and the intrinsicconcepts like “Song”, “Singer” and “Youtube” by mining the relatedpages. Therefore, we can build semantic relationships between the con-cepts of“Friday” and “Rebecca Black”.
+4.3 Feature Space Construction
+As the construction of Wikipedia follows the non-binding guidelines
+and the data quality is only under social control by the community [65],it often introduces noise to the corpus. Meanwhile, a single text maygenerate a huge number of features. These overzealous semantic features
+bring adverse impact on the eﬀectiveness and dilute the inﬂuence ofvaluable original information. Therefore, we conduct feature ﬁlteringto reﬁne the unstructured or meaningless features and apply feature
+selection to avoid aggravating the “curse of dimensionality”.
+Feature Filtering: We formulate empirical rules to reﬁne the un-
+structured features obtained from Wikipedia pages, some typical rulesare as follows:
+Remove features generated from too general seed phrase that re-
+turns a large number (more than 10,000) of articles from the indexcorpus.
+Transform features used for Wikipedia management or adminis-tration, e.g. “List of hotels” →“hotels”, “List of twins” →“twins”.
+Apply phrase sense stemming using Porter stemmer [46], e.g. “ﬁc-
+tional books” →“ﬁction book”.
+Remove features related to chronology, e.g. “year”, “decade” and
+“centuries”.
+Feature Selection: We need to select semantic features to construct
+featurespaceforvarioustasks. Thenumberof semantic features weneed
+to collect is determined by the speciﬁc task. In this chapter, we utilizea simple way to select the most frequent features.
+First, the tf-idfweights of all generated features are calculated. One
+seed phrase s
+i(0<i≤m) may generate ksemantic features , denoted
+by{fi1,fi2,...,fik}. In order to explore the diversity of the semanticText Analytics in Social Media 407
+features, we select one feature for each seed phrase .T h u smfeatures are
+collected as follows:
+f∗
+i= arg max
+fij∈{fi1,fi2,...,f ik}tfidf(fij). (12.11)
+Second, the top nfeatures are extracted from the remaining semantic
+features based on their frequency. These frequently appearing features,
+together with the features from the ﬁrst step, are used to construct them+nsemantic features .
+Now we prepare the feature space for clustering, classiﬁcation or other
+text analytics methods. From the discussion above, key idea of the
+framework is to introduce semantic knowledge base (Wikipedia) to buildsemantic connection between two short documents. This section pro-vides a clear mind about how to apply text analytics methods in socialmedia resources.
+5. Conclusion and Future Work
+Textual data in social media carries abundant information. User-
+generated content provides diverse and unique information in forms of
+comments, posts and tags. The useful information hidden in the text
+resources of social media provides opportunities for researchers of diﬀer-ent disciplines to mine patterns and information of interest that mightnot be obvious. In this chapter, we discuss about the distinct aspectsof textual data in social media and their challenges, and elaborate cur-rent work of utilizing text analytics methods to solve problems in socialmedia.
+This chapter has only discussed some essential issues. There are a
+number of interesting directions for further exploration.
+How to better make use of the real-time nature in social media?A real-time search system which can ﬁnd, summarize and trackupdated breaking news or events in social communities will be
+very challenging but useful.
+How to handle textual data with short length in social media? As
+wediscussed, shorttextplaysaveryimportantroleinsocialmedia.On one hand, these textual data contains less information thanstandard documents; on the other hand, it provides possibility for
+us to use traditional syntax-based NLP models to perform ﬁne-
+leveltextualanalysis,whichwereverytimeconsumingforstandard
+text.408 MINING TEXT DATA
+How to exploit cross media data to facilitate social behavior analy-
+sis? Cross media data here refers data of diﬀerent formats or datafrom diﬀerent social media resources [64]. The variance types of
+data in social media, including text, image, link or even multilin-
+gual data, have latent relationships and interactions between eachother. Also, an eﬃcient and eﬀective way to integrate these kindsof data will be very useful to address the data sparseness problem.
+How to process web scale data available in social media? The largevolume and the compact but noisy presentation of textual data insocial media hinders the accessibility of information for users to
+conveniently search, navigate and locate the speciﬁc messages one
+might be interested in. Finding an eﬃcient way to handle theselarge scale data types is very challenging.
+Acknowledgments
+This work is, in part, supported by the grants NSF (#0812551), ONR
+(N000141010091) and AFOSR (FA95500810132). The authors wouldlike to acknowledge all of the researchers in Arizona State University’sData Mining and Machine Learning Laboratory. The views expressed
+in this chapter are solely attributed to the authors and do not represent
+the opinions or policies of any of the funding agencies.
+References
+[1] L. Adamic, J. Zhang, E. Bakshy, and M. Ackerman. Knowledge
+sharing and yahoo answers: everyone knows something. In Proceed-
+ing of the 17th international conference on World Wide Web , pages
+665–674. ACM, 2008.
+[2] N. Agarwal, H. Liu, L. Tang, and P. S. Yu. Identifying the inﬂu-
+ential bloggers in a community. In Proceedings of the international
+conference on Web search and web data mining , WSDM ’08, pages
+207–218, New York, NY, USA, 2008. ACM.
+[3] C. C. Aggarwal and N. Li. On node classiﬁcation in dynamic
+content-based networks. In The Eleventh SIAM International Con-
+ference on Data Mining , pages 355–366, 2011.
+[4] C.C.AggarwalandH.Wang. Textmininginsocialnetworks. Social
+Network Data Analytics , pages 353–378, 2011.
+[5] E. Agichtein, C. Castillo, D. Donato, A. Gionis, and G. Mishne.
+Finding high-quality content in social media. In Proceedings of
+the international conference on Web search and web data mining ,
+WSDM ’08, pages 183–194, New York, NY, USA, 2008. ACM.Text Analytics in Social Media 409
+[6] R. Angelova and G. Weikum. Graph-based text classiﬁcation: learn
+fromyourneighbors. In Proceedings of the 29th annual international
+ACM SIGIR conference on Research and development in informa-tion retrieval , pages 485–492. ACM, 2006.
+[7] E. Bakshy, J. Hofman, W. Mason, and D. Watts. Identifying inﬂu-
+encers on twitter. In Proceedings of the fourth ACM I nternational
+Conference on Web Search and Data Mining , 2011.
+[8] S. Banerjee, K. Ramanathan, and A. Gupta. Clustering short texts
+using wikipedia. In Proceedings of the 30th annual international
+ACM SIGIR conference on Research and development in informa-
+tion retrieval , pages 787–788. ACM, 2007.
+[9] G. Barbier and H. Liu. Information Provenance in Social Me-
+dia.Social Computing, Behavioral-Cultural Modeling and Predic-
+tion, pages 276–283, 2011.
+[10] D. Carmel, H. Roitman, and N. Zwerdling. Enhancing cluster label-
+ing using wikipedia. In Proceedings of the 32nd international ACM
+SIGIR conference on Research and development in information re-trieval, pages 139–146. ACM, 2009.
+[11] S. Chakrabarti, B. Dom, and P. Indyk. Enhanced hypertext cate-
+gorization using hyperlinks. In ACM SIGMOD Record , volume 27,
+pages 307–318. ACM, 1998.
+[12] H.-H. Chen, M.-S. Lin, and Y.-C. Wei. Novel association mea-
+sures using web search with double checking. In Proceedings of the
+21st International Conference on Computational Linguistics and the44th annual meeting of the Association for Computational Linguis-
+tics, pages 1009–1016. Association for Computational Linguistics,
+2006.
+[13] L. Chen and A. Roy. Event detection from Flickr data through
+wavelet-based spatial analysis. In Proceeding of the 18th ACM con-
+ference on Information and knowledge management , pages 523–532.
+ACM, 2009.
+[14] B.Connor,R.Balasubramanyan,B.R.Routledge,andN.A.Smith.
+From tweets to polls: Linking text sentiment to public opinion timeseries. In Proceedings of the I nternational AAAI Conference on
+Weblogs and Social Media , pages 122–129, 2010.
+[15] B. Danushka, M. Yutaka, and I. Mitsuru. Measuring semantic sim-
+ilarity between words using web search engines. In Proceedings of
+the 16th international conference on World Wide Web , WWW ’07,
+pages 757–766, 2007.410 MINING TEXT DATA
+[16] L. Denoyer and P. Gallinari. The wikipedia xml corpus. SIGIR
+Forum, 40(1):64–69, 2006.
+[17] J. F
+”urnkranz. Exploiting structural information for text classiﬁcation
+on thewww.Advances in Intelligent Data Analysis ,pages 487–497,
+1999.
+[18] E. Gabrilovich and S. Markovitch. Feature generation for text cate-
+gorization using world knowledge. In International joint conference
+on artiﬁcial intelligence , volume 19, page 1048, 2005.
+[19] E. Gabrilovich and S. Markovitch. Overcoming the brittleness bot-
+tleneck using wikipedia: Enhancing text categorization with ency-clopedic knowledge. In Proceedings of the National Conference on
+Artiﬁcial Intelligence , volume 21, page 1301, 2006.
+[20] E. Gabrilovich and S. Markovitch. Computing semantic relatedness
+using wikipedia-based explicit semantic analysis. In Proceedings of
+the 20th International Joint Conference on Artiﬁcial Intelligence ,
+pages 6–12, 2007.
+[21] S. Gerani, M. J. Carman, and F. Crestani. Proximity-based opin-
+ion retrieval. In Proceeding of the 33rd i nternational ACM SIGIR
+conference on Research and development in information retrieval ,
+SIGIR ’10, pages 403–410, New York, NY, USA, 2010. ACM.
+[22] M. Gray, B. Team, J. Pickett, D. Hoiberg, D. Clancy, P. Norvig,
+J. Orwant, and S. Pinker. Quantitative Analysis of Culture UsingMillions of Digitized Books. science, 1199644(176):331, 2011.
+[23] Z. Guan, C. Wang, J. Bu, C. Chen, K. Yang, D. Cai, and X. He.
+Document recommendation in social tagging services. In Proceed-
+ings of the 19th international conference on World wide web,WWW’10, pages 391–400, New York, NY, USA, 2010. ACM.
+[24] J. Hammerton, M. Osborne, S. Armstrong, and W. Daelemans. In-
+troduction to special issue on machine learning approaches to shal-low parsing. Machine Learning Research, 2:551–558, 2002.
+[25] F. M. Harper, D. Moy, and J. A. Konstan. Facts or friends?: dis-
+tinguishing informational and conversational questions in social qasites. InProceedings of the 27th international conference on Human
+factors in computing systems , CHI ’09, pages 759–768, New York,
+NY, USA, 2009. ACM.
+[26] P. Heymann, G. Koutrika, and H. Garcia-Molina. Can social book-
+marking improve web search? In Proceedings of the international
+conference on Web search and web data mining , pages 195–206.
+ACM, 2008.Text Analytics in Social Media 411
+[27] J. Hu, L. Fang, Y. Cao, H. Zeng, H. Li, Q. Yang, and Z. Chen.
+Enhancing text clustering by leveraging Wikipedia semantics. InProceedings of the 31st annual international ACM SIGIR conference
+on Research and development in information retrieval , pages 179–
+186. ACM, 2008.
+[28] X. Hu, N. Sun, C. Zhang, and T.-S. Chua. Exploiting internal
+and external semantics for the clustering of short texts using world
+knowledge. In Proceeding of the 18th ACM conference on Informa-
+tion and knowledge management , pages 919–928. ACM, 2009.
+[29] X. Hu, X. Zhang, C. Lu, E. K. Park, and X. Zhou. Exploiting
+wikipedia as external knowledge for document clustering. In Pro-
+ceedings of the 15th ACM SIGKDD international conference on
+Knowledge discovery and data mining , pages 389–396. ACM, 2009.
+[30] A. Java, X. Song, T. Finin, and B. Tseng. Why we twitter: under-
+standing microblogging usage and communities. In Proceedings of
+the 9th WebKDD and 1st SNA-KDD 2007 workshop on Web miningand social network analysis , pages 56–65. ACM, 2007.
+[31] M.Ji,Y.Sun,M.Danilevsky,J.Han,andJ.Gao. Graphregularized
+transductive classiﬁcation on heterogeneous information networks.
+Machine Learning and Knowledge Discovery in Databases , pages
+570–586, 2010.
+[32] G. Kumaran and J. Allan. Text classiﬁcation and named entities
+for new event detection. In Proceedings of the 27th annual inter-
+national ACM SIGIR conference on Research and development ininformation retrieval , pages 297–304. ACM, 2004.
+[33] H. Kwak, C. Lee, H. Park, and S. Moon. What is twitter, a social
+network or a news media? In Proceedings of the 19th international
+conference on World wide web , WWW ’10, pages 591–600, New
+York, NY, USA, 2010. ACM.
+[34] Y. Lee, H.-y. Jung, W. Song, and J.-H. Lee. Mining the blogosphere
+for top news stories identiﬁcation. In Proceeding of the 33rd i nter-
+national ACM SIGIR conference on Research and development ininformation retrieval , SIGIR ’10, pages 395–402, New York, NY,
+USA, 2010. ACM.
+[35] K. Lerman and T. Hogg. Using a model of social dynamics to
+predict popularity of news. In Proceedings of the 19th international
+conference on World wide web , WWW ’10, pages 621–630, New
+York, NY, USA, 2010. ACM.
+[36] D. Lewis and W. Croft. Term clustering of syntactic phrases. In
+Proceedings of the 13th annual international ACM SIGIR confer-412 MINING TEXT DATA
+ence on Research and development in information retrieval , pages
+385–404. ACM, 1989.
+[37] C. Lin, B. Zhao, Q. Mei, and J. Han. Pet: a statistical model
+for popular events tracking in social communities. In Proceedings
+of the 16th ACM SIGKDD international conference on Knowledgediscovery and data mining , pages 929–938. ACM, 2010.
+[38] Y. Lu, P. Tsaparas, A. Ntoulas, and L. Polanyi. Exploiting social
+context for review quality prediction. In Proceedings of the 19th
+international conference on World wide web , WWW ’10, pages 691–
+700, New York, NY, USA, 2010. ACM.
+[39] C. Macdonald, I. Ounis, and I. Soboroﬀ. Overview of the trec-2009
+blog track. Proceedings of TREC 2009 , 2010.
+[40] D. Margineantu, W. Wong, and D. Dash. Machine learning algo-
+rithms for event detection. Machine Learning , 79(3):257–259, 2010.
+[41] J. McLean. State of the Blogosphere, introduction, 2009.
+[42] M.Mendoza,B.Poblete,andC.Castillo. TwitterUnderCrisis:Can
+we trust what we RT? In 1st Workshop on Social Media Analytics
+(SOMA’10) , 2010.
+[43] S. Moturu. Quantifying the Trustworthiness of User-Generated
+Social Media Content . PhD thesis, Arizona State University, 2009.
+[44] S. Osinski, J. Stefanowski, and D. Weiss. Lingo: Search results clus-
+tering algorithm based on singular value decomposition. In Proceed-
+ings of the IIS: IIPWM’04 Conference , page 359, 2004.
+[45] X.-H. Phan, L.-M. Nguyen, and S. Horiguchi. Learning to classify
+short and sparse text & web with hidden topics from large-scale
+data collections. In Proceeding of the 17th international conference
+on World Wide Web , pages 91–100. ACM, 2008.
+[46] M.F.Porter. Analgorithmforsuﬃxstripping. Program,14(3):130–
+137, 1980.
+[47] T. Sakaki, M. Okazaki, and Y. Matsuo. Earthquake shakes twitter
+users: real-time event detection by social sensors. In Proceedings of
+the 19th international conference on World wide web , pages 851–
+860. ACM, 2010.
+[48] B. Sigurbjornsson and R. Van Zwol. Flickr tag recommendation
+based on collective knowledge. In Proceeding of the 17th interna-
+tional conference on World Wide Web , pages 327–336. ACM, 2008.
+[49] A. Stavrianou, P. Andritsos, and N. Nicoloyannis. Overview and
+semantic issues of text mining. ACM SIGMOD Record , 36(3):23–
+34, 2007.Text Analytics in Social Media 413
+[50] Y. Sun, J. Han, J. Gao, and Y. Yu. itopicmodel: Informa-
+tion network-integrated topic modeling. In Data Mining, 2009.
+ICDM’09. Ninth IEEE International Conference on ,pages493–502.
+IEEE, 2009.
+[51] Y. Sun, Y. Yu, and J. Han. Ranking-based clustering of heteroge-
+neous information networks with star network schema. In Proceed-
+ings of the 15th ACM SIGKDD international conference on Knowl-edge discovery and data mining , pages 797–806. ACM, 2009.
+[52] J. Surowiecki. The wisdom of crowds: Why the many are smarter
+than the few and how collective wisdom shapes business, economies,
+societies, and nations . Random House of Canada, 2004.
+[53] L.TangandH.Liu. Relationallearningvialatentsocialdimensions.
+InProceedings of the 15th ACM SIGKDD international conference
+on Knowledge discovery and data mining , pages 817–826. ACM,
+2009.
+[54] L. Urena-Lopez, M. Buenaga, and J. Gomez. Integrating linguistic
+resources in TC through WSD. Computers and the Humanities ,
+35(2):215–230, 2001.
+[55] N. Van House. Flickr and public image-sharing: distant closeness
+and photo exhibition. In CHI’07 extended abstracts on Human fac-
+tors in computing systems , pages 2717–2722. ACM, 2007.
+[56] J. Wang, Y. Zhou, L. Li, B. Hu, and X. Hu. Improving short text
+clusteringperformancewithkeywordexpansion. In The Sixth Inter-
+national Symposium on Neural Networks (ISNN 2009) , pages 291–
+298. Springer, 2009.
+[57] K. Wang, Z. Ming, X. Hu, and T. Chua. Segmentation of multi-
+sentence questions: towards eﬀective question retrieval in cQA ser-
+vices. In Proceeding of the 33rd i nternational ACM SIGIR confer-
+ence on Research and development in information retrieval , pages
+387–394. ACM, 2010.
+[58] P.WangandC.Domeniconi. Buildingsemantickernelsfortextclas-
+siﬁcationusingWikipedia. In Proceeding of the 14th ACM SIGKDD
+international conference on Knowledge discovery and data mining ,
+pages 713–721. ACM, 2008.
+[59] X. Wang, L. Tang, H. Gao, and H. Liu. Discovering overlapping
+groups in social media. In the 10th IEEE International Conference
+on Data Mining series (ICDM2010) , Sydney, Australia, December
+14 - 17 2010.
+[60] X. Wang, C. Zhai, X. Hu, and R. Sproat. Mining correlated bursty
+topic patterns from coordinated text streams. In Proceedings of the414 MINING TEXT DATA
+13th ACM SIGKDD international conference on Knowledge discov-
+ery and data mining , pages 784–793. ACM, 2007.
+[61] D. Yin, Z. Xue, L. Hong, and B. D. Davison. A probabilistic model
+for personalized tag prediction. In Proceedings of the 16th ACM
+SIGKDD international conference on Knowledge discovery and data
+mining, KDD ’10, pages 959–968, New York, NY, USA, 2010. ACM.
+[62] Z.Yin,R.Li,Q.Mei,andJ.Han. Exploringsocialtagginggraphfor
+web object classiﬁcation. In Proceedings of the 15th ACM SIGKDD
+international conference on Knowledge discovery and data mining ,
+KDD ’09, pages 957–966, New York, NY, USA, 2009. ACM.
+[63] J. Yuan, Z. Zha, Z. Zhao, X. Zhou, and T. Chua. Utilizing related
+samples to learn complex queries in interactive concept-based videosearch. In Proceedings of the ACM I nternational Conference on
+Image and Video Retrieval , pages 66–73. ACM, 2010.
+[64] R. Zafarani and H. Liu. Connecting Corresponding Identities across
+Communities. In Proceedings of the 3rd I nternational Conference
+on Weblogs and Social Media (ICWSM09) , 2009.
+[65] T. Zesch, C. Muller, and I. Gurevych. Extracting lexical semantic
+knowledge from wikipedia and wiktionary. In Proceedings of the
+Conference on Language Resources and Evaluation (LREC) , pages
+1646–1652. Citeseer, 2008.
+[66] Z. Zha, X. Hua, T. Mei, J. Wang, G. Qi, and Z. Wang. Joint multi-
+label multi-instance learning for image classiﬁcation. In Computer
+Vision and Pattern Recognition, 2008. CVPR 2008. IEEE Confer-ence on, pages 1–8. IEEE, 2008.
+[67] Q. Zhao, P. Mitra, and B. Chen. Temporal and information ﬂow
+based event detection from social text streams. In Proceedings of
+the 22nd national conference on Artiﬁcial intelligence - Volume 2 ,
+pages 1501–1506. AAAI Press, 2007.
+[68] Y. Zhou, H. Cheng, and J. Yu. Graph clustering based on struc-
+tural/attribute similarities. Proceedings of the VLDB Endowment ,
+2(1):718–729, 2009.Chapter 13
+A SURVEY OF OPINION MINING AND
+SENTIMENT ANALYSIS
+Bing Liu
+University of Illinois at Chicago
+Chicago, IL
+liub@cs.uic.edu
+Lei Zhang
+University of Illinois at Chicago
+Chicago, IL
+lzhang32@gmail.com
+Abstract Sentiment analysis or opinion mining is the computational study of peo-
+ple’s opinions, appraisals, attitudes, and emotions toward entities, in-
+dividuals, issues, events, topics and their attributes. The task is tech-
+nically challenging and practically very useful. For example, businesses
+always want to ﬁnd public or consumer opinions about their products
+and services. Potential customers also want to know the opinions of
+existing users before they use a service or purchase a product.
+With the explosive growth of social media (i.e., reviews, forum dis-
+cussions, blogs and social networks) on the Web, individuals and or-
+ganizations are increasingly using public opinions in these media for
+their decision making. However, ﬁnding and monitoring opinion sites
+on the Web and distilling the information contained in them remains a
+formidable task because of the proliferation of diverse sites. Each site
+typically contains a huge volume of opinionated text that is not always
+easily deciphered in long forum postings and blogs. The average human
+reader will have diﬃculty identifying relevant sites and accurately sum-
+marizing the information and opinions contained in them. Moreover, it
+is also known that human analysis of text information is subject to con-
+siderable biases, e.g., people often pay greater attention to opinions that
+are consistent with their own preferences. People also have diﬃculty,
+owing to their mental and physical limitations, producing consistent
+© Springer Science+Business Media, LLC 2012 415  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_13,

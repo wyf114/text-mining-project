@@ -1,0 +1,1394 @@
+Chapter 4
+A SURVEY OF TEXT CLUSTERING
+ALGORITHMS
+Charu C. Aggarwal
+IBM T. J. Watson Research Center
+Yorktown Heights, NY
+charu@us.ibm.com
+ChengXiang Zhai
+University of Illinois at Urbana-Champaign
+Urbana, IL
+czhai@cs.uiuc.edu
+Abstract Clustering is a widely studied data mining problem in the text domains.
+The problem ﬁnds numerous applications in customer segmentation,
+classiﬁcation, collaborative ﬁltering, visualization, document organiza-
+tion, and indexing. In this chapter, we will provide a detailed survey of
+the problem of text clustering. We will study the key challenges of the
+clustering problem, as it applies to the text domain. We will discuss the
+key methods used for text clustering, and their relative advantages. We
+will also discuss a number of recent advances in the area in the context
+of social network and linked data.
+Keywords: Text Clustering
+1. Introduction
+The problem of clustering has been studied widely in the database
+and statistics literature in the context of a wide variety of data mining
+tasks [50, 54]. The clustering problem is deﬁned to be that of ﬁnding
+groups of similar objects in the data. The similarity between the ob-
+© Springer Science+Business Media, LLC 2012 77  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_4,78 MINING TEXT DATA
+jects is measured with the use of a similarity function. The problem
+of clustering can be very useful in the text domain, where the objectsto be clusters can be of diﬀerent granularities such as documents, para-
+graphs, sentences or terms. Clustering is especially useful for organizing
+documents to improve retrieval and support browsing [11, 26].
+The study of the clustering problem precedes its applicability to the
+text domain. Traditional methods for clustering have generally focussedon the case of quantitative data [44, 71, 50, 54, 108], in which the at-tributes of the data are numeric. The problem has also been studiedfor the case of categorical data [10, 41, 43], in which the attributes may
+take on nominal values. A broad overview of clustering (as it relates
+to generic numerical and categorical data) may be found in [50, 54]. Anumber of implementations of common text clustering algorithms, as ap-plied to text data, may be found in several toolkits such as Lemur[114]
+andBOWtoolkit in [64]. The problem of clustering ﬁnds applicability
+for a number of tasks:
+Document Organization and Browsing: The hierarchical or-
+ganizationofdocumentsintocoherentcategoriescanbeveryuseful
+for systematic browsing of the document collection. A classical ex-
+ample of this is the Scatter/Gather method [25], which provides a
+systematic browsing technique with the use of clustered organiza-tion of the document collection.
+Corpus Summarization: Clustering techniques provide a coher-
+ent summary of the collection in the form of cluster-digests [83] or
+word-clusters [17, 18], which can be used in order to provide sum-
+mary insights into the overall content of the underlying corpus.
+Variants of such methods, especially sentence clustering, can alsobe used for document summarization, a topic, discussed in detailin Chapter 3. The problem of clustering is also closely related tothat of dimensionality reduction and topic modeling. Such dimen-sionality reduction methods are all diﬀerent ways of summarizinga corpus of documents, and are covered in Chapter 5.
+Document Classiﬁcation: While clustering is inherently an un-
+supervisedlearningmethod, itcanbeleveragedinordertoimprovethe quality of the results in its supervised variant. In particular,word-clusters [17, 18] and co-training methods [72] can be used inorder to improve the classiﬁcation accuracy of supervised applica-tions with the use of clustering techniques.
+We note that many classes of algorithms such as the k-means algo-
+rithm, or hierarchical algorithms are general-purpose methods, whichA Survey of Text Clustering Algorithms 79
+can be extended to any kind of data, including text data. A text docu-
+ment can be represented either in the form of binary data, when we usethe presence or absence of a word in the document in order to create a
+binary vector. In such cases, it is possible to directly use a variety of
+categoricaldataclusteringalgorithms[10, 41, 43]onthebinaryrepresen-tation. A more enhanced representation would include reﬁned weightingmethods based on the frequencies of the individual words in the docu-ment as well as frequencies of words in an entire collection (e.g., TF-IDFweighting[82]). Quantitativedataclusteringalgorithms[44, 71, 108]canbe used in conjunction with these frequencies in order to determine the
+most relevant groups of objects in the data.
+However, such naive techniques do not typically work well for clus-
+tering text data. This is because text data has a number of uniqueproperties which necessitate the design of specialized algorithms for thetask. The distinguishing characteristics of the text representation are asfollows:
+The dimensionality of the text representation is very large, but theunderlying data is sparse. In other words, the lexicon from which
+the documents are drawn may be of the order of 10
+5, but a given
+document may contain only a few hundred words. This problemis even more serious when the documents to be clustered are veryshort (e.g., when clustering sentences or tweets).
+While the lexicon of a given corpus of documents may be large, thewords are typically correlated with one another. This means thatthe number of concepts (or principal components) in the data ismuch smaller than the feature space. This necessitates the carefuldesign of algorithms which can account for word correlations inthe clustering process.
+The number of words (or non-zero entries) in the diﬀerent docu-ments may vary widely. Therefore, it is important to normalize
+the document representations appropriately during the clustering
+task.
+The sparse and high dimensional representation of the diﬀerent doc-
+uments necessitate the design of text-speciﬁc algorithms for documentrepresentation and processing, a topic heavily studied in the informationretrieval literature where many techniques have been proposed to opti-mize document representation for improving the accuracy of matchinga document with a query [82, 13]. Most of these techniques can also be
+used to improve document representation for clustering.80 MINING TEXT DATA
+In order to enable an eﬀective clustering process, the word frequencies
+need to be normalized in terms of their relative frequency of presencein the document and over the entire collection. In general, a common
+representation used for text processing is the vector-space based TF-IDF
+representation [81]. In the TF-IDF representation, the term frequencyfor each word is normalized by the inverse document frequency , or IDF.
+The inverse document frequency normalization reduces the weight ofterms which occur more frequently in the collection. This reduces theimportance of common terms in the collection, ensuring that the match-ing of documents be more inﬂuenced by that of more discriminative
+words which have relatively low frequencies in the collection. In addi-
+tion, a sub-linear transformation function is often applied to the term-frequencies in order to avoid the undesirable dominating eﬀect of anysingle term that might be very frequent in a document. The work ondocument-normalization is itself a vast area of research, and a variety ofother techniques which discuss diﬀerent normalization methods may befound in [86, 82].
+Text clustering algorithms are divided into a wide variety of diﬀer-
+ent types such as agglomerative clustering algorithms, partitioning algo-rithms, and standard parametric modeling based methods such as theEM-algorithm. Furthermore, text representations may also be treatedas strings (rather than bags of words). These diﬀerent representationsnecessitate the design of diﬀerent classes of clustering algorithms. Diﬀer-ent clustering algorithms have diﬀerent tradeoﬀs in terms of eﬀectiveness
+and eﬃciency. An experimental comparison of diﬀerent clustering algo-
+rithms may be found in [90, 111]. In this chapter we will discuss a widevariety of algorithms which are commonly used for text clustering. Wewill also discuss text clustering algorithms for related scenarios such asdynamic data, network-based text data and semi-supervised scenarios.
+This chapter is organized as follows. In section 2, we will present fea-
+ture selection and transformation methods for text clustering. Section 3
+describes a number of common algorithms which are used for distance-
+based clustering of text documents. Section 4 contains the descriptionof methods for clustering with the use of word patterns and phrases.Methods for clustering text streams are described in section 5. Section6 describes methods for probabilistic clustering of text data. Section7 contains a description of methods for clustering text which naturallyoccurs in the context of social or web-based networks. Section 8 dis-
+cusses methods for semi-supervised clustering. Section 9 presents the
+conclusions and summary.A Survey of Text Clustering Algorithms 81
+2. Feature Selection and Transformation
+Methods for Text Clustering
+The quality of any data mining method such as classiﬁcation and clus-
+tering is highly dependent on the noisiness of the features that are usedfor the clustering process. For example, commonly used words suchas“the”, may not be very useful in improving the clustering quality.
+Therefore, it is critical to select the features eﬀectively, so that the noisywords in the corpus are removed before the clustering. In addition tofeatureselection, a number of feature transformation methods such as
+Latent Semantic Indexing (LSI), Probabilistic Latent Semantic Analysis
+(PLSA), and Non-negative Matrix Factorization (NMF) are available toimprove the quality of the document representation and make it moreamenable to clustering. In these techniques (often called dimension re-duction), the correlations among the words in the lexicon are leveragedin order to create features, which correspond to the concepts or princi-pal components in the data. In this section, we will discuss both classes
+of methods. A more in-depth discussion of dimension reduction can be
+found in Chapter 5.
+2.1 Feature Selection Methods
+Feature selection is more common and easy to apply in the problem of
+text categorization [99] in which supervision is available for the featureselection process. However, a number of simple unsupervised methodscan also be used for feature selection in text clustering. Some examples
+of such methods are discussed below.
+2.1.1 Document Frequency-based Selection. The simplest
+possible method for feature selection in document clustering is that ofthe use of document frequency to ﬁlter out irrelevant features. While
+the use of inverse document frequencies reduces the importance of such
+words, this may not alone be suﬃcient to reduce the noise eﬀects ofvery frequent words. In other words, words which are too frequent inthe corpus can be removed because they are typically common wordssuch as “a”, “an”, “the”, or “of” which are not discriminative from aclustering perspective. Such words are also referred to as stop words .
+A variety of methods are commonly available in the literature [76] for
+stop-word removal. Typically commonly available stop word lists of
+about 300 to 400 words are used for the retrieval process. In addition,words which occur extremely infrequently can also be removed fromthe collection. This is because such words do not add anything to thesimilarity computations which are used in most clustering methods. In82 MINING TEXT DATA
+some cases, such words may be misspellings or typographical errors in
+documents. Noisy text collections which are derived from the web, blogsor social networks are more likely to contain such terms. We note that
+some lines of research deﬁne document frequency based selection purely
+on the basis of very infrequent terms, because these terms contribute theleast to the similarity calculations. However, it should be emphasizedthat very frequent words should also be removed, especially if they arenot discriminative between clusters. Note that the TF-IDF weightingmethod can also naturally ﬁlter out very common words in a “soft” way.Clearly, the standard set of stop words provide a valid set of words to
+prune. Nevertheless, we would like a way of quantifying the importance
+of a term directly to the clustering process, which is essential for moreaggressive pruning. We will discuss a number of such methods below.
+2.1.2 Term Strength. A much more aggressive technique for
+stop-word removal is proposed in [94]. The core idea of this approach
+is to extend techniques which are used in supervised learning to theunsupervised case. The term strength is essentially used to measurehow informative a word is for identifying two related documents. Forexample, for two related documents xandy, the term strength s(t)o f
+termtis deﬁned in terms of the following probability:
+s(t)=P(t∈y|t∈x) (4.1)
+Clearly, the main issue is how one might deﬁne the document xandy
+as related. One possibility is to use manual (or user) feedback to deﬁnewhen a pair of documents are related. This is essentially equivalent
+to utilizing supervision in the feature selection process, and may be
+practical in situations in which predeﬁned categories of documents areavailable. On the other hand, it is not practical to manually createrelated pairs in large collections in a comprehensive way. It is thereforedesirable to use an automated and purely unsupervised way to deﬁnethe concept of when a pair of documents is related. It has been shownin [94] that it is possible to use automated similarity functions such as
+the cosine function [81] to deﬁne the relatedness of document pairs. A
+pair of documents are deﬁned to be related if their cosine similarity isabove a user-deﬁned threshold. In such cases, the term strength s(t)
+can be deﬁned by randomly sampling a number of pairs of such relateddocuments as follows:
+s(t)=Number of pairs in which toccurs in both
+Number of pairs in which toccurs in the ﬁrst of the pair(4.2)
+Here, the ﬁrst document of the pair may simply be picked randomly.
+In order to prune features, the term strength may be compared to theA Survey of Text Clustering Algorithms 83
+expectedstrengthofatermwhichisrandomlydistributedinthetraining
+documents with the same frequency. If the term strength of tis not at
+least two standard deviations greater than that of the random word,
+then it is removed from the collection.
+One advantage of this approach is that it requires no initial supervi-
+sion or training data for the feature selection, which is a key requirementin the unsupervised scenario. Of course, the approach can also be usedfor feature selection in either supervised clustering [4] or categoriza-tion [100], when such training data is indeed available. One observationabout this approach to feature selection is that it is particularly suited to
+similarity-based clustering because the discriminative nature of the un-
+derlying features is deﬁned on the basis of similarities in the documentsthemselves.
+2.1.3 Entropy-based Ranking. The entropy-based ranking
+approach was proposed in [27]. In this case, the quality of the term is
+measured by the entropy reduction when it is removed. Here the entropyE(t) of the term tin a collection of ndocuments is deﬁned as follows:
+E(t)=−n/summationdisplay
+i=1n/summationdisplay
+j=1(Sij·log(Sij)+(1−Sij)·log(1−Sij)) (4.3)
+HereSij∈(0,1) is the similarity between the ith andjth document in
+the collection, after the term tis removed, and is deﬁned as follows:
+Sij=2−dist (i,j)
+dist (4.4)
+Heredist(i,j) is the distance between the terms iandjafter the term
+tis removed, and distis the average distance between the documents
+after the term tis removed. We note that the computation of E(t)f o r
+each term trequires O(n2) operations. This is impractical for a very
+large corpus containing many terms. It has been shown in [27] how
+this method may be made much more eﬃcient with the use of samplingmethods.
+2.1.4 Term Contribution. The concept of term contribution
+[62] is based on the fact that the results of text clustering are highlydependent on document similarity. Therefore, the contribution of a termcan be viewed as its contribution to document similarity. For example,in the case of dot-product based similarity, the similarity between twodocuments is deﬁned as the dot product of their normalized frequencies.Therefore, the contribution of a term of the similarity of two documents
+istheproductoftheirnormalizedfrequenciesinthetwodocuments. This84 MINING TEXT DATA
+needstobesummedoverallpairsofdocumentsinordertodeterminethe
+term contribution. As in the previous case, this method requires O(n2)
+time for each term, and therefore sampling methods may be required
+to speed up the contribution. A major criticism of this method is that
+it tends to favor highly frequent words without regard to the speciﬁcdiscriminative power within a clustering process.
+In most of these methods, the optimization of term selection is based
+on some pre-assumed similarity function (e.g., cosine). While this strat-egy makes these methods unsupervised, there is a concern that the termselection might be biased due to the potential bias of the assumed sim-
+ilarity function. That is, if a diﬀerent similarity function is assumed,
+we may end up having diﬀerent results for term selection. Thus thechoice of an appropriate similarity function may be important for thesemethods.
+2.2 LSI-based Methods
+In feature selection, we attempt to explicitly select out features from
+the original data set. Feature transformation is a diﬀerent method inwhich the new features are deﬁned as a functional representation of the
+features in the original data set. The most common class of methods is
+that of dimensionality reduction [53] in which the documents are trans-formed to a new feature space of smaller dimensionality in which thefeatures are typically a linear combination of the features in the originaldata. Methods such as Latent Semantic Indexing (LSI) [28] are basedon this common principle. The overall eﬀect is to remove a lot of di-mensions in the data which are noisy for similarity based applications
+such as clustering. The removal of such dimensions also helps magnify
+the semantic eﬀects in the underlying data.
+Since LSI is closely related to problem of Principal Component Anal-
+ysis (PCA) orSingular Value Decomposition (SVD) , wewillﬁrstdiscuss
+this method, and its relationship to LSI. For a d-dimensional data set,
+PCA constructs the symmetric d×dcovariance matrix Cof the data,
+in which the ( i,j)th entry is the covariance between dimensions iandj.
+This matrix is positive semi-deﬁnite, and can be diagonalized as follows:
+C=P·D·P
+T(4.5)
+HerePis a matrix whose columns contain the orthonormal eigenvectors
+ofCandDis a diagonal matrix containing the corresponding eigenval-
+ues. We note that the eigenvectors represent a new orthonormal basissystem along which the data can be represented. In this context, theeigenvalues correspond to the variance when the data is projected along
+this basis system. This basis system is also one in which the secondA Survey of Text Clustering Algorithms 85
+order covariances of the data are removed, and most of variance in the
+data is captured by preserving the eigenvectors with the largest eigen-values. Therefore, in order to reduce the dimensionality of the data,
+a common approach is to represent the data in this new basis system,
+which is further truncated by ignoring those eigenvectors for which thecorresponding eigenvalues are small. This is because the variances alongthose dimensions are small, and the relative behavior of the data pointsis not signiﬁcantly aﬀected by removing them from consideration. Infact, it can be shown that the Euclidian distances between data pointsare not signiﬁcantly aﬀected by this transformation and corresponding
+truncation. The method of PCA is commonly used for similarity search
+in database retrieval applications.
+LSI is quite similar to PCA, except that we use an approximation of
+the covariance matrix Cwhich is quite appropriate for the sparse and
+high-dimensional nature of text data. Speciﬁcally, let Abe then×d
+term-document matrix in which the ( i,j)th entry is the normalized fre-
+quency for term jin document i. Then,A
+T·Ais ad×dmatrix which
+is close (scaled) approximation of the covariance matrix, in which the
+means have not been subtracted out. In other words, the value of AT·A
+would be the same as a scaled version (by factor n) of the covariance
+matrix, if the data is mean-centered. While text-representations are notmean-centered, the sparsity of text ensures that the use of A
+T·Ais
+quite a good approximation of the (scaled) covariances. As in the caseof numerical data, we use the eigenvectors of A
+T·Awith the largest vari-
+ance in order to represent the text. In typical collections, only about
+300 to 400 eigenvectors are required for the representation. One excel-lent characteristic of LSI [28] is that the truncation of the dimensionsremoves the noise eﬀects of synonymy and polysemy, and the similaritycomputations are more closely aﬀected by the semantic concepts in thedata. This is particularly useful for a semantic application such as textclustering. However, if ﬁner granularity clustering is needed, such low-
+dimensional space representation of text may not be suﬃciently discrim-
+inative; in information retrieval, this problem is often solved by mixingthe low-dimensional representation with the original high-dimensionalword-based representation (see, e.g., [105]).
+A similar technique to LSI, but based on probabilistic modeling is
+Probabilistic Latent Semantic Analysis (PLSA) [49]. The similarity andequivalence of PLSA and LSI are discussed in [49].
+2.2.1 Concept Decomposition using Clustering. One
+interesting observation is that while feature transformation is often usedas a pre-processing technique for clustering, the clustering itself can be86 MINING TEXT DATA
+used for a novel dimensionality reduction technique known as concept
+decomposition [2, 29]. This of course leads to the issue of circularity in
+the use of this technique for clustering, especially if clustering is required
+in order to perform the dimensionality reduction. Nevertheless, it is still
+possible to use this technique eﬀectively for pre-processing with the useof two separate phases of clustering.
+The technique of concept decomposition uses any standard clustering
+technique [2, 29] on the original representation of the documents. Thefrequent terms in the centroids of these clusters are used as basis vectors
+which are almost orthogonal to one another. The documents can then be
+represented in a much more concise way in terms of these basis vectors.
+We note that this condensed conceptual representation allows for en-hanced clustering as well as classiﬁcation. Therefore, a second phase ofclustering can be applied on this reduced representation in order to clus-ter the documents much more eﬀectively. Such a method has also beentested in [87] by using word-clusters in order to represent documents.We will describe this method in more detail later in this chapter.
+2.3 Non-negative Matrix Factorization
+The non-negative matrix factorization (NMF) technique is a latent-
+space method, and is particularly suitable to clustering [97]. As in thecase of LSI, the NMF scheme represents the documents in a new axis-system which is based on an analysis of the term-document matrix.However, the NMF method has a number of critical diﬀerences from theLSI scheme from a conceptual point of view. In particular, the NMFscheme is a feature transformation method which is particularly suited
+to clustering. The main conceptual characteristics of the NMF scheme,
+which are very diﬀerent from LSI are as follows:
+In LSI, the new basis system consists of a set of orthonormal vec-tors. This is not the case for NMF.
+In NMF, the vectors in the basis system directly correspond tocluster topics. Therefore, the cluster membership for a document
+may be determined by examining the largest component of the
+document along any of the vectors. The coordinate of any docu-ment along a vector is always non-negative. The expression of eachdocument as an additive combination of the underlying semanticsmakes a lot of sense from an intuitive perspective. Therefore, theNMFtransformationisparticularlysuitedtoclustering, anditalsoprovides an intuitive understanding of the basis system in terms
+of the clusters.A Survey of Text Clustering Algorithms 87
+LetAbe then×dterm document matrix. Let us assume that we
+wish to create kclusters from the underlying document corpus. Then,
+the non-negative matrix factorization method attempts to determine the
+matrices UandVwhich minimize the following objective function:
+J=( 1/2)·||A−U·VT|| (4.6)
+Here|| · ||represents the sum of the squares of all the elements in the
+matrix,Uis ann×knon-negative matrix, and Vis am×knon-negative
+matrix. We note that the columns of Vprovide the kbasis vectors which
+correspond to the kdiﬀerent clusters.
+What is the signiﬁcance of the above optimization problem? Note
+that by minimizing J, we are attempting to factorize Aapproximately
+as:
+A≈U·VT(4.7)
+For each rowaofA(document vector), we can rewrite the above equa-
+tion as:
+a≈u·VT(4.8)
+Hereuis the corresponding row of U. Therefore, the document vector
+acan be rewritten as an approximate linear (non-negative) combination
+of the basis vector which corresponds to the kcolumns of VT. If the
+value of kis relatively small compared to the corpus, this can only be
+done if the column vectors of VTdiscover the latent structure in the
+data. Furthermore, the non-negativity of the matrices UandVensures
+that the documents are expressed as a non-negative combination of thekey concepts (or clustered) regions in the term-based feature space.
+Next, we will discuss how the optimization problem for Jabove is
+actually solved. The squared norm of any matrix Qcan be expressed as
+the trace of the matrix Q·Q
+T. Therefore, we can express the objective
+function above as follows:
+J=( 1/2)·tr((A−U·VT)·(A−U·VT)T)
+=( 1/2)·tr(A·AT)−tr(A·U·VT)+(1/2)·tr(U·VT·V·UT)
+Thus, wehaveanoptimizationproblemwithrespecttothematrices U=
+[uij]a n dV=[vij], the entries uijandvijof which are the variables with
+respect to which we need to optimize this problem. In addition, sincethe matrices are non-negative, we have the constraints that u
+ij≥0a n d
+vij≥0. This is a typical constrained non-linear optimization problem,
+and can be solved using the Lagrange method. Let α=[αij]a n dβ=
+[βij] be matrices with the same dimensions as UandVrespectively.
+The elements of the matrices αandβare the corresponding Lagrange88 MINING TEXT DATA
+multipliers for the non-negativity conditions on the diﬀerent elements of
+UandVrespectively. Wenotethat tr(α·UT)issimplyequalto/summationtext
+i,jαij·
+uijandtr(β·VT) is simply equal to/summationtext
+i,jβij·vij. These correspond to
+the lagrange expressions for the non-negativity constraints. Then, wecan express the Lagrangian optimization problem as follows:
+L=J+tr(α·U
+T)+tr(β·VT) (4.9)
+Then, we can express the partial derivative of Lwith respect to Uand
+Vas follows, and set them to 0:
+δL
+δU=−A·V+U·VT·V+α=0
+δL
+δV=−AT·U+V·UT·U+β=0
+We can then multiply the ( i,j)th entry of the above (two matrices of)
+conditions with uijandvijrespectively. Using the Kuhn-Tucker condi-
+tionsαij·uij= 0 and βij·vij= 0, we get the following:
+(A·V)ij·uij−(U·VT·V)ij·uij=0
+(AT·U)ij·vij−(V·UT·U)ij·vij=0
+We note that these conditions are independent of αandβ. This leads
+to the following iterative updating rules for uijandvij:
+uij=(A·V)ij·uij
+(U·VT·V)ij
+vij=(AT·U)ij·vij
+(V·UT·U)ij
+It has been shown in [58] that the objective function continuously im-
+proves under these update rules, and converges to an optimal solution.
+One interesting observation about the matrix factorization technique
+is that it can also be used to determine word-clusters instead of doc-ument clusters. Just as the columns of Vprovide a basis which can
+be used to discover document clusters, we can use the columns of U
+to discover a basis which correspond to word clusters. As we will seelater, document clusters and word clusters are closely related, and it isoften useful to discover both simultaneously, as in frameworks such asco-clustering [30, 31, 75]. Matrix-factorization provides a natural way of
+achieving this goal. It has also been shown both theoretically and exper-imentally [33, 93] that the matrix-factorization technique is equivalent
+to another graph-structure based document clustering technique knownA Survey of Text Clustering Algorithms 89
+asspectral clustering . An analogous technique called concept factoriza-
+tionwas proposed in [98], which can also be applied to data points with
+negative values in them.
+3. Distance-based Clustering Algorithms
+Distance-based clustering algorithms are designed by using a simi-
+larity function to measure the closeness between the text objects. Themost well known similarity function which is used commonly in the textdomain is the cosine similarity function. Let U=(f(u
+1)...f(uk)) and
+V=(f(v1)...f(vk)) be the damped and normalized frequency term
+vector in two diﬀerent documents UandV. The values u1...ukand
+v1...vkrepresent the (normalized) term frequencies, and the function
+f(·) represents the damping function. Typical damping functions for
+f(·) could represent either the square-root or the logarithm [25]. Then,
+the cosine similarity between the two documents is deﬁned as follows:
+cosine(U,V)=/summationtextk
+i=1f(ui)·f(vi)/radicalBig/summationtextk
+i=1f(ui)2·/radicalBig/summationtextk
+i=1f(vi)2(4.10)
+Computation of text similarity is a fundamental problem in informa-
+tion retrieval. Although most of the work in information retrieval has
+focusedonhowtoassessthesimilarityofakeywordqueryandatextdoc-ument, rather than the similarity between two documents, many weight-ingheuristicsandsimilarityfunctionscanalsobeappliedtooptimizethesimilarity function for clustering. Eﬀective information retrieval mod-els generally capture three heuristics, i.e., TF weighting, IDF weighting,and document length normalization [36]. One eﬀective way to assign
+weights to terms when representing a document as a weighted term vec-
+tor is the BM25 term weighting method [78], where the normalized TFnot only addresses length normalization, but also has an upper boundwhich improves the robustness as it avoids overly rewarding the match-ing of any particular term. A document can also be represented witha probability distribution over words (i.e., unigram language models),and the similarity can then be measured based an information theoretic
+measure such as cross entropy or Kullback-Leibler divergencce [105]. For
+clustering, symmetric variants of such a similarity function may be moreappropriate.
+One challenge in clustering short segments of text (e.g., tweets or
+sentences) is that exact keyword matching may not work well. One gen-eral strategy for solving this problem is to expand text representationby exploiting related text documents, which is related to smoothing of
+a document language model in information retrieval [105]. A speciﬁc90 MINING TEXT DATA
+technique, which leverages a search engine to expand text representa-
+tion, was proposed in [79]. A comparison of several simple measures forcomputing similarity of short text segments can be found in [66].
+Thesesimilarityfunctionscanbeusedinconjunctionwithawidevari-
+ety of traditional clustering algorithms [50, 54]. In the next subsections,we will discuss some of these techniques.
+3.1 Agglomerative and Hierarchical Clustering
+Algorithms
+Hierarchical clustering algorithms have been studied extensively in
+the clustering literature [50, 54] for records of diﬀerent kinds includingmultidimensional numerical data, categorical data and text data. Anoverview of the traditional agglomerative and hierarchical clustering al-gorithms in the context of text data is provided in [69, 70, 92, 96]. An
+experimental comparison of diﬀerent hierarchical clustering algorithms
+may be found in [110]. The method of agglomerative hierarchical clus-tering is particularly useful to support a variety of searching methodsbecause it naturally creates a tree-like hierarchy which can be leveragedfor the search process. In particular, the eﬀectiveness of this method inimproving the search eﬃciency over a sequential scan has been shown in[51, 77].
+The general concept of agglomerative clustering is to successively
+merge documents into clusters based on their similarity with one an-other. Almost all the hierarchical clustering algorithms successivelymerge groups based on the best pairwise similarity between these groupsof documents. The main diﬀerences between these classes of methodsare in terms of how this pairwise similarity is computed between thediﬀerent groups of documents. For example, the similarity between a
+pair of groups may be computed as the best-case similarity, average-
+case similarity, or worst-case similarity between documents which aredrawn from these pairs of groups. Conceptually, the process of agglom-erating documents into successively higher levels of clusters creates acluster hierarchy (or dendogram) for which the leaf nodes correspond toindividual documents, and the internal nodes correspond to the mergedgroups of clusters. When two groups are merged, a new node is created
+in this tree corresponding to this larger merged group. The two children
+of this node correspond to the two groups of documents which have beenmerged to it.
+The diﬀerent methods for merging groups of documents for the dif-
+ferent agglomerative methods are as follows:A Survey of Text Clustering Algorithms 91
+Single Linkage Clustering: Insinglelinkageclustering, thesim-
+ilarity between two groups of documents is the greatest similaritybetween any pair of documents from these two groups. In single
+link clustering we merge the two groups which are such that their
+closest pair of documents have the highest similarity compared toany other pair of groups. The main advantage of single linkageclustering is that it is extremely eﬃcient to implement in practice.This is because we can ﬁrst compute all similarity pairs and sortthem in order of reducing similarity. These pairs are processed inthis pre-deﬁned order and the merge is performed successively if
+the pairs belong to diﬀerent groups. It can be easily shown that
+this approach is equivalent to the single-linkage method. This isessentially equivalent to a spanning tree algorithm on the completegraph of pairwise-distances by processing the edges of the graphin a certain order. It has been shown in [92] how Prim’s minimumspanning tree algorithm can be adapted to single-linkage cluster-ing. Another method in [24] designs the single-linkage method
+in conjunction with the inverted index method in order to avoid
+computing zero similarities.
+The main drawback of this approach is that it can lead to the
+phenomenon of chaining in which a chain of similar documents
+lead to disparate documents being grouped into the same clusters.Inotherwords, if Aissimilarto BandBissimilarto C,i td oe sn o t
+always imply that Ais similar to C, because of lack of transitivity
+in similarity computations. Single linkage clustering encourages
+the grouping of documents through such transitivity chains. This
+can often lead to poor clusters, especially at the higher levels of theagglomeration. Eﬀective methods for implementing single-linkageclustering for the case of document data may be found in [24, 92].
+Group-Average Linkage Clustering: In group-average linkage
+clustering, the similarity between two clusters is the average simi-
+larity between the pairs of documents in the two clusters. Clearly,the average linkage clustering process is somewhat slower than
+single-linkage clustering, because we need to determine the aver-
+age similarity between a large number of pairs in order to deter-mine group-wise similarity. On the other hand, it is much morerobust in terms of clustering quality, because it does not exhibitthe chaining behavior of single linkage clustering. It is possibleto speed up the average linkage clustering algorithm by approxi-mating the average linkage similarity between two clusters C
+1and
+C2by computing the similarity between the mean document of C192 MINING TEXT DATA
+and the mean document of C2. While this approach does not work
+equally well for all data domains, it works particularly well for thecase of text data. In this case, the running time can be reduced
+toO(n
+2), where nis the total number of nodes. The method can
+be implemented quite eﬃciently in the case of document data, be-cause the centroid of a cluster is simply the concatenation of thedocuments in that cluster.
+Complete Linkage Clustering: In this technique, the similarity
+between two clusters is the worst-case similarity between any pair
+of documents in the two clusters. Complete-linkage clustering canalso avoid chaining because it avoids the placement of any pair ofvery disparate points in the same cluster. However, like group-average clustering, it is computationally more expensive than the
+single-linkage method. The complete linkage clustering method
+requires O(n
+2) space and O(n3) time. The space requirement can
+however be signiﬁcantly lower in the case of the text data domain,because a large number of pairwise similarities are zero.
+Hierarchical clustering algorithms have also been designed in the context
+of text data streams. A distributional modeling method for hierarchicalclustering of streaming documents has been proposed in [80]. The mainidea is to model the frequency of word-presence in documents with theuse of a multi-poisson distribution. The parameters of this model are
+learned in order to assign documents to clusters. The method extends
+the COBWEB and CLASSIT algorithms [37, 40] to the case of text data.The work in [80] studies the diﬀerent kinds of distributional assumptionsof words in documents. We note that these distributional assumptionsare required to adapt these algorithms to the case of text data. Theapproach essentially changes the distributional assumption so that themethod can work eﬀectively for text data.
+3.2 Distance-based Partitioning Algorithms
+Partitioning algorithms are widely used in the database literature in
+order to eﬃciently create clusters of objects. The two most widely useddistance-based partitioning algorithms [50, 54] are as follows:
+k-medoid clustering algorithms: Ink-medoid clustering algo-
+rithms, we use a set of points from the original data as the anchors(or medoids) around which the clusters are built. The key aimof the algorithm is to determine an optimal set of representativedocuments from the original corpus around which the clusters are
+built. Each document is assigned to its closest representative fromA Survey of Text Clustering Algorithms 93
+the collection. This creates a running set of clusters from the cor-
+pus which are successively improved by a randomized process.
+The algorithm works with an iterative approach in which the set
+ofkrepresentatives are successively improved with the use of ran-
+domized inter-changes. Speciﬁcally, we use the average similarityof each document in the corpus to its closest representative as the
+objective function which needs to be improved during this inter-
+change process. In each iteration, we replace a randomly pickedrepresentativeinthecurrentsetofmedoidswitharandomlypickedrepresentative from the collection, if it improves the clustering ob-jective function. This approach is applied until convergence isachieved.
+There are two main disadvantages of the use of k-medoids based
+clustering algorithms, one of which is speciﬁc to the case of textdata. Onegeneraldisadvantageof k-medoidsclusteringalgorithms
+is that they require a large number of iterations in order to achieveconvergenceandarethereforequiteslow. Thisisbecauseeachiter-
+ation requires the computation of an objective function whose time
+requirement is proportional to the size of the underlying corpus.
+The second key disadvantage is that k-medoid algorithms do not
+work very well for sparse data such as text. This is because a large
+fraction of document pairs do not have many words in common,and the similarities between such document pairs are small (andnoisy) values. Therefore, a single document medoid often doesnot contain all the concepts required in order to eﬀectively build acluster around it. This characteristic is speciﬁc to the case of theinformation retrieval domain, because of the sparse nature of the
+underlying text data.
+k-means clustering algorithms: Thek-means clustering algo-
+rithm also uses a set of krepresentatives around which the clusters
+are built. However, these representatives are not necessarily ob-tained from the original data and are reﬁned somewhat diﬀerentlythan ak-medoids approach. The simplest form of the k-means ap-
+proach is to start oﬀ with a set of kseeds from the original corpus,
+and assign documents to these seeds on the basis of closest sim-ilarity. In the next iteration, the centroid of the assigned pointsto each seed is used to replace the seed in the last iteration. Inother words, the new seed is deﬁned, so that it is a better centralpoint for this cluster. This approach is continued until conver-gence. One of the advantages of the k-means method over the
+k-medoids method is that it requires an extremely small number94 MINING TEXT DATA
+of iterations in order to converge. Observations from [25, 83] seem
+to suggest that for many large data sets, it is suﬃcient to use 5 orless iterations for an eﬀective clustering. The main disadvantageof thek-means method is that it is still quite sensitive to the initial
+set of seeds picked during the clustering. Secondly, the centroidfor a given cluster of documents may contain a large number of
+words. This will slow down the similarity calculations in the next
+iteration. A number of methods are used to reduce these eﬀects,which will be discussed later on in this chapter.
+The initial choice of seeds aﬀects the quality of k-means clustering, espe-
+cially in the case of document clustering. Therefore, a number of tech-niques are used in order to improve the quality of the initial seeds whichare picked for the clustering process. For example, another lightweightclustering method such as an agglomerative clustering technique can be
+used in order to decide the initial set of seeds. This is at the core of
+the method discussed in [25] for eﬀective document clustering. We willdiscuss this method in detail in the next subsection.
+A second method for improving the initial set of seeds is to use some
+form of partial supervision in the process of initial seed creation. Thisform of partial supervision can also be helpful in creating clusters whichare designed for particular application-speciﬁc criteria. An example of
+such an approach is discussed in [4] in which we pick the initial set
+of seeds as the centroids of the documents crawled from a particularcategory if the Yahoo! taxonomy. This also has the eﬀect that the
+ﬁnal set of clusters are grouped by the coherence of content within thediﬀerent Yahoo! categories. The approach has been shown to be quite
+eﬀective for use in a number of applications such as text categorization.Such semi-supervised techniques are particularly useful for information
+organization in cases where the starting set of categories is somewhat
+noisy, but contains enough information in order to create clusters whichsatisfy a pre-deﬁned kind of organization.
+3.3 A Hybrid Approach: The Scatter-Gather
+Method
+While hierarchical clustering methods tend to be more robust because
+of their tendency to compare all pairs of documents, they are generallynot very eﬃcient, because of their tendency to require at least O(n
+2)
+time. On the other hand, k-means type algorithms are more eﬃcient
+than hierarchical algorithms, but may sometimes not be very eﬀective
+because of their tendency to rely on a small number of seeds.A Survey of Text Clustering Algorithms 95
+The method in [25] uses both hierarchical and partitional clustering
+algorithms to good eﬀect. Speciﬁcally, it uses a hierarchical clusteringalgorithm on a sample of the corpus in order to ﬁnd a robust initial setof seeds. This robust set of seeds is used in conjunction with a standardk-means clustering algorithm in order to determine good clusters. The
+size of the sample in the initial phase is carefully tailored so as to provide
+the best possible eﬀectiveness without this phase becoming a bottleneck
+in algorithm execution.
+There are two possible methods for creating the initial set of seeds,
+which are referred to as buckshot andfractionation respectively. These
+are two alternative methods, and are described as follows:
+Buckshot: Letkbe the number of clusters to be found and n
+be the number of documents in the corpus. Instead of picking thekseeds randomly from the collection, the buckshot scheme picks
+an overestimate√
+k·nof the seeds, and then agglomerates these
+tokseeds. Standard agglomerative hierarchical clustering algo-
+rithms (requiring quadratic time) are applied to this initial sample
+of√
+k·nseeds. Since we use quadratically scalable algorithms in
+this phase, this approach requires O(k·n) time. We note that this
+seed set is much more robust than one which simply samples for k
+seeds, because of the summarization of a large document sampleinto a robust set of kseeds.
+Fractionation: The fractionation algorithm initially breaks up
+the corpus into n/mbuckets of size m>keach. An agglomerative
+algorithm is applied to each of these buckets to reduce them by afactor of ν. Thus, at the end of the phase, we have a total of ν·n
+agglomerated points. The process is repeated by treating each oftheseagglomeratedpointsasanindividualrecord. Thisisachievedbymergingthediﬀerentdocumentswithinanagglomeratedcluster
+into a single document. The approach terminates when a total of
+kseeds remain. We note that the the agglomerative clustering of
+eachgroupof mdocumentsintheﬁrstiterationofthefractionation
+algorithm requires O(m
+2) time, which sums to O(n·m) over the
+n/mdiﬀerent groups. Since, the number of individuals reduces
+geometrically by a factor of νin each iteration, the total running
+time over all iterations is O(n·m·(1+μ+ν2+...)). For constant
+ν<1, the running time over all iterations is still O(n·m). By
+pickingm=O(k), we can still ensure a running time of O(n·k)
+for the initialization procedure.
+TheBuckshot andFractionation proceduresrequire O(k·n)timewhichis
+alsoequivalenttorunningtimeofoneiterationofthe kmeansalgorithm.96 MINING TEXT DATA
+Each iteration of the K-means algorithm also requires O(k·n) time
+because we need to compute the similarity of the ndocuments to the k
+diﬀerent seeds.
+We further note that the fractionation procedure can be applied to
+a random grouping of the documents into n/mdiﬀerent buckets. Of
+course, one can also replace the random grouping approach with a more
+carefully designed procedure for more eﬀective results. One such pro-
+cedure is to sort the documents by the index of the jth most common
+word in the document. Here jis chosen to be a small number such
+as 3, which corresponds to medium frequency words in the data. Thedocuments are then partitioned into groups based on this sort order bysegmenting out continuous groups of mdocuments. This approach en-
+sures that the groups created have at least a few common words in them
+and are therefore not completely random. This can sometimes provide a
+better quality of the centers which are determined by the fractionationalgorithm.
+Once the initial cluster centers have been determined with the use of
+theBuckshot orFractionation algorithmswecanapplystandard k-means
+partitioning algorithms. Speciﬁcally, we each document is assigned tothe nearest of the kcluster centers. The centroid of each such cluster is
+determined as the concatenation of the diﬀerent documents in a cluster.
+These centroids replace the sets of seeds from the last iteration. Thisprocess can be repeated in an iterative approach in order to successivelyreﬁne the centers for the clusters. Typically, only a smaller number ofiterations are required, because the greatest improvements occur only inthe ﬁrst few iterations.
+It is also possible to use a number of procedures to further improve
+the quality of the underlying clusters. These procedures are as follows:
+Split Operation: The process of splitting can be used in order to
+further reﬁne the clusters into groups of better granularity. Thiscanbeachievedbyapplyingthebuckshotprocedureontheindivid-ual documents in a cluster by using k= 2, and then re-clustering
+around these centers. This entire procedure requires O(k·n
+i) time
+for a cluster containing nidata points, and therefore splitting all
+the groups requires O(k·n) time. However, it is not necessary
+to splitallthe groups. Instead, only a subset of the groups can
+be split. Those are the groups which are not very coherent andcontain documents of a disparate nature. In order to measure thecoherence of a group, we compute the self-similarity of a cluster.This self-similarity provides us with an understanding of the un-derlying coherence. This quantity can be computed both in terms
+of the similarity of the documents in a cluster to its centroid orA Survey of Text Clustering Algorithms 97
+in terms of the similarity of the cluster documents to each other.
+The split criterion can then be applied selectively only to thoseclusters which have low self similarity. This helps in creating more
+coherent clusters.
+Join Operation: The join operation attempts to merge similar
+clusters into a single cluster. In order to perform the merge, wecompute the topicalwords of each cluster by examining the most
+frequentwordsofthecentroid. Twoclustersareconsideredsimilar,if there is signiﬁcant overlap between the topical words of the two
+clusters.
+We note that the method is often referred to as the Scatter-Gather
+clusteringmethod, butthisismorebecauseofhowtheclusteringmethod
+has been presented in terms of its use for browsing large collections in
+the original paper [25]. The scatter-gather approach can be used fororganized browsing of large document collections, because it creates anatural hierarchy of similar documents. In particular, a user may wishto browse the hierarchy of clusters in an interactive way in order tounderstand topics of diﬀerent levels of granularity in the collection. Onepossibility is to perform a hierarchical clustering a-priori; however such
+an approach has the disadvantage that it is unable to merge and re-
+cluster related branches of the tree hierarchy on-the-ﬂy when a usermay need it. A method for constant-interaction time browsing withthe use of the scatter-gather approach has been presented in [26]. Thisapproach presents the keywords associated with the diﬀerent keywordsto a user. The user may pick one or more of these keywords, which alsocorresponds to one or more clusters. The documents in these clusters
+are merged and re-clustered to a ﬁner-granularity on-the-ﬂy. This ﬁner
+granularity of clustering is presented to the user for further exploration.The set of documents which is picked by the user for exploration isreferred to as the focus set . Next we will explain how this focus set is
+further explored and re-clustered on the ﬂy in constant-time.
+The key assumption in order to enable this approach is the cluster
+reﬁnement hypothesis . This hypothesis states that documents which be-
+long to the same cluster in a signiﬁcantly ﬁner granularity partitioning
+will also occur together in a partitioning with coarser granularity. The
+ﬁrst step is to create a hierarchy of the documents in the clusters. A
+variety of agglomerative algorithms such as the buckshot method can beused for this purpose. We note that each (internal) node of this tree canbe viewed as a meta-document corresponding to the concatenation of allthe documents in the leaves of this subtree. The cluster-reﬁnement hy-
+pothesis allows us to work with a smaller set of meta-documents rather98 MINING TEXT DATA
+than the entire set of documents in a particular subtree. The idea is
+to pick a constant Mwhich represents the maximum number of meta-
+documentsthatwearewillingtore-clusterwiththeuseoftheinteractive
+approach. The tree nodes in the focus set are then expanded (with pri-
+ority to the branches with largest degree), to a maximum of Mnodes.
+TheseMnodes are then re-clustered on-the-ﬂy with the scatter-gather
+approach. This requires constant time because of the use of a constantnumberMof meta-documents in the clustering process. Thus, by work-
+ing with the meta-documents for M. we assume the cluster-reﬁnement
+hypothesis of all nodes of the subtree at the lower level. Clearly, a larger
+value of Mdoes not assume the cluster-reﬁnement hypothesis quite as
+strongly, but also comes at a higher cost. The details of the algorithmare described in [26]. Some extensions of this approach are also pre-sented in [85], in which it has been shown how this approach can be usedto cluster arbitrary corpus subsets of the documents in constant time.Another recent online clustering algorithm called LAIR2[55] provides
+constant-interaction time for Scatter/Gather browsing. The paralleliza-
+tion of this algorithm is signiﬁcantly faster than a corresponding version
+of the Buckshot algorithm. It has also been suggested that the LAIR2
+algorithm leads to better quality clusters in the data.
+3.3.1 Projections for Eﬃcient Document Clustering.
+One of the challenges of the scatter-gather algorithm is that even thoughthe algorithm is designed to balance the running times of the agglomer-ative and partitioning phases quite well, it sometimes suﬀer a slowdownin large document collections because of the massive number of distinctterms that a given cluster centroid may contain. Recall that a clustercentroid in the scatter-gather algorithm is deﬁned as the concatenationof all the documents in that collection. When the number of documents
+in the cluster is large, this will also lead to a large number of distinct
+terms in the centroid. This will also lead to a slow down of a number ofcritical computations such as similarity calculations between documentsand cluster centroids.
+An interesting solution to this problem has been proposed in [83]. The
+ideaistousetheconceptof projection inordertoreducethedimensional-
+ity of the document representation. Such a reduction in dimensionality
+will lead to signiﬁcant speedups, because the similarity computations
+will be made much more eﬃcient. The work in [83] proposes three kindsof projections:
+Global Projection: In global projection, the dimensionality of
+the original data set is reduced in order to remove the least im-
+portant (weighted) terms from the data. The weight of a term isA Survey of Text Clustering Algorithms 99
+deﬁned as the aggregate of the (normalized and damped) frequen-
+cies of the terms in the documents.
+Local Projection: In local projection, the dimensionality of the
+documents in each cluster are reduced with a locally speciﬁc ap-
+proachfor that cluster. Thus, the terms in each cluster centroid
+are truncated separately. Speciﬁcally, the least weight terms in thediﬀerent cluster centroids are removed. Thus, the terms removedfrom each document may be diﬀerent, depending upon their localimportance.
+Latent Semantic Indexing: In this case, the document-space is
+transformed with an LSI technique, and the clustering is appliedto the transformed document space. We note that the LSI tech-nique can also be applied either globally to the whole documentcollection, or locally to each cluster if desired.
+It has been shown in [83] that the projection approaches provide com-
+petitive results in terms of eﬀectiveness while retaining an extremely
+high level of eﬃciency with respect to all the competing approaches. In
+this sense, the clustering methods are diﬀerent from similarity searchbecause they show little degradation in quality, when projections areperformed. One of the reasons for this is that clustering is a much lessﬁne grained application as compared to similarity search, and thereforethere is no perceptible diﬀerence in quality even when we work with atruncated feature space.
+4. Word and Phrase-based Clustering
+Since text documents are drawn from an inherently high-dimensional
+domain, it can be useful to view the problem in a dual way, in whichimportant clusters of words may be found and utilized for ﬁnding clus-ters of documents. In a corpus containing dterms and ndocuments,
+one may view a term-document matrix as an n×dmatrix, in which
+the (i,j)th entry is the frequency of the jth term in the ith document.
+We note that this matrix is extremely sparse since a given document
+contains an extremely small fraction of the universe of words. We note
+that the problem of clustering rowsin this matrix is that of clustering
+documents, whereas that of clustering columns in this matrix is that
+of clustering words. In reality, the two problems are closely related, asgood clusters of words may be leveraged in order to ﬁnd good clustersof documents and vice-versa. For example, the work in [16] determinesfrequent itemsets of words in the document collection, and uses them to
+determine compact clusters of documents. This is somewhat analogous100 MINING TEXT DATA
+to the use of clusters of words [87] for determining clusters of documents.
+The most general technique for simultaneous word and document clus-tering is referred to as co-clustering [30, 31]. This approach simultaneous
+clusters the rows and columns of the term-document matrix, in order tocreate such clusters. This can also be considered to be equivalent to theproblem of re-ordering the rows and columns of the term-document ma-
+trix so as to create dense rectangular blocks of non-zero entries in this
+matrix. In some cases, the ordering information among words may beused in order to determine good clusters. The work in [103] determinesthe frequent phrases in the collection and leverages them in order todetermine document clusters.
+It is important to understand that the problem of word clusters and
+document clusters are essentially dual problems which are closely re-
+lated to one another. The former is related to dimensionality reduction,
+whereas the latter is related to traditional clustering. The boundary be-tweenthetwoproblemsisquiteﬂuid, becausegoodwordclustersprovidehints for ﬁnding good document clusters and vice-versa. For example,a more general probabilistic framework which determines word clustersand document clusters simultaneously is referred to as topic modeling
+[49]. Topic modeling is a more general framework than either cluster-
+ing or dimensionality reduction. We will introduce the method of topic
+modeling in a later section of this chapter. A more detailed treatmentis also provided in the next chapter in this book, which is on dimen-sionality reduction, and in Chapter 8 where a more general discussionof probabilistic models for text mining is given.
+4.1 Clustering with Frequent Word Patterns
+Frequent pattern mining [8] is a technique which has been widely used
+inthedataminingliteratureinordertodeterminethemostrelevantpat-
+terns in transactional data. The clustering approach in [16] is designed
+on the basis of such frequent pattern mining algorithms. A frequentitemset in the context of text data is also referred to as a frequent term
+set, because we are dealing with documents rather than transactions.
+The main idea of the approach is to not cluster the high dimensionaldocument data set, but consider the low dimensional frequent term setsas cluster candidates. This essentially means that a frequent terms set
+is a description of a cluster which corresponds to all the documents
+containing that frequent term set. Since a frequent term set can be con-sidered a description of a cluster, a set of carefully chosen frequent termssets can be considered a clustering. The appropriate choice of this setA Survey of Text Clustering Algorithms 101
+of frequent term sets is deﬁned on the basis of the overlaps between the
+supporting documents of the diﬀerent frequent term sets.
+Thenotionofclusteringdeﬁnedin[16]doesnotnecessarilyuseastrict
+partitioning in order to deﬁne the clusters of documents, but it allows
+a certain level of overlap. This is a natural property of many term- andphrase-based clustering algorithms because one does not directly controlthe assignment of documents to clusters during the algorithm execution.Allowing some level of overlap between clusters may sometimes be moreappropriate, because it recognizes the fact that documents are complexobjects and it is impossible to cleanly partition documents into speciﬁc
+clusters, especially when some of the clusters are partially related to one
+another. The clustering deﬁnition of [16] assumes that each documentis covered by at least one frequent term set.
+LetRbe the set of chosen frequent term sets which deﬁne the cluster-
+ing. Let f
+ibe the number of frequent term sets in Rwhich are contained
+in theith document. The value of fiis at least one in order to ensure
+complete coverage, but we would otherwise like it to be as low as possi-
+ble in order to minimize overlap. Therefore, we would like the average
+value of ( fi−1) for the documents in a given cluster to be as low as
+possible. We can compute the average value of ( fi−1) for the docu-
+ments in the cluster and try to pick frequent term sets such that thisvalue is as low as possible. However, such an approach would tend tofavor frequent term sets containing very few terms. This is because if aterm set contains mterms, then all subsets of it would also be covered
+by the document, as a result of which the standard overlap would be
+increased. The entropy overlap of a given term is essentially the sum ofthe values of −(1/f
+i)·log(1/fi) over all documents in the cluster. This
+value is 0, when each document has fi= 1, and increases monotonically
+with increasing fivalues.
+It then remains to describe how the frequent term sets are selected
+from the collection. Two algorithms are described in [16], one of which
+corresponds to a ﬂat clustering, and the other corresponds to a hierar-
+chical clustering. We will ﬁrst describe the method for ﬂat clustering.Clearly, the search space of frequent terms is exponential, and thereforea reasonable solution is to utilize a greedy algorithm to select the fre-quent terms sets. In each iteration of the greedy algorithm, we pick thefrequent term set with a cover having the minimum overlap with otherclustercandidates. Thedocumentscoveredbytheselectedfrequentterm
+are removed from the database, and the overlap in the next iteration is
+computed with respect to the remaining documents.
+Thehierarchicalversionofthealgorithmissimilartothebroadideain
+ﬂat clustering, with the main diﬀerence that each level of the clustering102 MINING TEXT DATA
+is applied to a set of term sets containing a ﬁxed number kof terms. In
+other words, we are working only with frequent patterns of length kfor
+the selection process. The resulting clusters are then further partitioned
+by applying the approach for ( k+1)-term sets. For further partitioning
+a given cluster, we use only those ( k+ 1)-term sets which contain the
+frequent k-term set deﬁning that cluster. More details of the approach
+may be found in [16].
+4.2 Leveraging Word Clusters for Document
+Clusters
+A two phase clustering procedure is discussed in [87], which uses the
+following steps to perform document clustering:
+In the ﬁrst phase, we determine word-clusters from the documentsin such a way that most of mutual information between words and
+documents is preserved when we represent the documents in terms
+of word clusters rather than words.
+In the second phase, we use the condensed representation of thedocuments in terms of word-clusters in order to perform the ﬁnaldocument clustering. Speciﬁcally, we replace the word occurrences
+indocumentswithword-clusteroccurrencesinordertoperformthe
+document clustering. One advantage of this two-phase procedureis the signiﬁcant reduction in the noise in the representation.
+LetX=x
+1...xnbe the random variables corresponding to the rows
+(documents), and let Y=y1...ydbe the random variables correspond-
+ing to the columns (words). We would like to partition Xintokclusters,
+andYintolclusters. Let the clusters be denoted by ˆX=ˆx1...ˆxkand
+ˆY=ˆy1...ˆyl. In other words, we wish to ﬁnd the maps CXandCY,
+which deﬁne the clustering:
+CX:x1...xn⇒ˆx1...ˆxk
+CY:y1...yd⇒ˆy1...ˆyl
+In the ﬁrst phase of the procedure we cluster YtoˆY, so that most
+of the information in I(X,Y) is preserved in I(X,ˆY). In the second
+phase, we perform the clustering again from XtoˆXusing exactly the
+same procedure so that as much information as possible from I(X,ˆY)
+is preserved in I(ˆX,ˆY). Details of how each phase of the clustering is
+performed is provided in [87].
+How to discover interesting word clusters (which can be leveraged for
+document clustering) has itself attracted attention in the natural lan-A Survey of Text Clustering Algorithms 103
+guageprocessingresearchcommunity, withparticularinterestsindiscov-
+ering word clusters that can characterize word senses [34] or a semanticconcept [21]. In [34], for example, the Markov clustering algorithm was
+applied to discover corpus-speciﬁc word senses in an unsupervised way.
+Speciﬁcally, awordassociationgraphisﬁrstconstructedinwhichrelatedwords would be connected with an edge. For a given word that poten-tially has multiple senses, we can then isolate the subgraph representingitsneighbors. Theseneighborsareexpectedtoformclustersaccordingtodiﬀerent senses of the target word, thus by grouping together neighborsthat are well connected with each other, we can discover word clusters
+that characterize diﬀerent senses of the target word. In [21], an n-gram
+class language model was proposed to cluster words based on minimiz-ing the loss of mutual information between adjacent words, which canachieve the eﬀect of grouping together words that share similar contextin natural language text.
+4.3 Co-clustering Words and Documents
+In many cases, it is desirable to simultaneously cluster the rows and
+columns of the contingency table, and explore the interplay between
+word clusters and document clusters during the clustering process. Since
+the clusters among words and documents are clearly related, it is oftendesirable to cluster both simultaneously when when it is desirable to ﬁndclusters along one of the two dimensions. Such an approach is referredto asco-clustering [30, 31]. Co-clustering is deﬁned as a pair of maps
+from rows to row-cluster indices and columns to column-cluster indices.These maps are determined simultaneously by the algorithm in order to
+optimize the corresponding cluster representations.
+We further note that the matrix factorization approach [58] discussed
+earlier in this chapter can be naturally used for co-clustering because itdiscovers word clusters and document clusters simultaneously. In thatsection, we have also discussed how matrix factorization can be viewedas a co-clustering technique. While matrix factorization has not widelybeen used as a technique for co-clustering, we point out this natural
+connection, as possible exploration for future comparison with other co-
+clustering methods. Some recent work [60] has shown how matrix fac-torization can be used in order to transform knowledge from word spaceto document space in the context of document clustering techniques.
+The problem of co-clustering is also closely related to the problem
+ofsubspace clustering [7] orprojected clustering [5] in quantitative data
+in the database literature. In this problem, the data is clustered by
+simultaneously associating it with a set of points and subspaces in multi-104 MINING TEXT DATA
+dimensional space. The concept of co-clustering is a natural application
+of this broad idea to data domains which can be represented as sparse
+high dimensional matrices in which most of the entries are 0. Therefore,
+traditional methods for subspace clustering can also be extended to the
+problem of co-clustering. For example, an adaptive iterative subspaceclustering method for documents was proposed in [59].
+We note that subspace clustering or co-clustering can be considered a
+form oflocal feature selection , in which the features selected are speciﬁc
+to each cluster. A natural question arises, as to whether the features canbe selected as a linear combination of dimensions as in the case of tra-
+ditional dimensionality reduction techniques such as PCA [53]. This is
+also known as local dimensionality reduction [22] orgeneralized projected
+clustering [6] in the traditional database literature. In this method,
+PCA-based techniques are used in order to generate subspace represen-tations which are speciﬁc to each cluster , and are leveraged in order to
+achieve a better clustering process. In particular, such an approach hasrecently been designed [32], which has been shown to work well with
+document data.
+In this section, we will study two well known methods for document
+co-clustering, which are commonly used in the document clustering liter-ature. One of these methods uses graph-based term-document represen-tations [30] and the other uses information theory [31]. We will discussboth of these methods below.
+4.3.1 Co-clustering with graph partitioning. The core
+idea in this approach [30] is to represent the term-document matrix as abipartite graph G=(V
+1∪V2,E), where V1andV2represent the vertex
+sets in the two bipartite portions of this graph, and Erepresents the
+edge set. Each node in V1corresponds to one of the ndocuments, and
+e a c hn o d ei n V2corresponds to one of the dterms. An undirected edge
+exists between node i∈V1and node j∈V2if document icontains the
+termj. We note that there are no edges in Edirectly between terms,
+or directly between documents. Therefore, the graph is bipartite. Theweight of each edge is the corresponding normalized term-frequency.
+We note that a word partitioning in this bipartite graph induces a
+document partitioning and vice-versa. Given a partitioning of the doc-
+uments in this graph, we can associate each word with the documentcluster to which it is connected with the most weight of edges. Notethat this criterion also minimizes the weight of the edges across the par-titions. Similarly, given a word partitioning, we can associate each docu-ment with the word partition to which it is connected with the greatestweight of edges. Therefore, a natural solution to this problem wouldA Survey of Text Clustering Algorithms 105
+besimultaneously perform the k-way partitioning of this graph which
+minimizes the total weight of the edges across the partitions. This is ofcourse a classical problem in the graph partitioning literature. In [30],
+it has been shown how a spectral partitioning algorithm can be used
+eﬀectively for this purpose. Another method discussed in [75] uses anisometric bipartite graph-partitioning approach for the clustering pro-cess.
+4.3.2 Information-Theoretic Co-clustering. In [31], the
+optimal clustering has been deﬁned to be one which maximizes the mu-tual information between the clustered random variables. The normal-ized non-negative contingency table is treated as a joint probability dis-tribution between two discrete random variables which take values overrows and columns. Let X=x
+1...xnbe the random variables corre-
+sponding to the rows, and let Y=y1...ydbe the random variables
+corresponding to the columns. We would like to partition Xintokclus-
+ters, and Yintolclusters. Let the clusters be denoted by ˆX=ˆx1...ˆxk
+andˆY=ˆy1...ˆyl. In other words, we wish to ﬁnd the maps CXandCY,
+which deﬁne the clustering:
+CX:x1...xn⇒ˆx1...ˆxk
+CY:y1...yd⇒ˆy1...ˆyl
+The partition functions CXandCYare allowed to depend on the joint
+probability distribution p(X,Y). We note that since ˆXandˆYare higher
+levelclustersof XandY,thereislossinmutualinformationinthehigher
+level representations. In other words, the distribution p(ˆX,ˆY) contains
+less information than p(X,Y), and the mutual information I(ˆX,ˆY)i s
+lower than the mutual information I(X,Y). Therefore, the optimal co-
+clustering problem is to determine the mapping which minimizes the lossinmutualinformation. Inotherwords, wewishtoﬁndaco-clusteringforwhichI(X,Y)−I(ˆX,ˆY) is as small as possible. An iterative algorithm
+for ﬁnding a co-clustering which minimizes mutual information loss is
+proposed in [29].
+4.4 Clustering with Frequent Phrases
+One of the key diﬀerences of this method from other text clustering
+methods is that it treats a document as a string as opposed to a bag ofwords. Speciﬁcally, each document is treated as a string of words, rather
+than characters. The main diﬀerence between the string representationand the bag-of-words representation is that the former also retains or-
+dering information for the clustering process. As is the case with many106 MINING TEXT DATA
+clustering methods, it uses an indexing method in order to organize the
+phrases in the document collection, and then uses this organization tocreate the clusters [103, 104]. Several steps are used in order to create
+the clusters:
+(1)The ﬁrst step is to perform the cleaning of the strings representing
+the documents. A light stemming algorithm is used by deleting wordpreﬁxes and suﬃxes and reducing plural to singular. Sentence bound-aries are marked and non-word tokens are stripped.(2)The second step is the identiﬁcation of base clusters. These are
+deﬁned by the frequent phases in the collection which are represented
+in the form of a suﬃx tree . A suﬃx tree [45] is essentially a trie which
+contains all the suﬃxes of the entire collection. Each node of the suﬃxtree represents a group of documents, and a phrase which is common toall these documents. Since each node of the suﬃx-tree also correspondsto a group of documents, it also corresponds to a base clustering. Eachbase cluster is given a score which is essentially the product of the num-ber of documents in that cluster and a non-decreasing function of the
+length of the underlying phrase. Therefore, clusters containing a large
+number of documents, and which are deﬁned by a relatively long phraseare more desirable.(3)An important characteristic of the base clusters created by the suf-
+ﬁx tree is that they do not deﬁne a strict partitioning and have overlapswith one another. For example, the same document may contain mul-tiple phrases in diﬀerent parts of the suﬃx tree, and will therefore be
+included in the corresponding document groups. The third step of the
+algorithm merges the clusters based on the similarity of their underlyingdocument sets. Let PandQbe the document sets corresponding to two
+clusters. The base similarity BS(P,Q)i sd e ﬁ n e da sf o l l o w s :
+BS(P,Q)=/floorleftbigg|P∩Q|
+max{|P|,|Q|}+0.5/floorrightbigg
+(4.11)
+This base similarity is either 0 or 1, depending upon whether the two
+groups have at least 50% of their documents in common. Then, we con-struct a graph structure in which the nodes represent the base clusters,
+and an edge exists between two cluster nodes, if the corresponding base
+similarity between that pair of groups is 1. The connected componentsin this graph deﬁne the ﬁnal clusters. Speciﬁcally, the union of thegroups of documents in each connected component is used as the ﬁnalset of clusters. We note that the ﬁnal set of clusters have much less over-lap with one another, but they still do not deﬁne a strict partitioning.This is sometimes the case with clustering algorithms in which modest
+overlaps are allowed to enable better clustering quality.A Survey of Text Clustering Algorithms 107
+5. Probabilistic Document Clustering and Topic
+Models
+A popular method for probabilistic document clustering is that of
+topic modeling . The idea of topic modeling is to create a probabilistic
+generative model for the text documents in the corpus. The main ap-
+proach is to represent a corpus as a function of hidden random variables,the parameters of which are estimated using a particular document col-lection. The primary assumptions in any topic modeling approach (to-gether with the corresponding random variables) are as follows:
+Thendocuments in the corpus are assumed to have a probability
+of belonging to one of ktopics. Thus, a given document may have
+a probability of belonging to multiple topics, and this reﬂects thefact that the same document may contain a multitude of subjects.For a given document D
+i, and a set of topics T1...Tk, the prob-
+ability that the document Dibelongs to the topic Tjis given by
+P(Tj|Di). We note that the the topics are essentially analogous to
+clusters, and the value of P(Tj|Di) provides a probability of clus-
+ter membership of the ith document to the jth cluster. In non-
+probabilistic clustering methods, the membership of documents toclusters is deterministic in nature, and therefore the clustering istypically a clean partitioning of the document collection. However,this often creates challenges, when there are overlaps in documentsubject matter across multiple clusters. The use of a soft cluster
+membership in terms of probabilities is an elegant solution to this
+dilemma. In this scenario, the determination of the membership of
+the documents to clusters is a secondary goal to that of ﬁnding thelatent topical clusters in the underlying text collection. Therefore,
+this area of research is referred to as topic modeling , and while it is
+related to the clustering problem, it is often studied as a distinctarea of research from clustering.
+The value of P(T
+j|Di) is estimated using the topic modeling ap-
+proach, and is one of the primary outputs of the algorithm. Thevalue of kis one of the inputs to the algorithm and is analogous
+to the number of clusters.
+Each topic is associated with a probability vector, which quantiﬁesthe probability of the diﬀerent terms in the lexicon for that topic.Lett
+1...tdbe thedterms in the lexicon. Then, for a document
+that belongs completely to topic Tj, the probability that the term
+tloccurs in it is given by P(tl|Tj). The value of P(tl|Tj) is another108 MINING TEXT DATA
+important parameter which needs to be estimated by the topic
+modeling approach.
+Note that the number of documents is denoted by n, topics by kand
+lexicon size (terms) by d. Most topic modeling methods attempt to
+learn the above parameters using maximum likelihood methods, so thatthe probabilistic ﬁt to the given corpus of documents is as large as pos-sible. There are two basic methods which are used for topic modeling,whichare Probabilistic Latent Semantic Indexing (PLSI) [49]andLatent
+Dirichlet Allocation (LDA) [20] respectively.
+In this section, we will focus on the probabilistic latent semantic in-
+dexing method. Note that the above set of random variables P(T
+j|Di)
+andP(tl|Tj) allow us to model the probability of a term tloccurring
+in any document Di. Speciﬁcally, the probability P(tl|Di) of the term
+tloccurring document Dican be expressed in terms of afore-mentioned
+parameters as follows:
+P(tl|Di)=k/summationdisplay
+j=1p(tl|Tj)·P(Tj|Di) (4.12)
+Thus, for each term tland document Di, we can generate a n×dma-
+trix of probabilities in terms of these parameters, where nis the number
+of documents and dis the number of terms. For a given corpus, we
+also have the n×dterm-document occurrence matrix X, which tells
+us which term actually occurs in each document, and how many times
+the term occurs in the document. In other words, X(i,l) is the number
+of times that term tloccurs in document Di. Therefore, we can use a
+maximum likelihood estimation algorithm which maximizes the productof the probabilities of terms that are observed in each document in theentire collection. The logarithm of this can be expressed as a weightedsum of the logarithm of the terms in Equation 4.12, where the weight
+of the (i,l)th term is its frequency count X(i,l). This is a constrained
+optimization problem which optimizes the value of the log likelihoodprobability/summationtext
+i,lX(i,l)·log(P(tl|Di)) subject to the constraints that the
+probabilityvaluesovereachofthetopic-documentandterm-topicspacesmust sum to 1:
+/summationdisplay
+lP(tl|Tj)=1∀Tj (4.13)
+/summationdisplay
+jP(Tj|Di)=1∀Di (4.14)A Survey of Text Clustering Algorithms 109
+Thevalueof P(tl|Di)intheobjectivefunctionisexpandedandexpressed
+in terms of the model parameters with the use of Equation 4.12. Wenote that a Lagrangian method can be used to solve this constrainedproblem. This is quite similar to the approach that we discussed forthe non-negative matrix factorization problem in this chapter. The La-grangian solution essentially leads to a set of iterative update equations
+for the corresponding parameters which need to be estimated. It can be
+shown that these parameters can be estimated [49] with the iterative up-date of two matrices [ P
+1]k×nand [P2]d×kcontaining the topic-document
+probabilities and term-topic probabilities respectively. We start oﬀ byinitializing these matrices randomly, and normalize each of them so thatthe probability values in their columns sum to one. Then, we iterativelyperform the following steps on each of P
+1andP2respectively:
+foreach entry ( j,i)i nP1do update
+P1(j,i)←P1(j,i)·/summationtextd
+r=1P2(r,j)·X(i,r)/summationtextk
+v=1P1(v,i)·P2(r,v)
+Normalize each column of P1to sum to 1;
+foreach entry ( l,j)i nP2do update
+P2(l,j)←P2(l,j)·/summationtextn
+q=1P1(j,q)·X(q,l)/summationtextk
+v=1P1(v,q)·P2(l,v)
+Normalize each column of P2to sum to 1;
+The process is iterated to convergence. The output of this approach
+are the two matrices P1andP2, the entries of which provide the topic-
+document and term-topic probabilities respectively.
+The second well known method for topic modeling is that of Latent
+Dirichlet Allocation . In this method, the term-topic probabilities and
+topic-document probabilities are modeled with a Dirichlet distribution
+as a prior. Thus, the LDA method is the Bayesian version of the PLSItechnique. It can also be shown the the PLSI method is equivalent tothe LDA technique, when applied with a uniform Dirichlet prior [42].
+The method of LDA was ﬁrst introduced in [20]. Subsequently, it has
+generally been used much more extensively as compared to the PLSImethod. Its main advantage over the PLSI method is that it is not quite
+as susceptible to overﬁtting. This is generally true of Bayesian meth-
+ods which reduce the number of model parameters to be estimated, andtherefore work much better for smaller data sets. Even for larger datasets, PLSI has the disadvantage that the number of model parametersgrows linearly with the size of the collection. It has been argued [20] thatthe PLSI model is not a fully generative model, because there is no ac-curate way to model the topical distribution of a document which is not
+includedinthecurrentdataset. Forexample, onecanusethecurrentset110 MINING TEXT DATA
+of topical distributions to perform the modeling of a new document, but
+it is likely to be much more inaccurate because of the overﬁtting inherentin PLSI. A Bayesian model, which uses a small number of parameters in
+the form of a well-chosen prior distribution, such as a Dirichlet , is likely
+to be much more robust in modeling new documents. Thus, the LDAmethodcanalsobeusedinordertomodelthetopicdistributionofanewdocument more robustly, even if it is not present in the original data set.Despite the theoretical advantages of LDA over PLSA, a recent studyhas shown that their task performances in clustering, categorization andretrieval tend to be similar [63]. The area of topic models is quite vast,
+and will be treated in more depth in Chapter 5 and Chapter 8 of this
+book; the purpose of this section is to simply acquaint the reader withthe basics of this area and its natural connection to clustering.
+We note that the EM-concepts which are used for topic modeling are
+quite general, and can be used for diﬀerent variations on the text cluster-ing tasks, such as text classiﬁcation [72] or incorporating user feedbackinto clustering [46]. For example, the work in [72] uses an EM-approach
+in order to perform supervised clustering (and classiﬁcation) of the doc-
+uments, when a mixture of labeled and unlabeled data is available. Amore detailed discussion is provided in Chapter 6 on text classiﬁcation.
+6. Online Clustering with Text Streams
+The problem of streaming text clustering is particularly challenging
+in the context of text data because of the fact that the clusters need tobe continuously maintained in real time. One of the earliest methodsfor streaming text clustering was proposed in [112]. This technique is
+referred to as the Online Spherical k-Means Algorithm (OSKM) , which
+reﬂects the broad approach used by the methodology. This techniquedivides up the incoming stream into small segments, each of which canbe processed eﬀectively in main memory. A set of k-means iterations
+are applied to each such data segment in order to cluster them. Theadvantage of using a segment-wise approach for clustering is that sinceeach segment can be held in main memory, we can process each data
+point multiple times as long as it is held in main memory. In addition,
+the centroids from the previous segment are used in the next iterationfor clustering purposes. A decay factor is introduced in order to age-out the old documents, so that the new documents are considered moreimportant from a clustering perspective. This approach has been shownto be extremely eﬀective in clustering massive text streams in [112].
+A diﬀerent method for clustering massive text and categorical data
+streams is discussed in [3]. The method discussed in [3] uses an approachA Survey of Text Clustering Algorithms 111
+which examines the relationship between outliers, emerging trends, and
+clusters in the underlying data. Old clusters may become inactive, andeventually get replaced by new clusters. Similarly, when newly arriving
+data points do not naturally ﬁt in any particular cluster, these need
+to be initially classiﬁed as outliers. However, as time progresses, thesenew points may create a distinctive pattern of activity which can berecognized as a new cluster. The temporal locality of the data streamis manifested by these new clusters. For example, the ﬁrst web pagebelonging to a particular category in a crawl may be recognized as anoutlier, but may later form a cluster of documents of its own. On the
+other hand, the new outliers may not necessarily result in the formation
+of new clusters. Such outliers are true short-term abnormalities in thedata since they do not result in the emergence of sustainable patterns.The approach discussed in [3] recognizes new clusters by ﬁrst recognizingthem as outliers. This approach works with the use of a summarizationmethodology, in which we use the concept of condensed droplets [3] in
+order to create concise representations of the underlying clusters.
+As in the case of the OSKM algorithm, we ensure that recent data
+points are given greater importance than older data points. This isachieved by creating a time-sensitive weight for each data point. It isassumedthateachdatapointhasatime-dependentweightdeﬁnedbythefunction f(t). Thefunction f(t) isalsoreferred toasthe fading function .
+The fading function f(t) is a non-monotonic decreasing function which
+decaysuniformlywithtime t. Theaimofdeﬁningahalflifeistoquantify
+the rate of decay of the importance of each data point in the stream
+clustering process. The decay-rate is deﬁned as the inverse of the half
+lifeofthedatastream. Wedenotethedecayrateby λ=1/t
+0. Wedenote
+the weight function of each point in the data stream by f(t)=2−λ·t.
+From the perspective of the clustering process, the weight of each datapoint isf(t). It is easy to see that this decay function creates a half life
+of 1/λ. It is also evident that by changing the value of λ, it is possible
+to change the rate at which the importance of the historical information
+in the data stream decays.
+When a cluster is created during the streaming process by a newly
+arriving data point, it is allowed to remain as a trend-setting outlierfor at least one half-life. During that period, if at least one more datapoint arrives, then the cluster becomes an active and mature cluster.On the other hand, if no new points arrive during a half-life, then the
+trend-setting outlier is recognized as a true anomaly in the data stream.
+At this point, this anomaly is removed from the list of current clusters.We refer to the process of removal as cluster death . Thus, a new cluster
+containing one data point dies when the (weighted) number of points112 MINING TEXT DATA
+in the cluster is 0 .5. The same criterion is used to deﬁne the death of
+mature clusters. A necessary condition for this criterion to be met isthat the inactivity period in the cluster has exceeded the half life 1 /λ.
+The greater the number of points in the cluster, the greater the level by
+which the inactivity period would need to exceed its half life in orderto meet the criterion. This is a natural solution, since it is intuitivelydesirable to have stronger requirements (a longer inactivity period) forthe death of a cluster containing a larger number of points.
+The statistics of the data points are captured in summary statistics,
+which are referred to as condensed droplets . These represent the word
+distributions within a cluster, and can be used in order to compute the
+similarityofanincomingdatapointtothecluster. Theoverallalgorithmproceeds as follows. At the beginning of algorithmic execution, we startwith an empty set of clusters. As new data points arrive, unit clusterscontaining individual data points are created. Once a maximum numberkof such clusters have been created, we can begin the process of online
+cluster maintenance. Thus, we initially start oﬀ with a trivial set of k
+clusters. These clusters are updated over time with the arrival of new
+data points.
+When a new data point
+Xarrives, its similarity to each cluster droplet
+is computed. In the case of text data sets, the cosine similarity measurebetween
+DF1a n dXis used. The similarity value S(X,Cj) is computed
+from the incoming document Xto every cluster Cj. The cluster with
+the maximum value of S(X,Cj) is chosen as the relevant cluster for
+data insertion. Let us assume that this cluster is Cmindex. We use a
+threshold denoted by threshin order to determine whether the incoming
+data point is an outlier. If the value of S(X,Cmindex) is larger than the
+threshold thresh, then the point Xis assigned to the cluster Cmindex.
+Otherwise, we check if some inactive cluster exists in the current set ofcluster droplets. If no such inactive cluster exists, then the data point
+Xis added to Cmindex. On the other hand, when an inactive cluster
+does exist, a new cluster is created containing the solitary data point
+X. This newly created cluster replaces the inactive cluster. We note
+that this new cluster is a potential true outlier or the beginning of a newtrend of data points. Further understanding of this new cluster mayonly be obtained with the progress of the data stream.
+In the event that
+Xis inserted into the cluster Cmindex, we update
+the statistics of the cluster in order to reﬂect the insertion of the data
+point and temporal decay statistics. Otherwise, we replace the most
+inactive cluster by a new cluster containing the solitary data point X.
+In particular, the replaced cluster is the least recently updated clusteramong all inactive clusters. This process is continuously performed overA Survey of Text Clustering Algorithms 113
+the life of the data stream, as new documents arrive over time. The
+work in [3] also presents a variety of other applications of the streamclustering technique such as evolution and correlation analysis.
+A diﬀerent way of utilizing the temporal evolution of text documents
+in the clustering process is described in [48]. Speciﬁcally, the work in[48] uses bursty features as markers of new topic occurrences in the data
+stream. This is because the semantics of an up-and-coming topic areoften reﬂected in the frequent presence of a few distinctive words in thetextstream. Atagivenperiodintime,thenatureofrelevanttopicscouldlead to bursts in speciﬁc features of the data stream. Clearly, such fea-
+tures are extremely important from a clustering perspective. Therefore,
+the method discussed in [48] uses a new representation, which is referredto as the bursty feature representation for mining text streams. In this
+representation, a time-varying weight is associated with the features de-pending upon its burstiness. This also reﬂects the varying importanceof the feature to the clustering process. Thus, it is important to remem-ber that a particular document representation is dependent upon the
+particular instant in time at which it is constructed.
+Another issue which is handled eﬀectively in this approach is an im-
+plicit reduction in dimensionality of the underlying collection. Text isinherentlyahighdimensionaldatadomain, andthepre-selectionofsomeof the features on the basis of their burstiness can be a natural way toreduce the dimensionality of document representation. This can help inboth the eﬀectiveness and eﬃciency of the underlying algorithm.
+The ﬁrst step in the process is to identify the bursty features in the
+data stream. In order to achieve this goal, the approach uses Klein-berg’s 2-state ﬁnite automaton model [57]. Once these features havebeen identiﬁed, the bursty features are associated with weights whichdepend upon their level of burstiness. Subsequently, a bursty featurerepresentation is deﬁned in order to reﬂect the underlying weight of thefeature. Both the identiﬁcation and the weight of the bursty feature are
+dependent upon its underlying frequency. A standard k-means approach
+is applied to the new representation in order to construct the clustering.It was shown in [48] that the approach of using burstiness improves thecluster quality. Once criticism of the work in [48] is that it is mostlyfocused on the issue of improving eﬀectiveness with the use of tempo-ral characteristics of the data stream, and does not address the issue ofeﬃcient clustering of the underlying data stream.
+In general, it is evident that feature extraction is important for all
+clustering algorithms. While the work in [48] focuses on using temporalcharacteristics of the stream for feature extraction, the work in [61] fo-cuses on using phrase extraction for eﬀective feature selection. This work114 MINING TEXT DATA
+is also related to the concept of topic-modeling, which will be discussed
+in detail in the next section. This is because the diﬀerent topics in acollection can be related to the clusters in a collection. The work in [61]
+uses topic-modeling techniques for clustering. The core idea in the work
+of [61] is that individual words are not very eﬀective for a clusteringalgorithm because they miss the context in which the word is used. Forexample, the word “star” may either refer to a celestial body or to anentertainer. On the other hand, when the phrase “ﬁxed star” is used,it becomes evident that the word “star” refers to a celestial body. Thephrases which are extracted from the collection are also referred to as
+topic signatures .
+The use of such phrasal clariﬁcation for improving the quality of the
+clustering is referred to as semantic smoothing because it reduces the
+noise which is associated with semantic ambiguity. Therefore, a key partof the approach is to extract phrases from the underlying data stream.After phrase extraction, the training process determines a translationprobability of the phrase to terms in the vocabulary. For example, the
+word “planet” may have high probability of association with the phrase
+“ﬁxed star”, because both refer to celestial bodies. Therefore, for a givendocument, arationalprobabilitycountmayalsobeassignedtoallterms.For each document, it is assumed that all terms in it are generated eitherby a topic-signature model, or a background collection model.
+The approach in [61] works by modeling the soft probability p(w|C
+j)
+forword wandcluster Cj. Theprobability p(w|Cj)ismodeledasalinear
+combinationoftwofactors; (a)Amaximumlikelihoodmodelwhichcom-
+putes the probabilities of generating speciﬁc words for each cluster (b)An indirect (translated) word-membership probability which ﬁrst deter-mines the maximum likelihood probability for each topic-signature, andthen multiplyingwith the conditional probability of each word, given thetopic-signature. We note that we can use p(w|C
+j) in order to estimate
+p(d|Cj) by using the product of the constituent words in the document.
+For this purpose, we use the frequency f(w,d) of word win document
+d.
+p(d|Cj)=/productdisplay
+w∈dp(w|Cj)f(w,d)(4.15)
+We note that in the static case, it is also possible to add a background
+model in order to improve the robustness of the estimation process. Thisis however not possible in a data stream because of the fact that thebackground collection model may require multiple passes in order tobuild eﬀectively. The work in [61] maintains these probabilities in onlinefashion with the use of a cluster proﬁle , that weights the probabilities
+with the use of a fading function. We note that the concept of clusterA Survey of Text Clustering Algorithms 115
+proﬁleisanalogoustotheconceptofcondenseddropletintroducedin[3].
+The key algorithm (denoted by OCTS) is to maintain a dynamic set ofclusters into which documents are progressively assigned with the use ofsimilaritycomputations. Ithasbeenshownin[61]howtheclusterproﬁlecan be used in order to eﬃciently compute p(d|C
+j) for each incoming
+document. This value is then used in order to determine the similarity of
+thedocumentstothediﬀerentclusters. Thisisusedinordertoassignthe
+documents to their closest cluster. We note that the methods in [3, 61]share a number of similarities in terms of (a) maintenance of clusterproﬁles, (b) use of cluster proﬁles (or condensed droplets) to computesimilarity and assignment of documents to most similar clusters, and (c)the rules used to decide when a new singleton cluster should be created,or one of the older clusters should be replaced.
+Themaindiﬀerencebetweenthetwoalgorithmsisthetechniquewhich
+is used in order to compute cluster similarity. The OCTS algorithmuses the probabilistic computation p(d|C
+j) to compute cluster similarity,
+whichtakesthephrasalinformationintoaccountduringthecomputationprocess. One observation about OCTS is that it may allow for verysimilar clusters to co-exist in the current set. This reduces the spaceavailable for distinct cluster proﬁles. A second algorithm called OCTSM
+is also proposed in [61], which allows for merging of very similar clusters.
+Before each assignment, it checks whether pairs of similar clusters canbe merged on the basis of similarity. If this is the case, then we allow themerging of the similar clusters and their corresponding cluster proﬁles.Detailed experimental results on the diﬀerent clustering algorithms andtheir eﬀectiveness are presented in [61].
+A closely related area to clustering is that of topic modeling, which
+we discussed in an earlier section. Recently, the topic modeling method
+has also been extended to the dynamic case which is helpful for topic
+modeling of text streams [107].
+7. Clustering Text in Networks
+Many social networks contain both text content in the nodes, as well
+as links between the diﬀerent nodes. Clearly, the links provide usefulcues in understanding the related nodes in the network. The impact ofdiﬀerent link types on the quality of the clustering has been studied in
+[109], and it has been shown that many forms of implicit and explicit
+links improve clustering quality, because they encode human knowledge.Therefore, a natural choice is to combine these two factors in the processofclusteringthediﬀerentnodes. Inthissection, wewilldiscussanumberof such techniques.116 MINING TEXT DATA
+In general, links may be considered as a kind of side-information,
+which can be represented in the form of attributes. A general approachforincorporatingsideattributesintotheclusteringprocesshasbeenpro-
+posed in [1]. This algorithm uses a combination of a k-means approach
+on the text attributes, and Bayesian probability estimations on the sideattributes for the clustering process. The idea is to identify those at-tributes, which are helpful for the clustering process, and use them inorder to enhance the quality of the clustering. However, this approach isreally designed for general attributes of any kind, rather than link-basedattributes, in which an underlying graph structure is implied by the
+document-to-document linkages. In spite of this, it has been shown in
+[1], that it is possible to signiﬁcantly enhance the quality of clustering bytreating linkage information as side-attributes. Many other techniques,which will be discussed in this section, have been proposed speciﬁcallyfor the case of text documents, which are linked together in a networkstructure.
+The earliest methods for combining text and link information for the
+clustering process are proposed in [12]. Two diﬀerent methods were
+proposed in this paper for the clustering process. The ﬁrst methoduses the link information in the neighbors of a node in order to biasthe term weights in a document. Term weights which are common be-tween a document and its neighbors are given more importance in theclustering process. One advantage of such an approach is that we canuse any of the existing clustering algorithms for this purpose, because
+the link information is implicitly encoded in the modiﬁed term weights.
+The second method proposed in [12] is a graph-based approach whichdirectly uses the links in the clustering process. In this case, the ap-proach attempts to model the probability that a particular documentbelongs to a given cluster for a particular set of links and content. Thisis essentially a soft-clustering , in which a probability of assignment is
+determined for each cluster. The cluster with the largest probability of
+assignment is considered the most relevant cluster. A Markov Random
+Field (MRF) technique is used in order to perform the clustering. Aniterative technique called relaxation labeling is used in order to computethe maximum likelihood parameters of this MRF. More details of thisapproach may be found in [12].
+A recent method to perform clustering with both structural and at-
+tribute similarities is proposed in [113]. The techniques of this paper can
+be applied to both relational and text attributes. This paper integrates
+structural and attribute-based clustering by adding attribute vertices tothe network in addition to the original structural vertices. In the contextof text data, this implies that a vertex exists for each word in the lexi-A Survey of Text Clustering Algorithms 117
+con. Therefore, in addition to the original set of vertices Vin the graph
+G=(V,E), we now have the augmented vertex set V∪V1, such that
+V1contains one vertex for each nodes. We also augment the edge set, in
+order to add to the original set of structural edges E. We add an edge
+between a structural vertex i∈Vand an attribute vertex j∈V1, if word
+jis contained in the node i. This new set of edges added is denoted by
+E1. Therefore, we now have an augmented graph G1=(V∪V1,E∪E1)
+which is semi-bipartite. A neighborhood random walk model is used inorder to determine the closeness of vertices. This closeness measure isused in order to perform the clustering. The main challenge in the algo-
+rithm is to determine the relative importance of structural and attribute
+components in the clustering process. In the context of the random walkmodel, this translates to determining the appropriate weights of diﬀer-ent edges during the random walk process. A learning model has beenproposed in [113] in order to learn these weights, and leverage them foran eﬀective clustering process.
+The problem of clustering network content is often encountered in the
+context of community detection in social networks. The text content in
+the social network graph may be attached to either the nodes [101] ofthe network, or to the edges [74]. The node-based approach is generallymore common, and most of the afore-mentioned techniques in this papercanbemodeledintermsofcontentattachedtothenodes. Inthemethodproposed in [101], the following link-based and content-based steps arecombined for eﬀective community detection:
+A conditional model is proposed for link analysis, in which the
+conditional probability for the destination of given link is modeled.
+A hidden variable is introduced in order to capture the popularityof a node in terms of the likelihood of that node being cited byother nodes.
+Adiscriminativecontentmodelisintroducedinordertoreducetheimpact of noisy content attributes. In this model, the attributesare weighed by their ability to discriminate between the diﬀerentcommunities.
+The two models are combined into a uniﬁed framework with theuse of a two-stage optimization algorithm for maximum likelihoodinference. One interesting characteristic of this broad frameworkis that it can also be used in the context of other complementary
+approaches.
+The details of the algorithm are discussed in [101].118 MINING TEXT DATA
+For the case of edge-based community detection, it is assumed that
+the text content in the network is attached to the edges [74]. This iscommon in applications which involve extensive communication between
+the diﬀerent nodes. For example, in email networks, or online chat net-
+works, the text in the network is associated with the communicationsbetween the diﬀerent entities. In such cases, the text is associated withan edge in the underlying network. The presence of content associatedwith edges allows for a much more nuanced approach in community de-tection, becauseagivennodemayparticipateincommunitiesofdiﬀerentkinds. The presence of content associated with edges helps in separat-
+ing out these diﬀerent associations of the same individual to diﬀerent
+communities. The work in [74] uses a matrix-factorization methodologyin order to jointly model the content and structure for the communitydetection process. The matrix factorization method is used to transformthe representation into multi-dimensional representation, which can beeasily clustered by a simple algorithm such as the k-means algorithm.
+It was shown in [74], that the use of such an approach can provide
+much more eﬀective results than a pure content- or link-based clustering
+methodology.
+A closely related area to clustering is that of topic modeling , in which
+weattempttomodeltheprobabilityofadocumentbelongingtoapartic-ular cluster. A natural approach to network-based topic modeling is toadd a network-based regularization constraint to traditional topic mod-els such as NetPLSA [65]. The relational topic model (RTM) proposed
+in [23] tries to model the generation of documents and links sequentially.
+The ﬁrst step for generating the documents is the same as LDA. Sub-sequently, the model predicts links based on the similarity of the topicmixture used in two documents. Thus, this method can be used bothfor topic modeling and predicting missing links. A more uniﬁed modelis proposed in the iTopicModel [91] framework which creates a Markov
+Random Field model in order to create a generative model which si-
+multaneously captures both text and links. Experimental results have
+shown this approach to be more general and superior to previously ex-isting methods. A number of other methods for incorporating networkinformation into topic modeling are discussed in the next chapter ondimensionality reduction.
+8. Semi-Supervised Clustering
+In some applications, prior knowledge may be available about the
+kinds of clusters that are available in the underlying data. This prior
+knowledge may take on the form of labels attached with the documents,A Survey of Text Clustering Algorithms 119
+which indicate its underlying topic. For example, if we wish to use the
+broaddistributionoftopicsinthe Yahoo!taxonomyinordertosupervise
+the clustering process of a new web collection, one way to performing
+supervision would be add some labeled pages from the Yahoo! taxonomy
+to the collection. Typically such pages would contain labels of the form@Science@Astronomy or @Arts@Painting , which indicate the subject
+area of the added pages. Such knowledge can be very useful in creatingsigniﬁcantly more coherent clusters, especially when the total number ofclusters is large. The process of using such labels to guide the clusteringprocess is referred to as semi-supervised clustering . This form of learning
+is a bridge between the clustering and classiﬁcation problem, because it
+uses the underlying class structure, but it is not completely tied down bythe speciﬁc structure. As a result, such an approach ﬁnds applicabilityboth to the clustering and classiﬁcation scenarios.
+The most natural method for incorporating supervision into the clus-
+tering process is to do so in partitional clustering methods such as k-
+means. This is because the supervision can be easily incorporated by
+changingtheseedsintheclusteringprocess. Forexample, theworkin[4]
+uses the initial seeds in the k-means clustering process as the centroids
+of the original classes in the underlying data. A similar approach hasalso been used in [15], except a wider variation of how the seeds may beselected has been explored.
+A number of probabilistic frameworks have also been designed for
+semi-supervised clustering [72, 14]. The work in [72] uses an iterative
+EM-approach in which the unlabeled documents are assigned labels us-
+ing a naive Bayes approach on the currently labeled documents. Thesenewly labeled documents are then again used for re-training a Bayesclassiﬁer. This process is iterated to convergence. The iterative labelingapproach in [72] can be considered a partially supervised approach forclustering the unlabeled documents. The work in [14] uses a Heteroge-neous Markov Random Field (HMRF) model for the clustering process.
+Agraph-basedmethodforincorporatingpriorknowledgeintotheclus-
+tering process has been proposed in [52]. In this method, the documentsare modeled as a graph, in which nodes represent documents and edgesrepresent the similarity among them. New edges may also be addedto this graph, which correspond to the prior knowledge. Speciﬁcally,an edge is added to the graph, when it is known on the basis of priorknowledge that these two documents are similar. A normalized cut al-
+gorithm [84] is then applied to this graph in order to create the ﬁnal
+clustering. This approach implicitly uses the prior knowledge becauseof the augmented graph representation which is used for the clustering.120 MINING TEXT DATA
+Since semi-supervised clustering forms a natural bridge between the
+clustering and classiﬁcation problems, it is natural that semi-supervisedmethods can be used for classiﬁcation as well [68]. This is also referred
+to asco-training , because it involves the use of unsupervised document
+clustering in order to assist the training process. Since semi-supervisedmethods use both the clustering structure in the feature space and theclass information, they are sometimes more robust in classiﬁcation sce-narios, especially in cases where the amount of available labeled data issmall. It has been shown in [72], how a partially supervised co-trainingapproach which mixes supervised and unsupervised data may yield more
+eﬀective classiﬁcation results, when the amount of training data avail-
+able is small. The work in [72] uses a partially supervised EM-algorithmwhich iteratively assigns labels to the unlabeled documents and reﬁnesthem over time as convergence is achieved. A number of similar methodsalong this spirit are proposed in [4, 14, 35, 47, 89] with varying levelsof supervision in the clustering process. Partially supervised clusteringmethods are also used feature transformation in classiﬁcation using the
+methods as discussed in [17, 18, 88]. The idea is that the clustering
+structure provides a compressed feature space, which capture the rele-vant classiﬁcation structure very well, and can therefore be helpful forclassiﬁcation.
+Partiallysupervisedmethodscanalsobeusedinconjunctionwithpre-
+existing categorical hierarchies (or prototype hierarchies) [4, 56, 67]. Atypicalexampleofaprototypehierarchywouldbethe Yahoo!taxonomy,
+theOpen Directory Project , or theReuters collection . The idea is that
+such hierarchies provide a good general idea of the clustering structure,but also have considerable noise and overlaps in them because of theirtypical manual origins. The partial supervision is able to correct thenoise and overlaps, and this results in a relatively clean and coherentclustering structure.
+An unusual kind of supervision for document clustering is the method
+o fu s eo fa universum of documents which are known notto belong to
+a cluster [106]. This is essentially, the background distribution whichcannot be naturally clustered into any particular group. The intuitionis that the universum of examples provide an eﬀective way of avoidingmistakes in the clustering process, since it provides a background ofexamples to compare a cluster with.
+9. Conclusions and Summary
+In this chapter, we presented a survey of clustering algorithms for text
+data. A good clustering of text requires eﬀective feature selection and aA Survey of Text Clustering Algorithms 121
+proper choice of the algorithm for the task at hand. Among the diﬀerent
+classes of algorithms, the distance-based methods are among the mostpopular in a wide variety of applications.
+In recent years, the main trend in research in this area has been in
+the context of two kinds of text data:
+Dynamic Applications: The large amounts of text data being
+created by dynamic applications such as social networks or onlinechat applications has created an immense need for streaming textclustering applications. Such streaming applications need to beapplicable in the case of text which is not very clean, as is often
+the case for applications such as social networks.
+Heterogeneous Applications: Text applications increasingly
+arise in heterogeneous applications in which the text is availablein the context of links, and other heterogeneous multimedia data.For example, in social networks such as Flickrthe clustering often
+needs to be applied in such scenario. Therefore, it is critical to ef-fectively adapt text-based algorithms to heterogeneous multimedia
+scenarios.
+We note that the ﬁeld of text clustering is too vast to cover comprehen-
+sively in a single chapter. Some methods such as committee-based clus-
+tering[73] cannot even be neatly incorporated into any class of methods,
+since they use a combination of the diﬀerent clustering methods in orderto create a ﬁnal clustering result. The main purpose of this chapter isto provide a comprehensive overview of the main algorithms which are
+often used in the area, as a starting point for further study.
+References
+[1] C. C. Aggarwal, Y. Zhao, P. S. Yu. On Text Clustering with Side
+Information, ICDE Conference , 2012.
+[2] C. C. Aggarwal, P. S. Yu. On Eﬀective Conceptual Indexing and
+Similarity Search in Text, ICDM Conference , 2001.
+[3] C. C. Aggarwal, P. S. Yu. A Framework for Clustering Massive Text
+and Categorical Data Streams, SIAM Conference on Data Mining ,
+2006.
+[4] C. C. Aggarwal, S. C. Gates, P. S. Yu. On Using Partial Supervi-
+sion for Text Categorization, IEEE Transactions on Knowledge and
+Data Engineering , 16(2), 245–255, 2004.
+[5] C. C. Aggarwal, C. Procopiuc, J. Wolf, P. S. Yu, J.-S. Park. Fast
+Algorithms for Projected Clustering, ACM SIGMOD Conference ,
+1999.122 MINING TEXT DATA
+[6] C. C. Aggarwal, P. S. Yu. Finding Generalized Projected Clusters
+in High Dimensional Spaces, ACM SIGMOD Conference , 2000.
+[7] R. Agrawal, J. Gehrke, P. Raghavan. D. Gunopulos. Automatic
+Subspace Clustering of High Dimensional Data for Data MiningApplications, ACM SIGMOD Conference , 1999.
+[8] R. Agrawal, R. Srikant. Fast Algorithms for Mining Association
+Rules in Large Databases, VLDB Conference , 1994.
+[9] J. Allan, R. Papka, V. Lavrenko. Online new event detection and
+tracking. ACM SIGIR Conference , 1998.
+[10] P. Andritsos, P. Tsaparas, R. Miller, K. Sevcik. LIMBO: Scalable
+Clustering of Categorical Data. EDBT Conference , 2004.
+[11] P. Anick, S. Vaithyanathan. Exploiting Clustering and Phrases
+for Context-Based Information Retrieval. ACM SIGIR Conference ,
+1997.
+[12] R. Angelova, S. Siersdorfer. A neighborhood-based approach for
+clustering of linked document collections. CIKM Conference , 2006.
+[13] R. A. Baeza-Yates, B. A. Ribeiro-Neto, Modern Information Re-
+trieval - the concepts and technology behind search, Second edition ,
+Pearson Education Ltd., Harlow, England, 2011.
+[14] S. Basu, M. Bilenko, R. J. Mooney. A probabilistic framework for
+semi-supervised clustering. ACM KDD Conference , 2004.
+[15] S. Basu, A. Banerjee, R. J. Mooney. Semi-supervised Clustering by
+Seeding. ICML Conference , 2002.
+[16] F. Beil, M. Ester, X. Xu. Frequent term-based text clustering, ACM
+KDD Conference , 2002.
+[17] L.Baker,A.McCallum.DistributionalClusteringofWordsforText
+Classiﬁcation, ACM SIGIR Conference , 1998.
+[18] R. Bekkerman, R. El-Yaniv, Y. Winter, N. Tishby. On Feature Dis-
+tributional Clustering for Text Categorization. ACM SIGIR Con-
+ference, 2001.
+[19] D. Blei, J. Laﬀerty. Dynamic topic models. ICML Conference , 2006.
+[20] D. Blei, A. Ng, M. Jordan. Latent Dirichlet allocation, Journal of
+Machine Learning Research , 3: pp. 993–1022, 2003.
+[21] P. F. Brown, P. V. deSouza, R. L. Mercer, V. J. Della Pietra, and
+J/ C. Lai. Class-based n-gram models of natural language, Compu-
+tational Linguistics , 18, 4 (December 1992), 467-479.
+[22] K. Chakrabarti, S. Mehrotra. Local Dimension reduction: A new
+ApproachtoIndexingHighDimensionalSpaces, VLDB Conference ,
+2000.A Survey of Text Clustering Algorithms 123
+[23] J. Chang, D. Blei. Topic Models for Document Networks. AISTA-
+SIS, 2009.
+[24] W.B.Croft.Clusteringlargeﬁlesofdocumentsusingthesingle-link
+method. Journal of the American Society of Information Science ,
+28: pp. 341–344, 1977.
+[25] D. Cutting, D. Karger, J. Pedersen, J. Tukey. Scatter/Gather: A
+Cluster-based Approach to Browsing Large Document Collections.
+ACM SIGIR Conference , 1992.
+[26] D.Cutting,D.Karger,J.Pederson.ConstantInteraction-timeScat-
+ter/Gather Browsing of Large Document Collections, ACM SIGIR
+Conference , 1993.
+[27] M. Dash, H. Liu. Feature Selection for Clustering, PAKDD Confer-
+ence, pp. 110–121, 1997.
+[28] S. Deerwester, S. Dumais, T. Landauer, G. Furnas, R. Harshman.
+Indexing by Latent Semantic Analysis. JASIS, 41(6), pp. 391–407,
+1990.
+[29] I. Dhillon, D. Modha. Concept Decompositions for Large Sparse
+Data using Clustering, 42(1), pp. 143–175, 2001.
+[30] I. Dhillon. Co-clustering Documents and Words using bipartite
+spectral graph partitioning, ACM KDD Conference , 2001.
+[31] I. Dhillon, S. Mallela, D. Modha. Information-theoretic Co-
+Clustering, ACM KDD Conference , 2003.
+[32] C. Ding, X. He, H. Zha, H. D. Simon. Adaptive Dimension Re-
+duction for Clustering High Dimensional Data, ICDM Conference ,
+2002.
+[33] C.Ding,X.He,H.Simon.Ontheequivalenceofnonnegativematrix
+factorization and spectral clustering. SDM Conference , 2005.
+[34] B. Dorow, D. Widdows. Discovering corpus-speciﬁc word senses,
+Proceedings of the tenth conference on European chapter of the As-
+sociation for Computational Linguistics - Volume 2 (EACL ’03) ,
+pages 79-82, 2003.
+[35] R. El-Yaniv, O. Souroujon. Iterative Double Clustering for Unsu-
+pervised and Semi-supervised Learning. NIPS Conference , 2002.
+[36] H. Fang, T. Tao, C. Zhai, A formal study of information retrieval
+heuristics, Proceedings of ACM S IGIR 2004 , 2004.
+[37] D. Fisher. Knowledge Acquisition via incremental conceptual clus-
+tering.Machine Learning , 2: pp. 139–172, 1987.
+[38] M. Franz, T. Ward, J. McCarley, W.-J. Zhu. Unsupervised and
+supervised clustering for topic tracking. ACM SIGIR Conference ,
+2001.124 MINING TEXT DATA
+[39] G.P.C.Fung,J.X.Yu,P.Yu,H.Lu.ParameterFreeBurstyEvents
+Detection in Text Streams, VLDB Conference , 2005.
+[40] J. H. Gennari, P. Langley, D. Fisher. Models of incremental concept
+formation. Journal of Artiﬁcial Intelligence , 40 pp. 11–61, 1989.
+[41] D. Gibson, J. Kleinberg, P. Raghavan. Clustering Categorical Data:
+An Approach Based on Dynamical Systems, VLDB Conference ,
+1998.
+[42] M.Girolami,AKaban.OntheEquivalancebetweenPLSIandLDA,
+SIGIR Conference , pp. 433–434, 2003.
+[43] S. Guha, R. Rastogi, K. Shim. ROCK: a robust clustering algo-
+rithm for categorical attributes, International Conference on Data
+Engineering , 1999.
+[44] S. Guha, R. Rastogi, K. Shim. CURE: An Eﬃcient Clustering Al-
+gorithm for Large Databases. ACM SIGMOD Conference , 1998.
+[45] D. Gusﬁeld. Algorithms for strings, trees and sequences, Cambridge
+University Press , 1997.
+[46] Y. Huang, T. Mitchell. Text clustering with extended user feedback.
+ACM SIGIR Conference , 2006.
+[47] H. Li, K. Yamanishi. Document classiﬁcation using a ﬁnite mix-
+ture model. Annual Meeting of the Association for Computational
+Linguistics , 1997.
+[48] Q.He,K.Chang,E.-P.Lim,J.Zhang.Burstyfeaturerepresentation
+for clustering text streams. SDM Conference , 2007.
+[49] T. Hofmann. Probabilistic Latent Semantic Indexing. ACM SIGIR
+Conference , 1999.
+[50] A. Jain, R. C. Dubes. Algorithms for Clustering Data, Prentice
+Hall, Englewood Cliﬀs, NJ, 1998.
+[51] N. Jardine, C. J.van Rijsbergen. The use of hierarchical clustering
+in information retrieval, Information Storage and Retrieval ,7 :p p .
+217–240, 1971.
+[52] X. Ji, W. Xu. Document clustering with prior knowledge. ACM
+SIGIR Conference , 2006.
+[53] I. T. Jolliﬀee. Principal Component Analysis. Springer, 2002.
+[54] L. Kaufman, P. J. Rousseeuw. Finding Groups in Data: An Intro-
+duction to Cluster Analysis, Wiley Interscience , 1990.
+[55] W. Ke, C. Sugimoto, J. Mostafa. Dynamicity vs. eﬀectiveness:
+studying online clustering for scatter/gather. ACM SIGIR Confer-
+ence, 2009.A Survey of Text Clustering Algorithms 125
+[56] H. Kim, S. Lee. A Semi-supervised document clustering technique
+for information organization, CIKM Conference , 2000.
+[57] J. Kleinberg, Bursty and hierarchical structure in streams, ACM
+KDD Conference , pp. 91–101, 2002.
+[58] D. D. Lee, H. S. Seung. Learning the parts of objects by non-
+negative matrix factorization, Nature, 401: pp. 788–791, 1999.
+[59] T. Li, S. Ma, M. Ogihara, Document Clustering via Adaptive Sub-
+space Iteration, ACM SIGIR Conference , 2004.
+[60] T. Li, C. Ding, Y. Zhang, B. Shao. Knowledge transformation from
+word space to document space. ACM SIGIR Conference, 2008.
+[61] Y.-B. Liu, J.-R. Cai, J. Yin, A. W.-C. Fu. Clustering Text Data
+Streams, Journal of Computer Science and Technology, Vol. 23(1),
+pp. 112–128, 2008.
+[62] T. Liu, S. Lin, Z. Chen, W.-Y. Ma. An Evaluation on Feature Se-
+lection for Text Clustering, ICML Conference , 2003.
+[63] Y.Lu,Q.Mei,C.Zhai.Investigatingtaskperformanceofprobabilis-
+tictopicmodels:anempiricalstudyofPLSAandLDA, Information
+Retrieval , 14(2): 178-203 (2011).
+[64] A. McCallum. Bow: A toolkit for statistical language modeling,
+text retrieval, classiﬁcation and clustering. http://www.cs.cmu.
+edu/ ~mccallum/bow, 1996.
+[65] Q.Mei,D.Cai,D.Zhang,C.-X.Zhai.TopicModelingwithNetwork
+Regularization. WWW Conference , 2008.
+[66] D. Metzler, S. T. Dumais, C. Meek, Similarity Measures for Short
+Segments of Text, Proceedings of ECIR 2007, 2007.
+[67] Z. Ming, K. Wang, T.-S. Chua. Prototype hierarchy-based cluster-
+ing for the categorization and navigation of web collections. ACM
+SIGIR Conference , 2010.
+[68] T. M. Mitchell. The role of unlabeled data in supervised learning.
+Proceedings of the Sixth I nternational Colloquium on Cognitive Sci-
+ence, 1999.
+[69] F. Murtagh. A Survey of Recent Advances in Hierarchical Cluster-
+ing Algorithms, The Computer Journal , 26(4), pp. 354–359, 1983.
+[70] F. Murtagh. Complexities of Hierarchical Clustering Algorithms:
+State of the Art, Computational Statistics Quarterly , 1(2), pp. 101–
+113, 1984.
+[71] R.Ng,J.Han.EﬃcientandEﬀectiveClusteringMethodsforSpatial
+Data Mining. VLDB Conference , 1994.126 MINING TEXT DATA
+[72] K. Nigam, A. McCallum, S. Thrun, T. Mitchell. Learning to clas-
+sify text from labeled and unlabeled documents. AAAI Conference ,
+1998.
+[73] P. Pantel, D. Lin. Document Clustering with Committees, ACM
+SIGIR Conference , 2002.
+[74] G. Qi, C. Aggarwal, T. Huang. Community Detection with Edge
+Content in Social Media Networks, ICDE Conference , 2012.
+[75] M.Rege,M.Dong,F.Fotouhi.Co-clusteringDocumentsandWords
+Using Bipartite Isoperimetric Graph Partitioning. ICDM Confer-
+ence, pp. 532–541, 2006.
+[76] C. J. van Rijsbergen. Information Retrieval , Butterworths, 1975.
+[77] C. J.van Rijsbergen, W. B. Croft. Document Clustering: An Eval-
+uation of some experiments with the Cranﬁeld 1400 collection, In-
+formation Processing and Management , 11, pp. 171–182, 1975.
+[78] S. E. Robertson and S. Walker. Some simple eﬀective approxima-
+tions to the 2-poisson model for probabilistic weighted retrieval. InSIGIR, pages 232–241, 1994.
+[79] M. Sahami, T. D. Heilman, A web-based kernel function for mea-
+suring the similarity of short text snippets, Proceedings of WWW
+2006, pages 377-386, 2006.
+[80] N. Sahoo, J. Callan, R. Krishnan, G. Duncan, R. Padman. Incre-
+mental Hierarchical Clustering of Text Documents, ACM CIKM
+Conference , 2006.
+[81] G. Salton. An Introduction to Modern Information Retrieval, Mc
+Graw Hill , 1983.
+[82] G. Salton, C. Buckley. Term Weighting Approaches in Automatic
+TextRetrieval, Information Processing and Management ,24(5),pp.
+513–523, 1988.
+[83] H. Schutze, C. Silverstein. Projections for Eﬃcient Document Clus-
+tering,ACM SIGIR Conference , 1997.
+[84] J. Shi, J. Malik. Normalized cuts and image segmentation. IEEE
+Transaction on Pattern Analysis and Machine Intelligence , 2000.
+[85] C. Silverstein, J. Pedersen. Almost-constant time clustering of ar-
+bitrary corpus subsets. ACM SIGIR Conference , pp. 60–66, 1997.
+[86] A. Singhal, C. Buckley, M. Mitra. Pivoted Document Length Nor-
+malization. ACM SIGIR Conference , pp. 21–29, 1996.
+[87] N. Slonim, N. Tishby. Document Clustering using word clusters via
+the information bottleneck method, ACM SIGIR Conference , 2000.A Survey of Text Clustering Algorithms 127
+[88] N. Slonim, N. Tishby. The power of word clusters for text classi-
+ﬁcation. European Colloquium on Information Retrieval Research
+(ECIR), 2001.
+[89] N. Slonim, N. Friedman, N. Tishby. Unsupervised document clas-
+siﬁcation using sequential information maximization. ACM SIGIR
+Conference , 2002.
+[90] M. Steinbach, G. Karypis, V. Kumar. A Comparison of Document
+Clustering Techniques, KDD Workshop on text mining , 2000.
+[91] Y. Sun, J. Han, J. Gao, Y. Yu. iTopicModel: Information Network
+Integrated Topic Modeling, ICDM Conference , 2009.
+[92] E. M. Voorhees. Implementing Agglomerative Hierarchical Cluster-
+ing for use in Information Retrieval, Technical Report TR86–765,
+Cornell University, Ithaca, NY , July 1986.
+[93] F. Wang, C. Zhang, T. Li. Regularized clustering for documents.
+ACM SIGIR Conference , 2007.
+[94] J. Wilbur, K. Sirotkin. The automatic identiﬁcation of stopwords,
+J. Inf. Sci. , 18: pp. 45–55, 1992.
+[95] P. Willett. Document Clustering using an inverted ﬁle approach.
+Journal of Information Sciences , 2: pp. 223–231, 1980.
+[96] P. Willett. Recent Trends in Hierarchical Document Clustering: A
+Critical Review. Information Processing and Management , 24(5):
+pp. 577–597, 1988.
+[97] W. Xu, X. Liu, Y. Gong. Document Clustering based on non-
+negative matrix factorization, ACM SIGIR Conference , 2003.
+[98] W. Xu, Y. Gong. Document clustering by concept factorization.
+ACM SIGIR Conference , 2004.
+[99] Y. Yang, J. O. Pederson. A comparative study on feature selection
+in text categorization, ACM SIGIR Conference , 1995.
+[100] Y. Yang. Noise Reduction in a Statistical Approach to Text Cat-
+egorization, ACM SIGIR Conference , 1995.
+[101] T. Yang, R. Jin, Y. Chi, S. Zhu. Combining link and content for
+community detection: a discriminative approach. ACM KDD Con-
+ference, 2009.
+[102] L.Yao,D.Mimno,A.McCallum.Eﬃcientmethodsfortopicmodel
+inference on streaming document collections, ACM KDD Confer-
+ence, 2009.
+[103] O. Zamir, O. Etzioni. Web Document Clustering: A Feasibility
+Demonstration, ACM SIGIR Conference , 1998.128 MINING TEXT DATA
+[104] O. Zamir, O. Etzioni, O. Madani, R. M. Karp. Fast and Intuitive
+Clustering of Web Documents, ACM KDD Conference , 1997.
+[105] C. Zhai, Statistical Language Models for Information Retrieval
+(Synthesis Lectures on Human Language Technologies) , Morgan &
+Claypool Publishers, 2008.
+[106] D. Zhang, J. Wang, L. Si. Document clustering with universum.
+ACM SIGIR Conference , 2011.
+[107] J. Zhang, Z. Ghahramani, Y. Yang. A probabilistic model for on-
+line document clustering with application to novelty detection. In
+Saul L., Weiss Y., Bottou L. (eds) Advances in Neural InformationProcessing Letters, 17, 2005.
+[108] T. Zhang, R. Ramakrishnan, M. Livny. BIRCH: An Eﬃcient Data
+Clustering Method for Very Large Databases. ACM SIGMOD Con-
+ference,1996.
+[109] X. Zhang, X. Hu, X. Zhou. A comparative evaluation of diﬀerent
+link types on enhancing document clustering. ACM SIGIR Confer-
+ence, 2008.
+[110] Y. Zhao, G. Karypis. Evaluation of hierarchical clustering algo-
+rithms for document data set, CIKM Conference , 2002.
+[111] Y. Zhao, G. Karypis. Empirical and Theoretical comparisons of se-
+lected criterion functions for document clustering, Machine Learn-
+ing, 55(3), pp. 311–331, 2004.
+[112] S. Zhong. Eﬃcient Streaming Text Clustering. Neural Networks ,
+Volume 18, Issue 5–6, 2005.
+[113] Y. Zhou, H. Cheng, J. X. Yu. Graph Clustering based on Struc-
+tural/Attribute Similarities, VLDB Conference , 2009.
+[114] http://www.lemurproject.org/Chapter 5
+DIMENSIONALITY REDUCTION AND
+TOPIC MODELING:
+FROM LATENT SEMANTIC INDEXING
+TO LATENT DIRICHLET ALLOCATION
+AND BEYOND
+Steven P. Crain
+School of Computational Science and Engineering
+College of Computing
+Georgia Institute of Technology
+s.crain@gatech.edu
+Ke Zhou
+School of Computational Science and Engineering
+College of Computing
+Georgia Institute of Technology
+kzhou@gatech.edu
+Shuang-Hong Yang
+School of Computational Science and Engineering
+College of Computing
+Georgia Institute of Technology
+shy@gatech.edu
+Hongyuan Zha
+School of Computational Science and Engineering
+College of Computing
+Georgia Institute of Technology
+zha@cc.gatech.edu
+© Springer Science+Business Media, LLC 2012 129  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_5,

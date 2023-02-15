@@ -1,0 +1,1354 @@
+Chapter 13
+A SURVEY OF OPINION MINING AND
+SENTIMENT ANALYSIS
+Bing Liu
+University of Illinois at Chicago
+Chicago, IL
+liub@cs.uic.edu
+Lei Zhang
+University of Illinois at Chicago
+Chicago, IL
+lzhang32@gmail.com
+Abstract Sentiment analysis or opinion mining is the computational study of peo-
+ple’s opinions, appraisals, attitudes, and emotions toward entities, in-
+dividuals, issues, events, topics and their attributes. The task is tech-
+nically challenging and practically very useful. For example, businesses
+always want to ﬁnd public or consumer opinions about their products
+and services. Potential customers also want to know the opinions of
+existing users before they use a service or purchase a product.
+With the explosive growth of social media (i.e., reviews, forum dis-
+cussions, blogs and social networks) on the Web, individuals and or-
+ganizations are increasingly using public opinions in these media for
+their decision making. However, ﬁnding and monitoring opinion sites
+on the Web and distilling the information contained in them remains a
+formidable task because of the proliferation of diverse sites. Each site
+typically contains a huge volume of opinionated text that is not always
+easily deciphered in long forum postings and blogs. The average human
+reader will have diﬃculty identifying relevant sites and accurately sum-
+marizing the information and opinions contained in them. Moreover, it
+is also known that human analysis of text information is subject to con-
+siderable biases, e.g., people often pay greater attention to opinions that
+are consistent with their own preferences. People also have diﬃculty,
+owing to their mental and physical limitations, producing consistent
+© Springer Science+Business Media, LLC 2012 415  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_13,416 MINING TEXT DATA
+results when the amount of information to be processed is large. Au-
+tomated opinion mining and summarization systems are thus needed,as subjective biases and mental limitations can be overcome with anobjective sentiment analysis system.
+In the past decade, a considerable amount of research has been done
+in academia [58,76]. There are also numerous commercial companiesthat provide opinion mining services. In this chapter, we ﬁrst deﬁne
+the opinion mining problem. From the deﬁnition, we will see the key
+technical issues that need to be addressed. We then describe various keymining tasks that have been studied in the research literature and theirrepresentative techniques. After that, we discuss the issue of detectingopinion spam or fake reviews. Finally, we also introduce the researchtopic of assessing the utility or quality of online reviews.
+Keywords: opinion mining, sentiment analysis
+1. The Problem of Opinion Mining
+In this ﬁrst section, we deﬁne the opinion mining problem, which
+enablesustoseeastructurefromtheintimidatingunstructuredtextandto provide a uniﬁed framework for the current research. The abstractionconsists of two parts: opinion deﬁnition and opinion summarization [31].
+1.1 Opinion Deﬁnition
+We use the following review segment on iPhone to introduce the prob-
+lem (an id number is associated with each sentence for easy reference):
+“(1) I bought an iPhone a few days ago. (2) It was such a nice phone. (3) The touch
+screen was really cool. (4) The voice quality was clear too. (5) However, my mother was
+mad with me as I did not tell her before I bought it. (6) She also thought the phone was too
+expensive, and wanted me to return it to the shop ...”
+The question is: what we want to mine or extract from this review?
+The ﬁrst thing that we notice is that there are several opinions in this
+review. Sentences (2), (3) and (4) express some positive opinions, whilesentences (5) and (6) express negative opinions or emotions. Then wealso notice that the opinions all have some targets. The target of theopinion in sentence (2) is the iPhone as a whole, and the targets of theopinions in sentences (3) and (4) are “touch screen” and “voice quality”oftheiPhonerespectively. Thetargetoftheopinioninsentence(6)isthe
+priceoftheiPhone, butthetargetoftheopinion/emotioninsentence(5)
+is “me”, not iPhone. Finally, we may also notice the holders of opinions.A Survey of Opinion Mining and Sentiment Analysis 417
+The holder of the opinions in sentences (2), (3) and (4) is the author
+of the review (“I”), but in sentences (5) and (6) it is “my mother”.With this example in mind, we now formally deﬁne the opinion miningproblem. We start with the opinion target.
+In general, opinions can be expressed about anything, e.g., a product,
+a service, an individual, an organization, an event, or a topic, by any
+person or organization. We use the entityto denote the target object
+that has been evaluated. Formally, we have the following:
+Definition 13.1 (Entity) Anentityeis a product, service, person,
+event, organization, or topic. It is associated with a pair, e:(T,W),
+whereTis a hierarchy of components (or parts), sub-components , and
+so on, and Wis a set of attributes of e. Each component or sub-
+component also has its own set of attributes.
+An example of an entity is as follows:
+Example 13.2 A particular brand of cellular phone is an entity, e.g.,
+iPhone. It has a set of components, e.g., battery and screen, and also a
+set of attributes, e.g., voice quality ,size, andweight. The battery com-
+ponent also has its own set of attributes, e.g., battery life , andbattery
+size.
+Based on this deﬁnition, an entity is represented as a tree or hierarchy.
+The root of the tree is the name of the entity. Each non-root nodeis a component or sub-component of the entity. Each link is a part-ofrelation. Each node is associated with a set of attributes. An opinioncan be expressed on any node and any attribute of the node.
+In practice, it is often useful to simplify this deﬁnition due to two
+reasons: First, natural language processing is a diﬃcult task. To eﬀec-
+tively study the text at an arbitrary level of detail as described in the
+deﬁnition is very hard. Second, for an ordinary user, it is too complex touse a hierarchical representation. Thus, we simplify and ﬂatten the treeto two levels and use the term aspectsto denote both components and
+attributes. In the simpliﬁed tree, the root level node is still the entityitself, while the second level nodes are the diﬀerent aspects of the entity.
+Forproductreviewsandblogs, opinionholdersareusuallytheauthors
+of the postings. Opinion holders are more important in news articles
+as they often explicitly state the person or organization that holds anopinion [5, 13, 49]. Opinion holders are also called opinion sources [107].
+There are two main types of opinions: regular opinions andcompara-
+tive opinions . Regular opinions are often referred to simply as opinions
+in the research literature. A comparative opinion expresses a relation ofsimilarities or diﬀerences between two or more entities, and/or a pref-
+erence of the opinion holder based on some of the shared aspects of the418 MINING TEXT DATA
+entities [36, 37]. A comparative opinion is usually expressed using the
+comparative orsuperlative form of an adjective or adverb, although not
+always. The discussion below focuses only on regular opinions. Com-parative opinions will be discussed in Sect. 6. For simplicity, the termsregular opinion andopinionare used interchangeably below.
+An opinion (or regular opinion) is simply a positive or negative sen-
+timent, attitude, emotion or appraisal about an entity or an aspect of
+the entity from an opinion holder. Positive, negative and neutral arecalledopinion orientations (also called sentiment orientations ,semantic
+orientations ,o rpolarities ). We are now ready to deﬁne an opinion [58].
+Definition 13.3 (Opinion) An opinion (or regular opinion) is a quin-
+tuple,(ei,aij,ooijkl,hk,tl), whereeiis the name of an entity, aijis an
+aspect of ei,ooijklis the orientation of the opinion about aspect aijof
+entityei,hkis the opinion holder, and tlis the time when the opinion is
+expressed by hk. The opinion orientation ooijklcan be positive, negative
+or neutral, or be expressed with diﬀerent strength/intensity levels. When
+an opinion is on the entity itself as a whole, we use the special aspectGENERAL to denote it.
+These ﬁve components are essential. Without any of them, it can be
+problematic in general. For example, if one says “ The picture quality
+is great”, and we do not know whose picture quality, the opinion is of
+little use. However, we do not mean that every piece of information isneeded in every application. For example, knowing each opinion holderis not necessary if we want to summarize opinions from a large number
+of people. Similarly, we do not claim that nothing else can be added to
+the quintuple. For example, in some applications the user may want toknow the sex and age of each opinion holder.
+An important contribution of this deﬁnition is that it provides a basis
+for transforming unstructured text to structured data. The quintuplegives us the essential information for a rich set of qualitative and quan-titative analysis of opinions. Speciﬁcally, the quintuple can be regarded
+as a schema for a database table. With a large set of opinion records
+mined from text, database management systems tools can be applied toslice and dice the opinions for all kinds of analyses.
+Objective of opinion mining: Given a collection of opinionated
+documents D, discover all opinion quintuples ( e
+i,aij,ooijkl,hk,tl)i nD.
+To achieve this objective, one needs to perform the following tasks:
+Task 1(entityextractionandgrouping): Extractallentityexpres-
+sions inD, and group synonymous entity expressions into entity
+clusters. Each entity expression cluster indicates a unique entity
+ei.A Survey of Opinion Mining and Sentiment Analysis 419
+Task 2(aspect extraction and grouping): Extract all aspect ex-
+pressionsoftheentities, andgroupaspectexpressionsintoclusters.Eachaspectexpressionclusterofentity e
+iindicatesauniqueaspect
+aij.
+Task 3(opinion holder and time extraction): Extract these pieces
+of information from the text or unstructured data.
+Task 4(aspect sentiment classiﬁcation): Determine whether each
+opinion on an aspect is positive, negative or neutral.
+Task 5(opinion quintuple generation): Produce all opinion quin-
+tuples (ei,aij,ooijkl,hk,tl) expressed in Dbased on the results of
+the above tasks.
+We use an example blog to illustrate these tasks (a sentence id is
+associated with each sentence):
+Example 13.4 (Blog Posting) Posted by: bigXyz on Nov-4-
+2010:(1) I bought a Motorola phone and my girlfriend bought a Nokia
+phone yesterday. (2) We called each other when we got home. (3) The
+voice of my Moto phone was unclear, but the camera was good. (4) Mygirlfriend was quite happy with her phone, and its sound quality. (5) Iwant a phone with good voice quality. (6) So I probably will not keep it.
+Task 1 should extract the entity expressions, “Motorola”, “Nokia”
+and “Moto”, and group “Motorola” and “Moto” together as they repre-sent the same entity. Task 2 should extract aspect expressions “camera”,“voice”, and “sound”, and group “voice” and “sound” together as they
+are synonyms representing the same aspect. Task 3 should ﬁnd the
+holder of the opinions in sentence (3) to be bigXyz (the blog author),and the holder of the opinions in sentence (4) to be bigXyz’s girlfriend.It should also ﬁnd the time when the blog was posted, which is Nov-4-2010. Task 4 should ﬁnd that sentence (3) gives a negative opinionto the voice quality of the Motorola phone, but a positive opinion toits camera. Sentence (4) gives positive opinions to the Nokia phone as
+a whole and also its sound quality. Sentence (5) seemingly expresses
+a positive opinion, but it does not. To generate opinion quintuples forsentence (4), we also need to know what “her phone” is and what “its”refers to. All these are challenging problems. Task 5 should ﬁnally gen-erate the following four opinion quintuples:
+(Motorola, voice
+quality, negative, bigXyz, Nov-4-2010)
+(Motorola, camera, positive, bigXyz, Nov-4-2010)420 MINING TEXT DATA
+(Nokia, GENERAL, positive, bigXyz’s girlfriend, Nov-4-2010)
+(Nokia, voice quality, positive, bigXyz’s girlfriend, Nov-4-2010)
+Before going further, let us discuss two other important concepts related
+to opinion mining and sentiment analysis, i.e., subjectivity andemotion.
+Definition 13.5 (Sentence Subjectivity) An objective sentence
+presents some factual information about the world, while a subjectivesentence expresses some personal feelings, views or beliefs.
+For instance, in the aboveexample, sentences(1) and (2) are objective
+sentences, while all other sentences are subjective sentences. Subjectiveexpressions come in many forms, e.g., opinions, allegations, desires, be-liefs, suspicions, and speculations [87, 103]. Thus, a subjective sentencemay not contain an opinion. For example, sentence (5) in Example 4 issubjective but it does not express a positive or negative opinion aboutanything. Similarly, not every objective sentence contains no opinion.
+For example, “ the earphone broke in two days ”, is an objective sen-
+tence but it implies a negative opinion. There is some confusion amongresearchers to equate subjectivity with opinion. As we can see, the con-cepts of subjective sentences and opinion sentences are not the same, al-though they have a large intersection. The task of determining whethera sentence is subjective or objective is called subjectivity classiﬁcation[105], which we will discuss in Sect. 3.
+Definition 13.6 (Emotion) Emotions are our subjective feelings and
+thoughts.
+According to [80], people have 6 primary emotions, i.e., love, joy, sur-
+prise, anger, sadness, and fear, which can be sub-divided into manysecondary and tertiary emotions. Each emotion can also have diﬀerentintensities. The strengths of opinions are related to the intensities ofcertain emotions, e.g., joy, anger, and fear, as these sentences show: (1)“I am very angry with this shop,” (2) “I am so happy with my iPhone,”
+and (3) “with the current economic condition, I fear that I will lose my
+job.” However, the concepts of emotions and opinions are not equiva-lent. Many opinion sentences express no emotion (e.g., “the voice ofthis phone is clear”), which are called rational evaluation sentences ,a n d
+many emotion sentences give no opinion, e.g., “I am so surprised to seeyou.”
+1.2 Aspect-Based Opinion Summary
+Most opinion mining applications need to study opinions from a large
+number of opinion holders. One opinion from a single person is usuallyA Survey of Opinion Mining and Sentiment Analysis 421
+not suﬃcient for action. This indicates that some form of summary of
+opinions is desirable. Opinion quintuples deﬁned above provide an ex-cellent source of information for generating both qualitative and quan-
+titative summaries. A common form of summary is based on aspects,
+and is called aspect-based opinion summary (orfeature-based opinion
+summary ) [31, 60]. Below, we use an example to illustrate this form of
+summary, which is widely used in industry.
+Example 13.7 Assume we summarize all the reviews of a particular
+cellular phone, cellular phone 1. The summary looks like that in Fig.13.1, which was proposed in [31] and is called a structured summary.In the ﬁgure, GENERAL represents the phone itself (the entity). 125
+reviews expressed positive opinions about the phone and 7 expressed neg-
+ative opinions. Voice quality andsizeare two product aspects. 120
+reviews expressed positive opinions about the voice quality, and only 8
+reviews expressed negative opinions. The <individual review sentences >
+link points to the speciﬁc sentences and/or the whole reviews that givethe positive or negative opinions. With such a summary, the user caneasily see how existing customers feel about the phone. If he/she is in-terested in a particular aspect, he/she can drill down by following the
+<individual review sentences >link to see why existing customers like it
+and/or dislike it.
+Cellular phone 1:
+Aspect: GENERAL
+Positive: 125 <individual review sentences>
+Negative: 7 <individual review sentences>
+Aspect: Voice quality
+Positive: 120 <individual review sentences>
+Negative: 8 <individual review sentences>
+...
+Figure 13.1. An aspect-based opinion summary
+The aspect-based summary in Fig. 13.1 can be visualized using a
+bar chart and opinions on multiple products can also be compared in a
+visualization (see [60]).
+Researchers have also studied opinion summarization in the tradition
+fashion, e.g., producing a short text summary [4, 11, 51, 89, 91]. Such a
+summary gives the reader a quick overview of what people think abouta product or service. A weakness of such a text-based summary is that
+it is not quantitative but only qualitative, which is usually not suitable422 MINING TEXT DATA
+for analytical purposes. For example, a traditional text summary may
+say “Most people do not like this product ”. However, a quantitative sum-
+mary may say that 60% of the people do not like this product and 40%
+of them like it. In most opinion mining applications, the quantitative
+side is crucial just like in the traditional survey research. In survey re-search, aspect-based summaries displayed as bar charts or pie charts arecommonly used because they give the user a concise, quantitative andvisual view. Recently, researchers also tried to produce text summariessimilar to that in Fig. 13.1 but in a more readable form [73, 81, 96].
+2. Document Sentiment Classiﬁcation
+We are now ready to discuss some main research topics of opinion
+mining. This section focuses on sentiment classiﬁcation , which has been
+studied extensively in the literature (see a survey in [76]). It classiﬁesan opinion document (e.g., a product review) as expressing a positive ornegative opinion or sentiment. The task is also commonly known as thedocument-level sentiment classiﬁcation because it considers the whole
+document as the basic information unit.
+Definition 13.8 (Document Level Sentiment) Given an opinion-
+ated document devaluating an entity e, determine the opinion orienta-
+tionooone, i.e., determine ooon aspect GENERAL in the quintuple
+(e,GENERAL,oo,h,t) .e,h, andtare assumed known or irrelevant.
+An important assumption about sentiment classiﬁcation is as follows:
+Assumption: Sentiment classiﬁcation assumes that the opinion docu-
+mentd(e.g., a product review) expresses opinions on a single entity e
+and the opinions are from a single opinion holder h.
+This assumption holds for customer reviews of products and services
+because each such review usually focuses on a single product and is
+written by a single reviewer. However, it may not hold for a forum andblog posting because in such a posting the author may express opinions
+on multiple products, and compare them using comparative sentences.
+Most existing techniques for document-level sentiment classiﬁcation
+are based on supervised learning, although there are also some unsuper-
+vised methods. We give an introduction to them below.
+2.1 Classiﬁcation based on Supervised Learning
+Sentiment classiﬁcation obviously can be formulated as a supervised
+learningproblemwiththreeclasses,positive,negativeandneutral. Train-ing and testing data used in the existing research are mostly product re-
+views, which is not surprising due to the above assumption. Since eachA Survey of Opinion Mining and Sentiment Analysis 423
+review already has a reviewer-assigned rating (e.g., 1 to 5 stars), train-
+ing and testing data are readily available. For example, a review with 4or 5 stars is considered a positive review, a review with 1 or 2 stars isconsidered a negative review and a review with 3 stars is considered aneutral review.
+Any existing supervised learning methods can be applied to sentiment
+classiﬁcation, e.g., naive Bayesian classiﬁcation, and support vector ma-
+chines (SVM). Pang et al. [78] took this approach to classify moviereviews into two classes, positive and negative. It was shown that us-ing unigrams (a bag of individual words) as features in classiﬁcationperformed well with either naive Bayesian or SVM.
+Subsequentresearchusedmanymorefeaturesandtechniquesinlearn-
+ing [76]. As most machine learning applications, the main task of sen-
+timent classiﬁcation is to engineer an eﬀective set of features. Some of
+the current features are listed below.
+Terms and their frequency: These features are individual words
+or word n-grams and their frequency counts. In some cases, wordpositions may also be considered. The TF-IDF weighting schemefrominformationretrievalmaybeappliedtoo. Thesefeatureshavebeen shown quite eﬀective in sentiment classiﬁcation.
+Part of s peech:It was found in many researches that adjectives
+are important indicators of opinions. Thus, adjectives have beentreated as special features.
+Opinion words and phrases: Opinion words are words that are
+commonly used to express positive or negative sentiments. For ex-
+ample,beautiful, wonderful, good, and amazing are positive opin-
+ion words, and bad, poor, and terrible are negative opinion words.
+Although many opinion words are adjectives and adverbs, nouns(e.g.,rubbish, junk, and crap ) and verbs (e.g., hateandlike) can
+also indicate opinions. Apart from individual words, there are alsoopinion phrases and idioms, e.g., cost someone an arm and a leg .
+Opinion words and phrases are instrumental to sentiment analysis
+for obvious reasons.
+Negations: Clearly, negation words are important because their
+appearances often change the opinion orientation. For example,the sentence “ I don’t like this camera ” is negative. However, nega-
+tion words must be handled with care because not all occurrences
+of such words mean negation. For example, “ not”i n“not only ...
+but also” does not change the orientation direction (see opinion
+shifters in Sect. 5.1).424 MINING TEXT DATA
+Syntactic dependency: Word dependency based features gener-
+ated from parsing or dependency trees are also tried by severalresearchers.
+Instead of using a standard machine learning method, researchers have
+also proposed several custom techniques speciﬁcally for sentiment clas-siﬁcation, e.g., the score function in [15] based on words in positive andnegative reviews. In [74], feature weighting schemes are used to enhanceclassiﬁcation accuracy.
+Manually labeling training data can be time-consuming and label-
+intensive. To reduce the labeling eﬀort, opinion words can be utilized
+in the training procedure. In [95], Tan et al. used opinion words tolabel a portion of informative examples and then learn a new super-vised classiﬁer based on labeled ones. A similar approach is also used in[86]. In addition, opinion words can be utilized to increase the sentimentclassiﬁcation accuracy. In [68], Melville et al. proposed a framework to
+incorporate lexical knowledge in supervised learning to enhance accu-
+racy.
+Apart from classiﬁcation of positive or negative sentiments, research
+has also been done on predicting the rating scores (e.g., 1-5 stars) ofreviews [77]. In this case, the problem is formulated as regression sincethe rating scores are ordinal. Another interesting research directionis transfer learning or domain adaptation as it has been shown that
+sentiment classiﬁcation is highly sensitive to the domain from which
+the training data is extracted. A classiﬁer trained using opinionateddocuments from one domain often performs poorly when it is applied ortested on opinionated documents from another domain. The reason isthat words and even language constructs used in diﬀerent domains forexpressing opinions can be quite diﬀerent. To make matters worse, thesamewordinonedomainmaymeanpositive, butinanotherdomainmay
+mean negative. Thus, domain adaptation is needed. Existing research
+has used labeled data from one domain and unlabeled data from thetarget domain and general opinion words as features for adaptation [2,7, 75, 112].
+2.2 Classiﬁcation based on Unsupervised
+Learning
+It is not hard to imagine that opinion words and phrases are the dom-
+inating indicators for sentiment classiﬁcation. Thus, using unsupervisedlearning based on such words and phrases would be quite natural. Forexample, the method in [93] uses known opinion words for classiﬁcation,
+while [100] deﬁnes some phrases which are likely to be opinionated. Be-A Survey of Opinion Mining and Sentiment Analysis 425
+low, we give a description of the algorithm in [100], which consists of
+three steps:Step 1: It extracts phrases containing adjectives or adverbs as adjec-
+tives and adverbs are good indicators of opinions. However, although anisolated adjective may indicate opinion, there may be insuﬃcient con-text to determine its opinion orientation (called semantic orientation in
+[100]). For example, the adjective “ unpredictable ” may have a negative
+orientation in an automotive review, in such a phrase as “ unpredictable
+steering”, but it could have a positive orientation in a movie review, in
+a phrase such as “ unpredictable plot ”. Therefore, the algorithm extracts
+two consecutive words, where one member of the pair is an adjective oradverb, and the other is a context word.
+Two consecutive words are extracted if their POS tags conform to
+any of the patterns in Table 13.1. For example, the pattern in line 2
+means that two consecutive words are extracted if the ﬁrst word is anadverb and the second word is an adjective, but the third word cannotbe a noun. NNP and NNPS are avoided so that the names of entities inthe review cannot inﬂuence the classiﬁcation.
+Example 13.9 In the sentence “This camera produces beautiful pic-
+tures”, ”beautiful pictures” will be extracted as it satisﬁes the ﬁrst pat-tern.
+Step 2: It estimates the semantic orientation of the extracted phrases
+using the pointwise mutual information (PMI) measure given in Equa-
+tion 13.1:
+PMI(term
+1,term2)=l o g2/parenleftbiggPr(term1∧term2)
+Pr(term1)·Pr(term2)/parenrightbigg
+(13.1)
+Here,Pr(term1∧term2) is the co-occurrence probability of term1and
+term2,a n dPr(term1)·Pr(term2) gives the probability that the two
+terms co-occur if they are statistically independent. The ratio betweenPr(term
+1∧term2)a n dPr (term1)·Pr(term2) is thus a measure of the
+degree of statistical dependence between them. The log of this ratio isthe amount of information that we acquire about the presence of one of
+the words when we observe the other. The semantic/opinion orientation
+(SO) of a phrase is computed based on its association with the positivereference word “ excellent” and its association with the negative reference
+word “poor”:
+SO(phrase)=PMI (phrase,“excellent
+/prime/prime)−PMI(phrase,“poor/prime/prime)
+(13.2)426 MINING TEXT DATA
+First Word Second Word Third Word
+(Not Extracted)
+1JJ NN or NNS anything
+2R B ,R B R ,o rR B S JJ not NN nor NNS
+3JJ JJ not NN nor NNS
+4NN or NNS JJ not NN nor NNS
+5R B ,R B R ,o rR B S VB, VBD, VBN, or VBG anything
+Table 13.1. Patterns of tags for extracting two-word phrases
+The probabilities are calculated by issuing queries to a search engine
+and collecting the number of hits. For each search query, a search engineusually gives the number of relevant documents to the query, which isthe number of hits. Thus, by searching the two terms together andseparately, we can estimate the probabilities in Equation 13.1. Theauthor of [100] used the AltaVista search engine because it has a NEARoperator, which constrains the search to documents that contain the
+words within ten words of one another in either order. Let hits(query)
+be the number of hits returned. Equation 13.2 can be rewritten asfollows:
+SO(phrase)=l o g
+2/parenleftbigghits(phrase NEAR “excellent”) hits(“poor”)
+hits(phrase NEAR “poor”) hits(“excellent/prime/prime)/parenrightbigg
+(13.3)
+To avoid division by 0, 0.01 is added to the hits.Step 3: Given a review, the algorithm computes the average SO of all
+phrases in the review, and classiﬁes the review as recommended if theaverage SO is positive, not recommended otherwise.
+Final classiﬁcation accuracies on reviews from various domains range
+from 84% for automobile reviews to 66% for movie reviews.
+To summarize, we can see that the main advantage of document level
+sentiment classiﬁcation is that it provides a prevailing opinion on anentity, topic or event. The main shortcomings are that it does not givedetails on what people liked and/or disliked and it is not easily appli-cable to non-reviews, e.g., forum and blog postings, because many suchpostings evaluate multiple entities and compare them.
+3. Sentence Subjectivity and Sentiment
+Classiﬁcation
+Naturally the same document-level sentiment classiﬁcation techniques
+can also be applied to individual sentences. The task of classifying a sen-
+tence as subjective or objective is often called subjectivity classiﬁcationA Survey of Opinion Mining and Sentiment Analysis 427
+in the existing literature [30, 87, 88, 106, 109, 110, 113]. The resulting
+subjective sentences are also classiﬁed as expressing positive or negativeopinions, which is called sentence-level sentiment classiﬁcation .
+Definition 13.10 Given a sentence s, two sub-tasks are performed:
+1Subjectivityclassiﬁcation: Determine whether s is a subjective sen-
+tence or an objective sentence,
+2Sentence-levelsentimentclassiﬁcation: If s is subjective, determine
+whether it expresses a positive, negative or neutral opinion.
+Notice that the quintuple ( e,a,oo,h,t ) is not used in deﬁning the prob-
+lem here because sentence-level classiﬁcation is often an intermediatestep. In most applications, one needs to know what entities or aspects
+of the entities are the targets of opinions. Knowing that some sentences
+have positive or negative opinions but not about what, is of limited use.However, the two sub-tasks are still useful because (1) it ﬁlters out thosesentences which contain no opinions, and (2) after we know what enti-ties and aspects of the entities are talked about in a sentence, this stepcan help us determine whether the opinions about the entities and theiraspects are positive or negative.
+Most existing researches study both problems, although some of them
+focus only on one. Both problems are classiﬁcation problems. Thus, tra-ditional supervised learning methods are again applicable. For example,one of the early works reported in [104] performed subjectivity classi-ﬁcation using the naive Bayesian classiﬁer. Subsequent researches alsoused other learning algorithms.
+Much of the research on sentence-level sentiment classiﬁcation makes
+the following assumption:
+Assumption: The sentence expresses a single opinion from a single
+opinion holder.This assumption is only appropriate for simple sentences with a singleopinion, e.g., “ The picture quality of this camera is amazing .” However,
+for compound and complex sentences, a single sentence may expressmore than one opinion. For example, the sentence, “ The picture quality
+of this camera is amazing and so is the battery life, but the viewﬁnder is
+too small for such a great camera ”, expresses both positive and negative
+opinions(ithasmixedopinions). For“ picture quality ”and“battery life ”,
+the sentence is positive, but for “ viewﬁnder ”, it is negative. It is also
+positive for the camera as a whole (i.e., the GENERAL aspect).
+Many papers have been published on subjectivity classiﬁcation and
+sentence-level sentiment classiﬁcation. In [113], for subjectivity classi-
+ﬁcation, it applied supervised learning. For sentiment classiﬁcation of428 MINING TEXT DATA
+eachsubjectivesentence, itusedasimilarmethodtothatinSect. 2.2but
+with many more seed words, and the score function was log-likelihoodratio. The same problem was also studied in [30] considering gradable
+adjectives, and in [23] using semi-supervised learning. In [48-50], re-
+searchers also built models to identify some speciﬁc types of opinions.
+Aswementionedearlier, sentence-levelclassiﬁcationisnotsuitablefor
+compound and complex sentences. It was pointed out in [109] that notonly a single sentence may contain multiple opinions, but also both sub-jective and factual clauses. It is useful to pinpoint such clauses. It is alsoimportanttoidentifythestrengthofopinions. Astudyofautomaticsen-
+timent classiﬁcation was presented to classify clauses of every sentence
+by thestrength of the opinions being expressed in individual clauses,
+down to four levels deep ( neutral,low,medium,a n dhigh). The strength
+ofneutralindicates the absence of opinion or subjectivity. Strength clas-
+siﬁcation thus subsumes the task of classifying a sentence as subjectiveversus objective. In [108], the problem was studied further using super-vised learning by considering contextual sentiment inﬂuencers such as
+negation (e.g., notandnever) and contrary (e.g., butandhowever). A
+list of inﬂuencers can be found in [82]. However, in many cases, identify-ing only clauses are insuﬃcient because the opinions can be embedded inphrases, e.g., “ Apple is doing very well in this terrible economy. ” In this
+sentence, the opinion on “ Apple” is clearly positive but on “ economy”i t
+is negative.
+Besidesanalyzingopinionsentencesinreviews, researchhasbeendone
+in threaded discussions, which includes forum discussions, emails, and
+newsgroups. In threaded discussions, people not only express their opin-ions on a topic but also interact with each other. However, the discus-sions could be highly emotional and heated with many emotional state-ments between participants. In [115], Zhai et al. proposed a method toidentify those evaluative sentences from forum discussions, which only
+express people’s opinions on entities or topics and their diﬀerent aspects.
+In [28], Hassan et al. proposed an approach to ﬁnd sentences with atti-
+tudes of participants toward one another. That is, it predicts whether asentence contains an attitude toward a text recipient or not.
+Finally, we should bear in mind that not all subjective sentences have
+opinions and those that do form only a subset of opinionated sentences.Many objective sentences can imply opinions too. Thus, to mine opin-ions from text one needs to mine them from both subjective and objec-
+tive sentences.A Survey of Opinion Mining and Sentiment Analysis 429
+4. Opinion Lexicon Expansion
+In the preceding sections, we mentioned that opinion words are em-
+ployed in many sentiment classiﬁcation tasks. We now discuss how suchwords are generated. In the research literature, opinion words are alsoknown as opinion-bearing words or sentiment words. Positive opinionwords are used to express some desired states while negative opinion
+words are used to express some undesired states. Examples of positive
+opinion words are: beautiful,wonderful ,good,a n damazing. Examples of
+negativeopinion wordsare bad,poor,a n dterrible. Apart fromindividual
+words, there are also opinion phrases and idioms, e.g., cost someone an
+arm and a leg . Collectively, they are called the opinion lexicon .T h e y
+are instrumental for opinion mining for obvious reasons.
+In order to compile or collect the opinion word list, three main ap-
+proaches have been investigated: manual approach, dictionary-based ap-
+proach, and corpus-based approach. The manual approach is very time-consuming and thus it is not usually used alone, but combined withautomated approaches as the ﬁnal check because automated methodsmake mistakes. Below, we discuss the two automated approaches.
+4.1 Dictionary based approach
+One of the simple techniques in this approach is based on bootstrap-
+ping using a small set of seed opinion words and an online dictionary,
+e.g., WordNet [69] or thesaurus[71]. The strategy is to ﬁrst collect a
+small set of opinion words manually with known orientations, and thento grow this set by searching in the WordNet or thesaurus for theirsynonyms and antonyms. The newly found words are added to the seedlist. The next iteration starts. The iterative process stops when no morenew words are found. This approach is used in [31, 49]. After the pro-cess completes, manual inspection can be carried out to remove and/or
+correct errors. Researchers have also used additional information (e.g.,
+glosses) in WordNet and additional techniques (e.g., machine learning)to generate better lists [1, 19, 20, 45]. Several opinion word lists havebeen produced [17, 21, 31, 90, 104].
+Thedictionarybasedapproachandtheopinionwordscollectedfromit
+have a major shortcoming. The approach is unable to ﬁnd opinion wordswith domain and context speciﬁc orientations, which is quite common.
+For example, for a speaker phone, if it is quiet, it is usually negative.
+However, foracar, ifitisquiet, itispositive. Thecorpus-basedapproachcan help deal with this problem.430 MINING TEXT DATA
+4.2 Corpus-based approach and sentiment
+consistency
+The methods in the corpus-based approach rely on syntactic or co-
+occurrence patterns and also a seed list of opinion words to ﬁnd otheropinion words in a large corpus. One of the key ideas is the one pro-posed by Hazivassiloglou and McKeown [29]. The technique starts witha list of seed opinion adjectives, and uses them and a set of linguisticconstraints or conventions on connectives to identify additional adjec-tive opinion words and their orientations. One of the constraints is
+about the conjunction AND, which says that conjoined adjectives usu-
+ally have the same orientation. For example, in the sentence, “ This car
+is beautiful and spacious ,” if “beautiful” is known to be positive, it can
+be inferred that “ spacious” is also positive. This is so because people
+usually express the same opinion on both sides of a conjunction. Thefollowingsentenceisratherunnatural, ”Thiscarisbeautifulanddiﬃcultto drive”. If it is changed to ”This car is beautiful but diﬃcult to drive”,
+it becomes acceptable. Rules or constraints are also designed for other
+connectives, OR, BUT, EITHER-OR, and NEITHER-NOR. This ideais called sentiment consistency . Of course, in practice it is not always
+consistent. Learning is applied to a large corpus to determine if twoconjoined adjectives are of the same or diﬀerent orientations. Same anddiﬀerent-orientationlinksbetweenadjectivesformagraph. Finally, clus-tering is performed on the graph to produce two sets of words: positive
+and negative. In [46], Kanayama and Nasukawa expanded this approach
+by introducing the idea of intra-sentential (within a sentence) and inter-sentential (between neighboring sentences) sentiment consistency (calledcoherency in [46]). The intra-sentential consistency is similar to that in[29]. Inter-sentential consistency applies the idea to neighboring sen-tences. That is, the same opinion orientation (positive or negative) isusually expressed in a few consecutive sentences. Opinion changes are
+indicated by adversative expressions such as butandhowever. Some
+criteria to determine whether to add a word to the positive or negativelexicon are also proposed. This study was based on Japanese text. InSect. 5.4, a related but also quite diﬀerent method will be described.Other related work includes [43, 44].
+In [17], Ding et al. explored the idea of intra-sentential and inter-
+sentential sentiment consistency further. Instead of ﬁnding domain de-
+pendent opinion words, they showed that the same word could indicate
+diﬀerentorientationsindiﬀerentcontextseveninthesamedomain. Thisfact was also clearly depicted by the basic rules of opinions in Sect. 5.2.For example, in the digital camera domain, the word “ long” expressesA Survey of Opinion Mining and Sentiment Analysis 431
+opposite opinions in the two sentences: “ The battery life is long ” (pos-
+itive) and “ The time taken to focus is long ” (negative). Thus, ﬁnding
+domain dependent opinion words is insuﬃcient. They then proposedto consider both possible opinion words and aspects together, and usethe pair (aspect, opinion
+word) as the opinion context, e.g., the pair
+(“battery life ”, “long”). Their method thus determines opinion words
+and their orientations together with the aspects that they modify. The
+above rules about connectives are still applied. The work in [24] adoptedthe same context deﬁnition but used it for analyzing comparative sen-tences. In [63], Lu et al. proposed an optimization framework to learnaspect-dependent sentiments in opinion context based on integer linearprogramming [14]. In fact, the method in [94, 100] can also be consid-ered as a method for ﬁnding context speciﬁc opinions, but it does not
+use the sentiment consistency idea. Its opinion context is based on syn-
+tactic POS patterns rather than aspects and opinion words that modifythem. All these context deﬁnitions, however, are still insuﬃcient as thebasic rules of opinions discussed in Sect. 5.2 show, i.e., many contextscan be more complex, e.g., consuming a large amount of resources. In[9], the problem of extracting opinion expressions with any number ofwords was studied. The Conditional Random Fields (CRF) method [52]
+was used as a sequence learning technique for extraction. In [84, 85],
+a double-propagation method was proposed to extraction both opinionwords and aspects together. We describe it in Sect. 5.4.
+Using the corpus-based approach alone to identify all opinion words,
+however, is not as eﬀective as the dictionary-based approach because itis hard to prepare a huge corpus to cover all English words. However,as we mentioned above, this approach has a major advantage that the
+dictionary-based approach does not have. It can help ﬁnd domain and
+context speciﬁc opinion words and their orientations using a domaincorpus. Finally, we should realize that populating an opinion lexicon(domain dependent or not) is diﬀerent from determining whether a wordor phrase is actually expressing an opinion and what its orientation isin a particular sentence. Just because a word or phrase is listed in anopinion lexicon does not mean that it actually is expressing an opinion in
+a sentence. For example, in the sentence, “ I am looking for a good health
+insurance ”, “good” does not express either a positive or negative opinion
+on any particular insurance. The same is true for opinion orientation.We should also remember that opinion words and phrases are not theonly expressions that bear opinions. There are many others as we willsee in Sect. 5.2.432 MINING TEXT DATA
+5. Aspect-Based Sentiment Analysis
+Although classifying opinionated texts at the document level or at
+the sentence level is useful in many cases, it does not provide the neces-sary detail needed for many other applications. A positive opinionateddocument about a particular entity does not mean that the author haspositive opinions on all aspects of the entity. Likewise, a negative opin-
+ionated document does not mean that the author dislikes everything.
+In a typical opinionated document, the author writes both positive andnegative aspects of the entity, although the general sentiment on theentity may be positive or negative. Document and sentence sentimentclassiﬁcation does not provide such information. To obtain these details,we need to go to the aspect level. That is, we need the full model of Sect.1.1, i.e., aspect-basedopinionmining. Insteadoftreatingopinionmining
+simply as a classiﬁcation of sentiments, aspect-based sentiment analysis
+introduces a suite of problems which require deeper natural languageprocessing capabilities, and also produce a richer set of results.
+Recall that, at the aspect level, the mining objective is to discover
+every quintuple ( e
+i,aij,ooijkl,hk,tl) in a given document d. To achieve
+the objective, ﬁve tasks need to be performed. This section mainlyfocuses on the following two core tasks and they have also been studied
+more extensively by researchers (in Sect. 7, we will brieﬂy discuss some
+other tasks):
+1Aspect extraction: Extract aspects that have been evaluated.
+For example, in the sentence, “ The picture quality of this camera is
+amazing,” the aspect is “ picture quality ” of the entity represented
+by “this camera ”. Note that “ this camera ” does not indicate the
+GENERAL aspect because the evaluation is not about the cameraas a whole, but about its picture quality. However, the sentence“I love this camera ” evaluates the camera as a whole, i.e., the
+GENERALaspectoftheentityrepresentedby“ this camera ”. Bear
+in mind whenever we talk about an aspect, we must know which
+entity it belongs to. In our discussion below, we often omit the
+entity just for simplicity of presentation.
+2Aspect sentiment classiﬁcation: Determine whether the opin-
+ions on diﬀerent aspects are positive, negative or neutral. In theﬁrst example above, the opinion on the “ picture quality ” aspect is
+positive, andinthesecondexample, theopinionontheGENERALaspect is also positive.A Survey of Opinion Mining and Sentiment Analysis 433
+5.1 Aspect Sentiment Classiﬁcation
+Westudythesecondtaskﬁrst, determiningtheorientationofopinions
+expressed on each aspect in a sentence. Clearly, the sentence-level andclause-level sentiment classiﬁcation methods discussed in Sect. 3 areusefulhere. Thatis, theycanbeappliedtoeachsentenceorclausewhichcontainssomeaspects. Theaspectsin it will taketheopinion orientation
+of the sentence or clause. However, these methods have diﬃculty dealing
+with mixed opinions in a sentence and opinions that need phrase levelanalysis, e.g., “ Apple is doing very well in this terrible economy. ”Clause-
+level analysis also needs techniques to identify clauses which itself isa challenging task, especially with informal text of blogs and forumdiscussions, which is full of grammatical errors. Here, we describe alexicon-based approach to solving the problem [17, 31], which tries to
+avoid these problems and has been shown to perform quite well. The
+extension of this method to handling comparative sentences is discussedin Sect. 6. In the discussion below, we assume that entities and theiraspects are known. Their extraction will be discussed in Sect. 5.3, 5.4,and 7.
+The lexicon-based approach basically uses an opinion lexicon, i.e., a
+list ofopinion words andphrases, and a set of rules to determine the
+orientations of opinions in a sentence [17, 31]. It also considers opinion
+shifters and but-clauses. The approach works as follows:
+1Mark opinion words and phrases: Given a sentence that con-
+tains one or more aspects, this step marks all opinion words and
+phrases in the sentence. Each positive word is assigned the opinionscore of +1, each negative word is assigned the opinion score of -1.
+2Handle opinion shifters: Opinion shifters (also called valence
+shifters [82]) are words and phrases that can shift or change opin-
+ion orientations. Negation words like not, never, none, nobody,nowhere, neither and cannot are the most common type. Addi-tionally, sarcasm changes orientation too, e.g., “ What a great car,
+it failed to start the ﬁrst day .” Although it is easy to recognize such
+shifters manually, spotting them and handling them correctly inactual sentences by an automated system is by no means easy.
+Furthermore, not every appearance of an opinion shifter changes
+the opinion orientation, e.g., “ not only ...but also”. Such cases
+need to be dealt with carefully.
+3Handle but-clauses: In English, butmeans contrary. A sen-
+tence containing butis handled by applying the following rule: the
+opinion orientation before butand after butare opposite to each434 MINING TEXT DATA
+other if the opinion on one side cannot be determined. As in the
+case of negation, not every butmeans contrary, e.g., “ not only ...
+but also”. Such non-but phrases containing “ but”a l s on e e dt ob e
+considered separately. Finally, we should note that contrary words
+and phrases do not always indicate an opinion change, e.g., “ Car-x
+is great, but Car-y is better ”. Such cases need to be identiﬁed and
+dealt with separately.
+4Aggregating opinions: This step applies an opinion aggregation
+function to the resulting opinion scores to determine the ﬁnal ori-
+entation of the opinion on each aspect in the sentence. Let the
+sentence be s, which contains a set of aspects {a1...am}and a set
+of opinion words or phrases {ow1...own}with their opinion scores
+obtained from steps 1, 2 and 3. The opinion orientation for eachaspecta
+iinsis determined by the following opinion aggregation
+function:
+score(ai,s)=/summationdisplay
+owj∈sowj·oo
+dist(owj,ai)(13.4)
+whereowjis an opinion word/phrase in s,dist(owj,ai) is the dis-
+tance between aspect aiand opinion word owjins.owj.oois the
+opinion score of owi. The multiplicative inverse is used to give
+lower weights to opinion words that are far away from aspect ai.
+If the ﬁnal score is positive, then the opinion on aspect aiins
+is positive. If the ﬁnal score is negative, then the opinion on theaspect is negative. It is neutral otherwise.
+This simple algorithm can perform quite well in many cases, but it is
+not suﬃcient in others. One main shortcoming is that opinion wordsand phrases do not cover all types of expressions that convey or implyopinions. There are in fact many other possible opinion bearing expres-
+sions. Most of them are also harder to deal with. Below, we list some of
+them, which we call the basic rules of opinions [58, 59].
+5.2 Basic Rules of Opinions
+An opinion rule expresses a concept that implies a positive or negative
+opinion [58, 59]. In actual sentences, the concept can be expressed inmany diﬀerent ways in natural language. We present these rules usinga formalism that is similar to the BNF form. The top level rules are asfollows:A Survey of Opinion Mining and Sentiment Analysis 435
+1. POSITIVE ::= P
+2. |PO
+3. |orientation shifter N
+4. |orientation shifter NE
+5. NEGATIVE ::= N6. |NE
+7. |orientation shifter P
+8. |orientation shifter PO
+The non-terminals P and PO represent two types of positive opinion ex-
+pressions . The non-terminal N and NE represent two types of negative
+opinion expressions . ‘opinion shifter N’ and ‘opinion shifter NE’ repre-
+sent the negation of N and NE respectively, and ‘opinion shifter P’ and‘opinion shifter PO’ represent the negation of P and PO respectively.
+We can see that these are not expressed in the actual BNF form but a
+pseudo-language stating some concepts. The reason is that we are un-abletospecifythempreciselybecauseforexample, inanactualsentence,the opinion shifter may be in any form and can appear before or afterN, NE, P, or PO. POSITIVE and NEGATIVE are the ﬁnal orientationsused to determine the opinions on the aspects in a sentence.
+We now deﬁne N, NE, P and PO, which contain no opinion shifters.
+Theseopinionexpressionsaregroupedinto6conceptualcategoriesbased
+on their characteristics:
+1Opinion word or phrase: This is the most commonly used cate-
+gory, in which opinion words or phrases alone can imply positive
+or negative opinions on aspects, e.g., “ great”i n“The picture qual-
+ity is great ”. These words or phrases are reduced to P and N.
+9. P ::= a positive opinion word or phrase
+10. N ::= an negative opinion word or phrase
+Again, the details of the right-hand-sides are not speciﬁed (which
+also apply to all the subsequent rules). It is assumed that a set of
+positive and negative opinion words/phrases exist for an applica-
+tion.
+2Desirable or undesirable fact: In this case, it is a factual statement,
+and the description uses no opinion words, but in the context ofthe entity, the description implies a positive or negative opinion.
+For example, the sentence “ After my wife and I slept on it for two436 MINING TEXT DATA
+weeks, I noticed a mountain in the middle of the mattress ” indi-
+cates a negative opinion about the mattress. However, the word”mountain” itself does not carry any opinion. Thus, we have the
+following two rules:
+11. P ::= desirable fact
+12. N ::= undesirable fact
+3High, low, increased and decreased quantity of a positive or neg-
+ative potential item: For some aspects, a small value/quantity
+of them is negative, and a large value/quantity of them is posi-tive, e.g., “ The battery life is short ”a n d“The battery life is long. ”
+We call such aspects positive potential items (PPI) . Here “battery
+life” is a positive potential item. For some other aspects, a small
+value/quantity of them is positive, and a large value/quantity of
+them is negative, e.g., “ This phone costs a lot ”a n d“Sony reduced
+the price of the camera. ” We call such aspects negative potential
+items (NPI) .“cost”a n d“price” are negative potential items. Both
+positive and negative potential items themselves express no opin-ions, i.e., “ battery life ”a n d“cost”, but when they are modiﬁed by
+quantity adjectives or quantity change words or phrases, positiveor negative opinions are implied.
+13. PO ::= no, low, less or decreased quantity of NPI
+14. |large, larger, or increased quantity of PPI
+15. NE ::= no, low, less, or decreased quantity of PPI16. |large, larger, or increased quantity of NPI
+17. NPI ::= a negative potential item18. PPI ::= a positive potential item
+4Decreased and increased quantity of an opinionated item (N and
+P):This set of rules is similar to the negation rules 3, 4, 7, and
+8 above. Decreasing or increasing the quantity associated with an
+opinionated item (often nouns and noun phrases) can change the
+orientation of the opinion. For example, in the sentence“ This drug
+reduced my pain signiﬁcantly ”, “pain” is a negative opinion word,
+and the reduction of “ pain” indicates a desirable eﬀect of the drug.
+Hence, decreased pain implies a positive opinion on the drug. Theconcept of decreasing also extends to removal and disappearance,e.g., “My pain has disappeared after taking the drug. ”A Survey of Opinion Mining and Sentiment Analysis 437
+19. PO ::= less or decreased N
+20. |more or increased P
+21. NE ::= less or decreased P
+22. |more or increased N
+Rules 20 and 22 may not be needed as there is no change of opinion
+orientation, but they can change the opinion intensity. The key
+diﬀerence between this set of rules and the rules in the previous
+category is that no opinion words or phrases are involved in theprevious category.
+5Deviation from the norm or some desired value range: In some
+application domains, the value of an aspect may have a desiredrange or norm. If it is above or below the normal range, it isnegative, e.g., “ This drug causes low (or high) blood pressure ”a n d
+“This drug causes my blood pressure to reach 200. ” Notice that no
+opinion word appeared in these sentences.
+23. PO ::= within the desired value range
+24. NE ::= above or below the desired value range
+6Producing and consuming resources and wastes: If an entity pro-
+duces a lot of resources, it is positive. If it consumes a lot ofresources, it is negative. For example, water is a resource. The
+sentence, “ This washer uses a lot of water ” gives a negative opin-
+ion about the washer. Likewise, if an entity produces a lot ofwastes, it is negative. If it consumes a lot of wastes, it is positive.
+25. PO ::= produce a large quantity of or more resource
+26. |produce no, little or less waste
+27. |consume no, little or less resource
+28. |consume a large quantity of or more waste
+29. NE ::= produce no, little or less resource30. |produce some or more waste
+31. |consume a large quantity of or more resource
+32. |consume no, little or less waste
+Weshouldnotethattheserulesarenottheonlyrulesthatgovernexpres-
+sionsofpositiveandnegativeopinions. Withfurtherresearch, additional
+new rules may be discovered.438 MINING TEXT DATA
+5.3 Aspect Extraction
+Existing research on aspect extraction (more precisely, aspect expres-
+sion extraction ) is mainly carried out in online reviews. We thus focus
+on reviews here. We describe some unsupervised methods for ﬁndingaspect expressions that are nouns and noun phrases. The ﬁrst methodis due to [31]. The method consists of two steps:
+1 Find frequent nouns and noun phrases. Nouns and noun phrases
+(or groups) are identiﬁed by a POS tagger. Their occurrence fre-
+quencies are counted, and only the frequent ones are kept. Afrequency threshold can be decided experimentally. The reasonfor using this approach is that when people comment on diﬀer-ent aspects of a product, the vocabulary that they use usuallyconverges. Thus, those nouns that are frequently talked aboutare usually genuine and important aspects. Irrelevant contents in
+reviews are often diverse, i.e., they are quite diﬀerent in diﬀerent
+reviews. Hence, thoseinfrequentnounsarelikelytobenon-aspectsor less important aspects.
+2 Find infrequent aspects by exploiting the relationships between
+aspects and opinion words. The above step can miss many genuine
+aspect expressions which are infrequent. This step tries to ﬁndsome of them. The idea is as follows: The same opinion word canbe used to describe or modify diﬀerent aspects. Opinion wordsthat modify frequent aspects can also modify infrequent aspects,and thus can be used to extract infrequent aspects. For example,“picture” has been found to be a frequent aspect, and we have the
+sentence,
+“The pictures are absolutely amazing. ”
+If we know that “ amazing” is an opinion word, then “ software”
+can also be extracted as an aspect from the following sentence,“The software is amazing. ”
+because the two sentences follow the same dependency patternand “software” in the sentence is also a noun. This idea of using
+the modifying relationship of opinion words and aspects to extract
+aspects was later generalized to using dependency relations [120],which was further developed into the double-propagation methodfor simultaneously extracting both opinion words and aspects [85].The double-propagation method will be described in Sect. 5.4.
+The precision of step 1 of the above algorithm was improved in [83].
+Their algorithm tries to remove those noun phrases that may not be
+product aspects/features. It evaluates each noun phrase by computingA Survey of Opinion Mining and Sentiment Analysis 439
+a pointwise mutual information (PMI) score between the phrase and
+somemeronymy discriminators associated with the product class, e.g.,
+a scanner class. The meronymy discriminators for the scanner class are,“of scanner”, “scanner has”, “scanner comes with”, etc., which are usedto ﬁnd components or parts of scanners by searching the Web.
+PMI(a,d)=hits(a∧d)
+hits(a)·hits(d)(13.5)
+whereaisacandidateaspectidentiﬁedinstep1and disadiscriminator.
+Web search is used to ﬁnd the number of hits of individual terms andalso their co-occurrences. The idea of this approach is clear. If the PMIvalue of a candidate aspect is too low, it may not be a component of theproduct because aandddo not co-occur frequently.
+Other related works on aspect extraction use existing knowledge, su-
+pervised learning, semi-supervised learning, topic modeling and cluster-ing. For example, many information extraction techniques can also beapplied, e.g., Conditional Random Fields (CRF) [33, 52], and HiddenMarkov Models (HMM) [22, 34, 35], and sequential rule mining [60].Wu et al. [111] used dependency tree kernels. Su et al. [92] proposeda clustering method with mutual reinforcement to identify implicit as-
+pects.
+Topicmodelingmethodshavealsobeenattempted asan unsupervised
+and knowledge-lean approach. Titov and McDonald [99] showed thatglobal topic models such as LDA (Latent Dirichlet allocation [6]) mightnotbesuitablefordetectingrateableaspects. Theyproposedmulti-graintopic models to discover local rateable aspects. Here each discovered as-pect is a unigram language model, i.e., a multinomial distribution over
+words. Such a representation is thus not as easy to interpret as aspects
+extracted by previous methods, but its advantage is that diﬀerent wordsexpressing the same or related aspects (more precisely aspect expres-sions) can usually be automatically grouped together under the sameaspect. However, Titov and McDonald [99] did not separate aspects andopinion words in the discovery. Lin and He [57] proposed a joint topic-sentimentmodelalsobyextendingLDA,whereaspectwordsandopinion
+words were still not explicitly separated. To separate aspects and opin-
+ion words using topic models, Mei et al. [67] proposed to use a positivesentiment model and a negative sentiment model in additional to aspectmodels. Brody and Elhadad [10] proposed to ﬁrst identify aspects usingtopic models and then identify aspect-speciﬁc opinion words by consid-ering adjectives only. Zhao et al. [119] proposed a MaxEnt-LDA hybridmodel to jointly discover both aspect words and aspect-speciﬁc opinion
+words, which can leverage syntactic features to help separate aspects440 MINING TEXT DATA
+and opinion words. Topic modeling based approaches were also used by
+Liu et al. [62] and Lu et al. [65].
+Another line of work is to associate aspects with opinion/sentiment
+ratings. It aims to predict ratings based on learned aspects or jointly
+model aspects and ratings. Titov and McDonald [98] proposed a sta-tistical model that is able to discover aspects from text and to extracttextual evidence from reviews supporting each aspect rating. Lu et al.[66] deﬁned a problem of rated aspect summarization. They proposed touse the structured probabilistic latent semantic analysis method to learnaspects from a bag of phrases, and a local/global method to predict as-
+pect ratings. Wang et al. [102] proposed to infer both aspect ratings and
+aspect weights at the level of individual reviews based on learned latentaspects. Jo and Oh [41] proposed an AspectandSentiment Uniﬁcation
+Model(ASUM) to model sentiments toward diﬀerent aspects.
+5.4 Simultaneous Opinion Lexicon Expansion
+and Aspect Extraction
+In [84, 85], a method was proposed to extract both opinion words and
+aspects simultaneously by exploiting some syntactic relations of opinionwords and aspects. The method needs only an initial set of opinion wordseeds as the input and no seed aspects are required. It is based on the
+observation that opinions almost always have targets. Hence there are
+natural relations connecting opinion words and targets in a sentence dueto the fact that opinion words are used to modify targets. Furthermore,it was found that opinion words have relations among themselves andso do targets among themselves too. The opinion targets are usuallyaspects. Thus, opinion words can be recognized by identiﬁed aspects,and aspects can be identiﬁed by known opinion words. The extracted
+opinion words and aspects are utilized to identify new opinion words and
+new aspects, which are used again to extract more opinion words andaspects. This propagation or bootstrapping process ends when no moreopinion words or aspects can be found. As the process involves prop-agation through both opinion words and aspects, the method is calleddouble propagation. Extraction rules are designed based on diﬀerent re-lations between opinion words and aspects, and also opinion words and
+aspects themselves. Speciﬁcally, four subtasks are performed:
+1 extracting aspects using opinion words;
+2 extracting aspects using the extracted aspects;3 extracting opinion words using the extracted aspects;A Survey of Opinion Mining and Sentiment Analysis 441
+4 extracting opinion words using both the given and the extracted
+opinion words.
+Dependency grammar [97] was adopted to describe the relations. The
+algorithm uses only a simple type of dependencies called direct depen-
+denciesto model the relations. A direct dependency indicates that one
+word depends on the other word without any additional words in theirdependency path or they both depend on a third word directly. Someconstraints are also imposed. Opinion words are considered to be adjec-tives and aspects nouns or noun phrases.
+For example, in an opinion sentence “ Canon G3 produces great pic-
+tures”, the adjective “ great” is parsed as directly depending on the noun
+“pictures” through relation mod. If we know “ great” is an opinion word
+and are given the rule ‘a noun on which an opinion word directly de-pends through modis taken as an aspect’, we can extract “ pictures”a s
+an aspect. Similarly, if we know “ pictures” is an aspect, we can extract
+“great” as an opinion word using a similar rule.
+6. Mining Comparative Opinions
+Directly or indirectly expressing positive or negative opinions about
+an entity and its aspects is only one form of evaluation. Comparing
+the entity with some other similar entities is another. Comparisons arerelated to but are also quite diﬀerent from regular opinions. They notonlyhavediﬀerentsemanticmeanings, butalsodiﬀerentsyntacticforms.For example, a typical regular opinion sentence is “ The picture quality of
+this camera is great ”, and a typical comparative sentence is “ The picture
+quality of Camera-x is better than that of Camera-y. ” This section ﬁrst
+deﬁnes the problem, and then presents some existing methods to solve
+it [15, 18, 24, 37].
+In general, a comparative sentence expresses a relation based on simi-
+larities or diﬀerences of more than one entity. The comparison is usuallyconveyed using the comparative or superlative form of an adjective oradverb. A comparative sentence typically states that one entity hasmore or less of a certain attribute than another entity. A superlative
+sentence typically states that one entity has the most or least of a cer-
+tain attribute among a set of similar entities. In general, a comparisoncan be between two or more entities, groups of entities, and one entityand the rest of the entities. It can also be between an entity and itsprevious versions.
+Two types of comparatives: In English, comparatives are usually
+formed by adding the suﬃx -erand superlatives are formed by adding442 MINING TEXT DATA
+the suﬃx -estto their base adjectives andadverbs. For example, in “ The
+battery life of Camera-x is longer than that of Camera-y ”, “longer”i s
+the comparative form of the adjective “ long”. In “The battery life of
+this camera is the longest ”, “longest” is the superlative form of the ad-
+jective “long”. We call this type of comparatives and superlatives as
+Type 1comparatives and superlatives. Note that for simplicity, we often
+usecomparativetomeanbothcomparativeandsuperlativeifsuperlativeis not explicitly stated.
+Adjectives and adverbs with two syllables or more and not ending in
+ydo not form comparatives or superlatives by adding -eror-est.I n -
+stead,more,most,lessandleastare used before such words, e.g., more
+beautiful. We call this type of comparatives and superlatives as Type 2
+comparatives and superlatives. Both Type 1 and Type 2 are called reg-ular comparatives and superlatives. In English, there are also irregularcomparatives and superlatives, i.e., more, most, less, least, better, best,
+worse, worst, further/farther andfurthest/farthest , which do not follow
+the above rules. However, they behave similarly to Type 1 comparatives
+and are thus grouped under Type 1.
+Apartfromthesestandard comparativesandsuperlatives, manyother
+words or phrases can also be used to express comparisons, e.g., prefer
+andsuperior. For example, the sentence, “ Camera-x’s quality is supe-
+rior to Camera-y ”, says that “ Camera-x is better or preferred. ” In [36],
+Jindal and Liu identiﬁed a list of such words. Since these words behavesimilarly to Type 1 comparatives, they are also grouped under Type 1.
+Types of comparative relations: Comparative relations or compar-
+isons can be grouped into four main types. The ﬁrst three types arecalled the gradable comparisons and the last one the non-gradable com-
+parisons.
+1Non-equal gradable comparisons: Relations of the type greater or
+less than that express an ordering of some entities with regard to
+some of their shared aspects, e.g., “ The Intel chip is faster than
+that of AMD ”. This type also includes user preferences, e.g., “ I
+prefer Intel to AMD ”.
+2Equative comparisons: Relations of the type equal to that state
+two or more entities are equal with regard to some of their shared
+aspects, e.g., “ The performance of Car-x is about the same as that
+of Car-y. ”
+3Superlative comparisons: Relations of the type greater or less than
+all others that rank one entity over all others, e.g., “
+The Intel chip
+is the fastest ”.A Survey of Opinion Mining and Sentiment Analysis 443
+4Non-gradable comparisons: Relations that compare aspects of two
+or more entities, but do not grade them. There are three mainsub-types:
+EntityAis similar to or diﬀerent from entity Bwith regard
+to some of their shared aspects, e.g., “ Coke tastes diﬀerently
+from Pepsi. ”
+EntityAhas aspect a1, and entity Bhas aspect a2(a1and
+a2are usually substitutable), e.g., “ Desktop PCs use external
+speakers but laptops use internal speakers. ”
+EntityAhas aspect a, but entity Bdoes not have, e.g.,
+“Phone-x has an earphone, but Phone-y does not have. ”
+Comparative words used in non-equal gradable comparisons can
+be further categorized into two groups according to whether theyexpress increased or decreased quantities, which are useful in opin-ion analysis.
+•Increasing comparatives: Such a comparative expresses an in-
+creased quantity, e.g., moreandlonger.
+•Decreasing comparatives: Such a comparative expresses a de-
+creased quantity, e.g., lessandfewer.
+Objective of mining comparative opinions: Given a collec-
+tion of opinionated documents D, discover in Dall comparative
+opinion sextuples of the form ( E
+1,E2,A,PE,h,t ), where E1and
+E2are the entity sets being compared based on their shared as-
+pectsA(entitiesin E1appearbeforeentitiesin E2inthesentence),
+PE(∈{E1,E2}) is the preferred entity set of the opinion holder
+h,a n dtis the time when the comparative opinion is expressed.
+Example 13.11 Consider the comparative sentence “ Canon’s optics is
+better than those of Sony and Nikon. ” written by John in 2010. The
+extracted comparative opinion is:
+({Canon},{Sony, Nikon },{optics}, preferred: {Canon}, John, 2010)
+The entity set E1is{Canon}, the entity set E2is{Sony, Nikon }, their
+shared aspect set Abeing compared is {optics}, the preferred entity set
+is{Canon}, the opinion holder his John and the time twhen this com-
+parative opinion was written is 2010.
+To mine comparative opinions, the tasks of extracting entities, aspects,
+opinion holders and times are the same as those for mining regular opin-ions. In [37], a method based on label sequential rules (LSR) is proposed
+to extract entities and aspects that are compared. A similar approach444 MINING TEXT DATA
+is described in [54] for extracting the compared entities. Clearly, the
+approaches discussed in previous sections are applicable as well, and soare many other information extraction methods. See [37, 24, 18] forsome existing methods for performing sentiment analysis of compara-tive sentences, i.e., identifying comparative sentences and identifyingthe preferred entity set.
+7. Some Other Problems
+Besides the problems discussed in previous sections, there are many
+other challenges in opinion mining. This section gives an introduction tosome of them. As we will see, most of these problems are related to theirgeneral problems that have been studied before but the opinion text pro-vides more clues for their solutions and also has additional requirements.
+Entity, opinion holder, and time extraction: In some applications,
+it is useful to identify and extract entities, opinion holders, and the times
+when opinions are given. These extraction tasks are collectively calledNamed Entity Recognition (NER). They have been studied extensivelyin the literature.
+In the case of social media on the Web, the opinion holders are often
+the authors of the discussion postings, bloggers, or reviewers, whoselogin ids are known although their true identities in the real world may
+be unknown. The date and time when an opinion is submitted are also
+known and displayed on the page, so their extraction is easy [59].
+For entity name extraction, there is a diﬀerence from NER. In a typi-
+cal opinion mining application, the user wants to ﬁnd opinions on somecompetingentities, e.g., competingproductsorbrands. However, he/sheoften can only provide a few names because there are so many dif-ferent brands and models. Furthermore, Web users also write names
+of the same product brands in many ways. For example, “ Motorola ”
+may be written as “ Moto”o r“Mot”, and “Samsung ” may be written as
+“Sammy”. Product model names have even more variations. It is thus
+important for a system to automatically discover them from a relevantcorpus. The key requirement is that the discovered entities must be ofthe same type as entities provided by the user (e.g., phone brands andmodels). In [55], this problem was modeled as a set expansion problem
+[25, 79], which expands a set of given seed entities (e.g., product names).
+Formally, the problem is stated as follows: Given a set Qof seed entities
+of a particular class C, and a set D of candidate entities, we wish todetermine which of the entities in D belong to C. That is, we “grow”the class C based on the set of seed examples Q. Although this is aA Survey of Opinion Mining and Sentiment Analysis 445
+classiﬁcation problem, in practice, the problem is often solved as a rank-
+ing problem, i.e., to rank the entities in D based on their likelihoods ofbelonging to C. It was shown that learning from positive and unlabeled
+examples provides a more eﬀective method than the traditional distri-
+butional similarity methods [53, 79] and the machine learning techniqueBayesian Sets [25] which was designed speciﬁcally for set expansion.
+Objective expressions implying sentiments: Much of the research
+onsentimentanalysisfocusesonsubjectivesentences,whichareregardedas opinion bearing. However, many objective sentences can bear opin-
+ions as well. For example, in a mattress review, the sentence “ Within a
+month, a valley formed in the middle of the mattress ” is not a subjective
+sentence, but an objective sentence. However, it implies a negative opin-ionaboutthemattress. Speciﬁcally, “ valley”inthiscontextindicatesthe
+qualityofthemattress(aproductaspect)andimpliesanegativeopinion.Objective words (or sentences) that imply opinions are very diﬃcult torecognize because their recognition typically requires the commonsense
+or world knowledge of the application domain. In [116], a method was
+proposed to deal with the problem of product aspects which are nounsand imply opinions using a large corpus. Our experimental results showsome promising results. However, the accuracy is still low, and muchfurther research is still needed.
+Grouping aspect expressions indicating the same aspects: It
+is common that people use diﬀerent words or phrases (which are called
+aspect expressions in Sect. 1) to describe the same aspect. For example,photoandpicturerefer to the same aspect in digital camera reviews.
+Identifying and grouping aspect expressions indicating the same aspectare essential for applications. Although WordNet [69] and other the-saurus dictionaries help to some extent, they are far from suﬃcient dueto the fact that many synonyms are domain dependent. For example,
+pictureandmovieare synonyms in movie reviews, but they are not syn-
+onyms in digital camera reviews as pictureis more related to photowhile
+movierefers to video. It is also important to note that although most as-
+pect expressions of an aspect are domain synonyms, they are not alwayssynonyms. For example, “ expensive ”a n d“cheap” can both indicate the
+aspect price but they are not synonyms of price.
+Carenini et al [12] proposed the ﬁrst method to solve this problem
+in the context of opinion mining. Their method is based on several
+similaritymetricsdeﬁnedusingstringsimilarity, synonymsanddistancesmeasured using WordNet. It requires a taxonomy of aspects to be givenfor a particular domain. The algorithm merges each discovered aspect446 MINING TEXT DATA
+expression to an aspect node in the taxonomy. Experiments based on
+digital camera and DVD reviews showed promising results.
+In [114], Zhai et al. proposed a semi-supervised learning method to
+group aspect expressions into the user speciﬁed aspect groups. Each
+group represents a speciﬁc aspect. To reﬂect the user needs, he/she ﬁrstmanually labels a small number of seeds for each group. The systemthen assigns the rest of the discovered aspect expressions to suitablegroups using semi-supervised learning based on labeled seeds and unla-beled examples. The method used the Expectation-Maximization (EM)algorithm. Two pieces of prior knowledge were used to provide a better
+initialization for EM, i.e., (1) aspect expressions sharing some common
+words are likely to belong to the same group, and (2) aspect expressionsthat are synonyms in a dictionary are likely to belong to the same group.
+Mapping implicit aspect expressions to aspects: There are many
+types of implicit aspect expressions. Adjectives are perhaps the mostcommon type. Many adjectives modify or describe some speciﬁc at-
+tributes or properties of entities. For example, the adjective ”heavy”
+usually describes the aspect weight of an entity. ”Beautiful” is normallyused to describe (positively) the aspect look or appearance of an entity.By no means, however, does this say that these adjectives only describesuch aspects. Their exact meanings can be domain dependent. For ex-ample, “ heavy” in the sentence “ the traﬃc is heavy ” does not describe
+the weight of the traﬃc. One way to map implicit aspect expressions to
+aspects is to manually compile a list of such mappings during training
+data annotation, which can then be used in the same domain in the fu-ture. However, we should note that some implicit aspect expressions arevery diﬃcult to extract and to map, e.g., “ ﬁt in pockets ” in the sentence
+“This phone will not easily ﬁt in pockets ”.
+Coreference resolution: This problem has been extensively studied
+in the NLP community. However, the sentiment analysis context has
+additional needs. In [16], the problem of entity and aspect coreferenceresolutionwasproposed. Itdetermineswhichmentionsofentitiesand/oraspects refer to the same entities. The key interesting points were thedesign and testing of two opinion-related features for machine learning.The ﬁrst feature is based on opinion analysis of regular sentences andcomparative sentences, and the idea of sentiment consistency. For exam-
+ple, we have the sentences, “ The Sony camera is better than the Canon
+camera. It is cheap too. ”I ti sc l e a rt h a t“ It” means “ Sony” because
+in the ﬁrst sentence, the opinion about “ Sony” is positive (comparative
+positive), but it is negative (comparative negative) about “ Canon”, andA Survey of Opinion Mining and Sentiment Analysis 447
+the second sentence is positive. Thus, we can conclude that “ It” refers
+to “Sony” because people usually express sentiments in a consistent way.
+It is unlikely that “ It” refers to “ Canon”. As we can see, to obtain this
+feature, the system needs to have the ability to determine positive and
+negative opinions expressed in regular and comparative sentences.
+The second feature considers what entities and aspects are modiﬁed
+by what opinion words. Consider these sentences, “ The picture quality
+of the Canon camera is very good. It is not expensive either. ” The ques-
+tion is what “ It” refers to, “ Canon camera ”o r“picture quality ”. Clearly,
+we know that “ It” refers to “ Canon camera ” because “ picture quality ”
+cannot be expensive. To obtain this feature, the system needs to identify
+what opinion words are usually associated with what entities or aspects,which means that the system needs to discover such relationships fromthe corpus. These two features can boost the coreference resolution ac-curacy.
+Cross lingual opinion mining: This research involves opinion mining
+for a language corpus based on the corpora from other languages. It is
+needed in following scenarios. Firstly, there are many English sentimentcorpora on the Web nowadays, but for other languages (e.g. Chinese),the annotated sentiment corpora are limited [101]. And it is not a triv-ial task to label them manually. Utilizing English corpora for opinionmining in Chinese can relieve the labeling burden. Secondly, there aremany situations where opinion mining results need to be multilanguage-
+comparable. For example, global companies need to analyze customer
+feedback for their products and services from many countries in diﬀer-ent languages [47]. Thus, cross-lingual opinion mining is necessary. Thebasic idea of the current research is to utilize available language cor-pora to train sentiment classiﬁers for the target language data. Machinetranslation is typically used [3, 8, 27, 47, 101].
+8. Opinion Spam Detection
+It has become a common practice for people to ﬁnd and to read opin-
+ions on the Web for many purposes. For example, if one wants to buy
+a product, one typically goes to a merchant or review site (e.g., ama-zon.com) to read some reviews of existing users of the product. If onesees many positive reviews of the product, one is very likely to buy theproduct. However, if one sees many negative reviews, he/she will mostlikely choose another product. Positive opinions can result in signiﬁcantﬁnancial gains and/or fames for organizations and individuals. This,
+unfortunately, gives good incentives for opinion spam, which refers to448 MINING TEXT DATA
+human activities (e.g., write spam reviews) that try to deliberately mis-
+lead readers or automated opinion mining systems by giving undeservingpositive opinions to some target entities in order to promote the entitiesand/or by giving unjust or false negative opinions to some other entitiesin order to damage their reputation. Such opinions are also called fakeopinions, bogus opinions, or fake reviews. The problem of detecting fake
+or spam opinions was introduced by Jindal and Liu in [38, 39].
+Individual Spammers and Group Spammers: A spammer may
+act individually (e.g., the author of a book) or as a member of a group(e.g., a group of employees of a company).
+Individual spammers: In this case, a spammer, who does not work with
+anyone else, writes spam reviews. The spammer may register at a re-
+view site as a single user, or as many fake users using diﬀerent user-ids.He/she can also register at multiple review sites and write spam re-views.Group spammers: A group of spammers works together to promote a
+target entity and/or to damage the reputation of another. They mayalso register at multiple sites and spam on these sites. Group spam can
+be very damaging because they may take control of the sentiment on a
+product and completely mislead potential customers.
+8.1 Spam Detection Based on Supervised
+Learning
+In general, spam detection can be formulated as a classiﬁcation prob-
+lem with two classes, spam and non-spam. However, manually labelingthe training data for learning is very hard, if not impossible. The prob-lem is that identifying spam reviews by simply reading the reviews isextremely diﬃcult because a spammer can carefully craft a spam reviewthat is just like any innocent review.
+Since manually labeling training data is hard, other ways have to be
+explored in order to ﬁnd training examples for detecting possible fakereviews. In [38], it exploited duplicate reviews. In their study of 5.8million reviews, 2.14 million reviewers and 6.7 million products fromamazon.com, a large number of duplicate and near-duplicate reviewswere found. Certain types of duplicate and near-duplicate reviews wereregarded as spam reviews, and the rest of the reviews as non-spam re-
+views.
+In [38, 39], three sets of features were identiﬁed for learning:A Survey of Opinion Mining and Sentiment Analysis 449
+1Review centric features: These are features about the content of
+reviews. Example features include actual words in a review, thenumber of times that brand names are mentioned, the percentage
+of opinion words, the review length, and the number of helpful
+feedbacks.
+2Reviewer centric features: These are features about each reviewer.
+Example features include the average rating given by the reviewer,the standard deviation in rating, the ratio of the number of reviewsthatthereviewerwrotewhichweretheﬁrstreviewsoftheproductsto the total number of reviews that he/she wrote, and the ratio ofthe number of cases in which he/she was the only reviewer.
+3Product centric features: These are features about each product.
+Example features include the price of the product, the sales rank of
+the product (amazon.com assigns sales rank to ‘now selling prod-
+ucts’accordingtotheirsalesvolumes), theaveragereviewratingofthe product, and the standard deviation in ratings of the reviewsfor the product.
+Logistic regression was used for model building. Experimental results
+showed some interesting results.
+8.2 Spam Detection Based on Abnormal
+Behaviors
+Due to the diﬃculty of manually labeling training data, treating opin-
+ion spam detection as a supervised learning problem is problematic be-cause many non-duplicated reviews can be spam too. Here, we describe
+two techniques that try to identify atypical behaviors of reviewers for
+detecting spammers. For example, if a reviewer wrote all negative re-views for a brand but other reviewers were all positive about the brand,then this reviewer is naturally a spam suspect.
+The ﬁrst technique [56] identiﬁes several unusual reviewer behavior
+models based on diﬀerent review patterns that suggest spamming. Eachmodel assigns a numeric spamming behavior score to a reviewer by mea-
+suring the extent to which the reviewer practices spamming behavior of
+the type. All the scores are then combined to produce a ﬁnal spam scorefor each reviewer.
+The second technique [40] identiﬁes unusual reviewer behavior pat-
+terns via unexpected rule discovery. This approach formulates the prob-lem as ﬁnding unexpected class association rules [59] from data. Fourtypes of unexpected rules are found based on four unexpectedness deﬁ-
+nitions. Below, an example behavior is given for each type of unexpect-450 MINING TEXT DATA
+edness deﬁnition. Their detailed deﬁnitions for these types of unexpect-
+edness are involved [40]. Below, we brieﬂy introduce them by giving anexample behavior for each unexpectedness.
+Conﬁdence Unexpectedness: Using this measure, we can ﬁnd
+reviewers who give all high ratings to products of a brand, butmost other reviewers are generally negative about the brand.
+Support Unexpectedness: Using this measure, we can ﬁnd re-
+viewerswhowritemultiplereviewsforasingleproduct, whileotherreviewers only write one review.
+Attribute Distribution Unexpectedness: Using this measure,
+we can ﬁnd that most positive reviews for a brand of productsare from only one reviewer although there are a large number of
+reviewers who have reviewed the products of the brand.
+Attribute Unexpectedness: Using this measure, we can ﬁnd
+reviewers who write only positive reviews to one brand, and only
+negative reviews to another brand.
+Experimental results of both papers [40, 56] using amazon.com reviews
+showed that many spammers can be detected based on their behaviors.
+8.3 Group Spam Detection
+Agroupspamdetectionalgorithmwasreportedin[72]. Itﬁndsgroups
+of spammers who work together to promote or demote some products.The method works in two steps:
+1Frequent pattern mining: First, it extracts the review data
+to produce a set of transactions. Each transaction represents a
+unique product and consists of all the reviewers (their ids) whohave reviewed that product. Using all the transactions, it per-forms frequent pattern mining. The patterns thus give us a set ofcandidate groups who might have spammed together. The reasonfor using frequent pattern mining is as follows: If a group of re-viewers who only worked together once to promote or to demote
+a single product, it can be hard to detect based on their collec-
+tive or group behavior. However, these fake reviewers (especiallythose who get paid to write) cannot be just writing one reviewfor a single product because they would not make enough moneythat way. Instead, they work on many products, i.e., write manyreviews about many products, which unfortunately also give themaway. Frequent pattern mining can be used to ﬁnd them working
+together on multiple products.A Survey of Opinion Mining and Sentiment Analysis 451
+2Rank groups based on a set of group spam indicators: The
+groups discovered in step 1 may not all be spammer groups. Manyof the reviewers are grouped together in pattern mining simply
+due to chance. Then, this step ﬁrst uses a set of indicators to
+catch diﬀerent types of unusual group behaviors. These indicatorsincluding writing reviews together in a short time window, writingreviews right after the product launch, group content similarity,group rating deviation, etc (see [72] for details). It then ranks thediscovered groups from step 1 based on their indicator values usingSVM rank (also called Ranking SVM) [42].
+9. Utility of Reviews
+A related problem that has also been studied in the past few years is
+the determination of the usefulness, helpfulness or utility of each review[26, 50, 61, 118, 64, 70, 117]. This is a meaningful task as it is desir-able to rank reviews based on utilities or qualities when showing reviewsto the user, with the most useful reviews ﬁrst. In fact, many reviewaggregation sites have been practicing this for years. They obtain thehelpfulness or utility score of each review by asking readers to provide
+helpfulness feedbacks to each review. For example, in amazon.com, the
+reader can indicate whether he/she ﬁnds a review helpful by respondingto the question “ Was the review helpful to you? ” just below each review.
+The feedback results from all those responded are then aggregated anddisplayed right before each review, e.g., “ 15 of 16 people found the fol-
+lowing review helpful ”. Although most review sites already provide the
+service, automatically determining the quality of a review is still useful
+because many reviews have few or no feedbacks. This is especially true
+for new reviews.
+Determiningtheutilityofreviewsisusuallyformulatedasaregression
+problem. The learned model assigns a utility value to each review, whichcan be used in review ranking. In this area of research, the ground truthdata used for both training and testing are usually the user-helpfulnessfeedback given to each review, which as we discussed above is provided
+for each review at many review sites. So unlike fake review detection,
+the training and testing data here is not an issue.
+Researchers have used many types of features for model building.
+Example features include review length, review rating (the number ofstars), counts of some speciﬁc POS tags, opinion words, tf-idf weightingscores, wh-words, product attribute mentions, comparison with prod-uct speciﬁcations, comparison with editorial reviews, and many more.
+Subjectivity classiﬁcation was also applied in [26]. In [61], Liu et al.452 MINING TEXT DATA
+formulated the problem slightly diﬀerently. They made it a binary clas-
+siﬁcation problem. Instead of using the original helpfulness feedbackas the target or dependent variable, they performed manual annotation
+based on whether the review evaluates many product aspects or not.
+Finally, we should note that review utility regression/classiﬁcation
+and review spam detections are diﬀerent concepts. Not-helpful or lowquality reviews are not necessarily fake reviews or spam, and helpfulreviews may not be non-spam. A user often determines whether a reviewis helpful or not based on whether the review expresses opinions onmany aspects of the product. A spammer can satisfy this requirement
+by carefully crafting a review that is just like a normal helpful review.
+Using the number of helpful feedbacks to deﬁne review quality is alsoproblematic because user feedbacks can be spammed too. Feedbackspamisasub-problemofclickfraudinsearchadvertising, whereapersonor robot clicks on some online advertisements to give the impression ofreal customer clicks. Here, a robot or a human spammer can also clickon helpfulness feedback button to increase the helpfulness of a review.
+Another important point is that a low quality review is still a valid
+review and should not be discarded, but a spam review is untruthfuland/or malicious and should be removed once detected.
+10. Conclusions
+This chapter introduced and surveyed the ﬁeld of sentiment analysis
+and opinion mining. Due to many challenging research problems and awide variety of practical applications, it has been a very active researcharea in recent years. In fact, it has spread from computer science to
+management science. This chapter ﬁrst presented an abstract model of
+sentiment analysis, which formulated the problem and provided a com-mon framework to unify diﬀerent research directions. It then discussedthemostwidelystudiedtopicofsentimentandsubjectivityclassiﬁcation,which determines whether a document or sentence is opinionated, and ifso whether it carries a positive or negative opinion. We then describedaspect-based sentiment analysis which exploits the full power of the ab-
+stract model. After that we brieﬂy introduced the problem of analyzing
+comparative sentences. Last but not least, we discussed opinion spam,which is increasingly becoming an important issue as more and morepeople are relying on opinions on the Web for decision making. Severalinitial algorithms were described. Finally, we conclude the chapter bysaying that all the sentiment analysis tasks are very challenging. Ourunderstanding and knowledge of the problem and its solution are still
+limited. The main reason is that it is a natural language processing task,A Survey of Opinion Mining and Sentiment Analysis 453
+and natural language processing has no easy problems. However, many
+signiﬁcant progresses have been made. This is evident from the largenumber of start-up companies that oﬀer sentiment analysis or opinion
+mining services. There is a real and huge need in the industry for such
+services because every company wants to know how consumers perceivetheir products and services and those of their competitors. These prac-tical needs and the technical challenges will keep the ﬁeld vibrant andlively for years to come.
+References
+[1] Andreevskaia, A. and S. Bergler. Mining WordNet for fuzzy senti-
+ment: Sentiment tag extraction from WordNet glosses. In Proceed-
+ings of Conference of the European Chapter of the Association forComputational Linguistics (EACL-06) , 2006.
+[2] Aue, A. and M. Gamon. Customizing sentiment classiﬁers to new
+domains: a case study. In Proceedings of Recent A dvances in Natural
+Language Processing (RANLP-2005) , 2005.
+[3] Banea, C., R. Mihalcea and J. Wiebe. Multilingual subjectivity: are
+more languages better?. In Proceedings of I nternational Conference
+on Computational Linguistics (COLING-2010) , 2010.
+[4] Beineke, P., T. Hastie, C. Manning, and S. Vaithyanathan. An explo-
+ration of sentiment summarization. In Proceedings of AAAI Spring
+Symposium on Exploring Attitude and Aﬀect in Text: Theories and
+Applications, 2003.
+[5] Bethard, S., H. Yu, A. Thornton, V. Hatzivassiloglou, and D. Juraf-
+sky. Automatic extraction of opinion propositions and their holders.
+InProceedings of the AAAI Spring Symposium on Exploring Attitude
+and Aﬀect in Text , 2004.
+[6] Blei, D., A. Ng, and M. Jordan. Latent dirichlet allocation. The
+Journal of Machine Learning Research , 2003, 3: p. 993-1022.
+[7] Blitzer,J.,M.Dredze,andF.Pereira.Biographies,bollywood,boom-
+boxes and blenders: Domain adaptation for sentiment classiﬁcation.InProceedings of Annual Meeting of the Association for Computa-
+tional Linguistics (ACL-2007) , 2007.
+[8] Boyd-Graber, J. and P. Resnik. Holistic sentiment analysis across
+languages: multilingual supervised latent dirichlet allocation. In Pro-
+ceedings of the Human L anguage Technology Conference and the
+Conference on Empirical Methods in Natural Language Processing
+(HLT/EMNLP-2010) , 2010.454 MINING TEXT DATA
+[9] Breck, E., Y. Choi, and C. Cardie. Identifying expressions of opinion
+in context. In Proceedings of the I nternational Joint Conference on
+Artiﬁcial Intelligence (IJCAI-2007) , 2007.
+[10] Brody, S. and S. Elhadad. An unsupervised aspect-sentiment model
+for online reviews. In Proceedings of The 2010 Annual Conference of
+the North American Chapter of the ACL , 2010.
+[11] Carenini, G., R. Ng, and A. Pauls. Multi-document summarization
+of evaluative text. In Proceedings of the European Chapter of the
+Association for Computational Linguistics (EACL-2006) , 2006.
+[12] Carenini, G., R. Ng, and E. Zwart. Extracting knowledge from eval-
+uative text. In Proceedings of Third Intl. Conf. on Knowledge Cap-
+ture (K-CAP-05) , 2005.
+[13] Choi, Y., C. Cardie, E. Riloﬀ, and S. Patwardhan. Identifying
+sources of opinions with conditional random ﬁelds and extraction
+patterns. In Proceedings of the Human L anguage Technology Confer-
+ence and the Conference on Empirical Methods in Natural LanguageProcessing (HLT/EMNLP-2005) , 2005.
+[14] Choi, Y. and C. Claire. Adapting a polarity lexicon using integer
+linear programming for domain-speciﬁc sentiment classiﬁcation. In
+Proceedings of the Conference on Empirical Methods in Natural Lan-
+guage Processing (EMNLP-2009) , 2009.
+[15] Dave, K., S. Lawrence, and D. Pennock. Mining the peanut gallery:
+Opinion extraction and semantic classiﬁcation of product reviews.InProceedings of I nternational Conference on World Wide Web
+(WWW-2003) , 2003.
+[16] Ding, X. and B. Liu. Resolving object and attribute coreference
+in opinion mining. In Proceedings of I nternational Conference on
+Computational Linguistics (COLING-2010) , 2010.
+[17] Ding, X., B. Liu, and P. Yu. A holistic lexicon-based approach to
+opinion mining. In Proceedings of the Conference on Web Search and
+Web Data Mining (WSDM-2008) , 2008.
+[18] Ding, X., B. Liu, and L. Zhang. Entity discovery and assignment
+for opinion mining applications. In Proceedings of ACM S IGKDD
+International Conference on Knowledge Discovery and Data Mining
+(KDD-2009) , 2009.
+[19] Esuli, A. and F. Sebastiani. Determining term subjectivity and
+term orientation for opinion mining. In Proceedings of Conf. of the
+European Chapter of the Association for Computational Linguistics
+(EACL-2006) , 2006.A Survey of Opinion Mining and Sentiment Analysis 455
+[20] Esuli, A. and F. Sebastiani. Determining the semantic orientation
+of terms through gloss classiﬁcation. In Proceedings of ACM I nter-
+national Conference on Information and Knowledge Management(CIKM-2005) , 2005.
+[21] Esuli, A. and F. Sebastiani. SentiWordNet: a publicly available lexi-
+calresourceforopinionmining.In Proceedings of L anguage Resources
+and Evaluation (LREC-2006) , 2006.
+[22] Freitag, D. and A. McCallum. Information extraction with HMM
+structures learned by stochastic optimization. In Proceedings of Na-
+tional Conf. on Artiﬁcial Intelligence (AAAI-2000) , 2000.
+[23] Gamon, M., A. Aue, S. Corston-Oliver, and E. Ringger. Pulse: Min-
+ing customer opinions from free text. Advances in Intelligent Data
+Analysis VI , 2005: p. 121-132.
+[24] Ganapathibhotla, M. and B. Liu. Mining opinions in comparative
+sentences. In Proceedings of I nternational Conference on Computa-
+tional Linguistics (COLING-2008) , 2008.
+[25] Ghahramani, Z. and K. Heller. Bayesian sets. Advances in Neural
+Information Processing Systems (NIPS-2005) , 2005.
+[26] Ghose, A. and P. Ipeirotis. Designing novel review ranking systems:
+predicting the usefulness and impact of reviews. In Proceedings of
+the International Conference on Electronic Commerce , 2007.
+[27] Guo, H., H. Zhu., X. Zhang., and Z. Su. OpinionIt: a text mining
+system for cross-lingual opinion analysis. In Proceedings of ACM In-
+ternational Conference on Information and knowledge management(CIKM-2010) , 2010.
+[28] Hassan, A., V. Qazvinian., D. Radev. What’s with the attitude?
+identifying sentences with attitude in online discussion. In Proceed-
+ings of the Conference on Empirical Methods in Natural LanguageProcessing (EMNLP-2010) , 2010.
+[29] Hatzivassiloglou, V. and K. McKeown. Predicting the semantic ori-
+entation of adjectives. In Proceedings of Annual Meeting of the As-
+sociation for Computational Linguistics (ACL-1997) , 1997.
+[30] Hatzivassiloglou, V. and J. Wiebe. Eﬀects of adjective orientation
+and gradability on sentence subjectivity. In Proceedings of I nter-
+national Conference on Computational Linguistics (COLING-2000) ,
+2000.
+[31] Hu, M. and B. Liu. Mining and summarizing customer reviews. In
+Proceedings of ACM S IGKDD International Conference on Knowl-
+edge Discovery and Data Mining (KDD-2004) , 2004.456 MINING TEXT DATA
+[32] Huang, X. and W. B. Croft. A uniﬁed relevance model for opin-
+ion retrieval. In Proceedings of ACM International Conference on
+Information and knowledge management (CIKM-2009) , 2009.
+[33] Jakob, N. and I. Gurevych. Extracting opinion targets in a single-
+and cross-domain setting with conditional random ﬁelds. In Pro-
+ceedings of Conference on Empirical Methods in Natural LanguageProcessing (EMNLP-2010) , 2010.
+[34] Jin, W. and H. Ho. A novel lexicalized HMM-based learning frame-
+work for web opinion mining. In Proceedings of I nternational Con-
+ference on Machine Learning (ICML-2009) , 2009.
+[35] Jin, W. and H. Ho. OpinionMiner: a novel machine learning sys-
+tem for web opinion mining and extraction. In Proceedings of ACM
+SIGKDD International Conference on Knowledge Discovery andData Mining (KDD-2009) , 2009.
+[36] Jindal, N. and B. Liu. Identifying comparative sentences in text
+documents. In Proceedings of ACM SIGIR Conf. on Research and
+Development in Information Retrieval (SIGIR-2006) , 2006.
+[37] Jindal, N. and B. Liu. Mining comparative sentences and relations.
+InProceedings of National Conf. on Artiﬁcial Intelligence (AAAI-
+2006), 2006.
+[38] Jindal, N. and B. Liu. Opinion spam and analysis. In Proceedings
+of the Conference on Web Search and Web Data Mining (WSDM-2008), 2008.
+[39] Jindal, N. and B. Liu. Review spam detection. In Proceedings of
+International Conference on World Wide Web (WWW-2007) , 2007.
+[40] Jindal, N., B. Liu, and E. Lim. Finding unusual review patterns
+using unexpected rules. In Proceedings of ACM I nternational Con-
+ference on Information and Knowledge Management (CIKM-2010) ,
+2010.
+[41] Jo,Y.andA.Oh.Aspectandsentimentuniﬁcationmodelforonline
+review analysis. In Proceedings of the Conference on Web Search and
+Web Data Mining (WSDM-2011) , 2011.
+[42] Joachims, T. Optimizing search engines using clickthrough data.
+InProceedings of the ACM Conference on Knowledge Disc overy and
+Data Mining (KDD-2002) , 2002.
+[43] Kaji, N. and M. Kitsuregawa. Automatic construction of polarity-
+tagged corpus from HTML documents. In Proceedings of COL-
+ING/ACL 2006 Main Conference Poster Sessions (COLING-ACL-
+2006), 2006.A Survey of Opinion Mining and Sentiment Analysis 457
+[44] Kaji, N. and M. Kitsuregawa. Building lexicon for sentiment anal-
+ysis from massive collection of HTML documents. In Proceedings
+of the Joint Conference on Empirical Methods in Natural LanguageProcessing and Computational Natural Language Learning (EMNLP-2007), 2007.
+[45] Kamps, J., M. Marx, R. Mokken, and M. De Rijke. Using WordNet
+to measure semantic orientation of adjectives. In Proc. of LREC-
+2004, 2004.
+[46] Kanayama, H. and T. Nasukawa. Fully automatic lexicon expansion
+for domain-oriented sentiment analysis. In Proceedings of Conference
+on Empirical Methods in Natural Language Processing (EMNLP-
+2006), 2006.
+[47] Kim, J., J. Li., and J. Lee. Evaluating multilanguage-comparability
+of subjective analysis system. In P roceedings of Annual Meeting of
+the Association for Computational Linguistics (ACL-2010) , 2010.
+[48] Kim, S. and E. Hovy. Crystal: analyzing predictive opinions on the
+web.InProceedingsoftheJointConferenceonEmpiricalMethodsinNatural Language Processing and Computational Natural LanguageLearning (EMNLP/CoNLL-2007), 2007.
+[49] Kim, S. and E. Hovy. Determining the sentiment of opinions. In
+Proceedings of I nterntional Conference on Computational Linguistics
+(COLING-2004) , 2004.
+[50] Kim, S., P. Pantel, T. Chklovski, and M. Pennacchiotti. Automat-
+ically assessing review helpfulness. In Proceedings of the Conference
+on Empirical Methods in Natural Language Processing (EMNLP-
+2006), 2006.
+[51] Ku, L., Y. Liang, and H. Chen. Opinion extraction, summarization
+and tracking in news and blog corpora. In Proceedings of AAAI-
+CAAW-2006 , 2006.
+[52] Laﬀerty, J., A. McCallum, and F. Pereira. Conditional random
+ﬁelds: probabilistic models for segmenting and labeling sequencedata. InProceedings of I nternational Conference on Machine Learn-
+ing (ICML-2001) , 2001.
+[53] Lee, L. Measures of distributional similarity. In Proceedings of An-
+nual Meeting of the Association for Computational Linguistics (ACL-1999), 1999.
+[54] Li, S., C. Lin, Y. Song, and Z. Li. Comparable entity mining from
+comparative questions. In Proceedings of Annual Meeting of the As-
+sociation for Computational Linguistics (ACL-2010) , 2010.458 MINING TEXT DATA
+[55] Li, X., L. Zhang, B. Liu, and S. Ng. Distributional similarity vs. PU
+learning for entity set expansion. In Proceedings of Annual Meeting
+of the Association for Computational Linguistics (ACL-2010) , 2010.
+[56] Lim, E., V. Nguyen, N. Jindal, B. Liu, and H. Lauw. Detecting
+product review spammers using rating behaviors. In Proceedings of
+ACM International Conference on Information and Knowledge Man-agement (CIKM-2010) , 2010.
+[57] Lin,C.andY.He.Jointsentiment/topicmodelforsentimentanaly-
+sis. InProceedings of ACM International Conference on Information
+and Knowledge Management (CIKM-2009) , 2009.
+[58] Liu, B. Sentiment analysis and subjectivity. In Handbook of Nat-
+ural Language Processing, Second Edition, N. Indurkhya and F.J.Damerau, Editors. 2010.
+[59] Liu, B. Web Data Mining: Exploring Hyperlinks, Contents, and
+Usage Data. Second Edition, Springer, 2011.
+[60] Liu,B.,M.Hu,andJ.Cheng.Opinionobserver:analyzingandcom-
+paring opinions on the web. In Proceedings of I nternational Confer-
+ence on World Wide Web (WWW-2005) , 2005.
+[61] Liu, J., Y. Cao, C. Lin, Y. Huang, and M. Zhou. Low-quality prod-
+uct review detection in opinion summarization. In Proceedings of the
+Joint Conference on Empirical Methods in Natural Language Pro-
+cessing and Computational Natural Language Learning (EMNLP-CoNLL-2007) , 2007.
+[62] Liu, Y., X. Huang, A. An, and X. Yu. ARSA: a sentiment-aware
+model for predicting sales performance using blogs. In Proceedings
+of ACM SIGIR Conf. on Research and Development in InformationRetrieval (SIGIR-2007) , 2007.
+[63] Lu, Y., M. Castellanos, U. Dayal, and C. Zhai. Automatic con-
+struction of a context-aware sentiment lexicon: an optimization ap-
+proach. In Proceedings of I nternational Conference on World Wide
+Web (WWW-2011) , 2011.
+[64] Lu, Y., P. Tsaparas., A. Ntoulas., and L. Polanyi. Exploiting social
+context for review quality prediction. In Proceedings of I nternational
+Conference on World Wide Web (WWW-2010) , 2010.
+[65] Lu, Y. and C. Zhai. Opinion integration through semi-supervised
+topic modeling. In Proceedings of I nternational Conference on World
+Wide Web (WWW-2008) , 2008.
+[66] Lu, Y., C. Zhai, and N. Sundaresan. Rated aspect summarization
+of short comments. In Proceedings of I nternational Conference on
+World Wide Web (WWW-2009) , 2009.A Survey of Opinion Mining and Sentiment Analysis 459
+[67] Mei, Q., X. Ling, M. Wondra, H. Su, and C. Zhai. Topic sentiment
+mixture: modeling facets and opinions in weblogs. In Proceedings of
+International Conference on World Wide Web (WWW-2007) , 2007.
+[68] Melville, P., W. Gryc., R. D. Lawrence. Sentiment analysis of blogs
+by combining lexical knowledge with text classiﬁcation. In Proceed-
+ings of ACM SIGKDD International Conference on Knowledge Dis-covery and Data Mining (KDD-2009) , 2009.
+[69] Miller, G., R. Beckwith, C. Fellbaum, D. Gross, and K. Miller.
+WordNet: an on-line lexical database. Oxford Univ. Press. , 1990.
+[70] Mishne, G. and N. Glance. Predicting movie sales from blogger
+sentiment. In Proceedings of AAAI Symposium on Computational
+Approaches to Analysing Weblogs (AAAI-CAAW-2006) , 2006.
+[71] Mohammad, S., C. Dunne., and B. Dorr. Generating high-coverage
+semantic orientation lexicons from overly marked words and a the-saurus. In Proceedings of the Conference on Emp irical Methods in
+Natural Language Processing (EMNLP-2009) , 2009.
+[72] Mukherjee,A.,B.Liu,J.Wang,N.Glance,andN.Jindal.Detecting
+group review spam. In Proceedings of International Conference on
+World Wide Web (WWW-2011) , 2011.
+[73] Nishikawa, H., T. Hasegawa, Y. Matsuo, and G. Kikui. Optimiz-
+ing informativeness and readability for sentiment summarization. In
+Proceedings of Annual Meeting of the Association for Compu tational
+Linguistics (ACL-2010) , 2010.
+[74] Paltoglou, G. and M. Thelwall. A study of information retrieval
+weighting schemes for sentiment analysis. In Proceedings of Annual
+Meeting of the Association for Computational Linguistics (ACL-2010), 2010.
+[75] Pan, S., X. Ni, J. Sun, Q. Yang, and Z. Chen. Cross-domain senti-
+ment classiﬁcation via spectral feature alignment. In Proceedings of
+International Conference on World Wide Web (WWW-2010) , 2010.
+[76] Pang, B. and L. Lee. Opinion mining and sentiment analysis. Foun-
+dations and Trends in Information Retrieval , 2(1-2): p. 1-135, 2008.
+[77] Pang, B. and L. Lee. Seeing stars: Exploiting class relationships for
+sentiment categorization with respect to rating scales. In Proceedings
+of Meeting of the Association for Computational Linguistics (ACL-2005), 2005.
+[78] Pang, B., L. Lee, and S. Vaithyanathan. Thumbs up?: sentiment
+classiﬁcation using machine learning techniques. In Proceedings of
+Conference on Empirical Methods in Natural Language Processing
+(EMNLP-2002) , 2002.460 MINING TEXT DATA
+[79] Pantel, P., E. Crestan, A. Borkovsky, A. Popescu, and V. Vyas.
+Web-scale distributional similarity and entity set expansion. In Pro-
+ceedings of Conference on Empirical Methods in Natural LanguageProcessing (EMNLP-2009) , 2009.
+[80] Parrott, W. Emotions in social psychology: Essential readings. Psy-
+chology Press , 2001.
+[81] Paul, M., C. Zhai, and R. Girju. Summarizing contrastive view-
+points in opinionated text. In Proceedings of Conference on Emp iri-
+cal Methods in Natural Language Processing (EMNLP-2010) , 2010.
+[82] Polanyi, L. and A. Zaenen. Contextual valence shifters. In Pro-
+ceedings of the AAAI Spring Symposium on Exploring Attitude andAﬀect in Text , 2004.
+[83] Popescu, A. and O. Etzioni. Extracting product features and opin-
+ions from reviews. In Proceedings of Conference on Emp irical Meth-
+ods in Natural Language Processing (EMNLP-2005) , 2005.
+[84] Qiu, G., B. Liu, J. Bu, and C. Chen. Expanding domain sentiment
+lexicon through double propagation. In Proceedings of International
+Joint Conference on Artiﬁcial Intelligence (IJCAI-2009) , 2009.
+[85] Qiu, G., B. Liu, J. Bu, and C. Chen. Opinion word expansion and
+target extraction through double propagation. Computational Lin-
+guistics, 2011.
+[86] Qiu, L., W. Zhang., C. Hu., and K. Zhao. SELC: A self-supervised
+model for sentiment classiﬁcation. In Proceedings of ACM I nter-
+national Conference on Information and knowledge management(CIKM-2009) , 2009.
+[87] Riloﬀ, E., S. Patwardhan, and J. Wiebe. Feature subsumption
+for opinion analysis. In Proceedings of the Conference on Emp irical
+Methods in Natural Language Processing (EMNLP-2006) , 2006.
+[88] Riloﬀ, E. and J. Wiebe. Learning extraction patterns for subjective
+expressions. In Proceedings of Conference on Emp irical Methods in
+Natural Language Processing (EMNLP-2003) , 2003.
+[89] Seki, Y., K. Eguchi, N. Kando, and M. Aono. Opinion-focused sum-
+marization and its analysis at DUC 2006. In Proceedings of the Doc-
+ument Understanding Conference (DUC) , 2006.
+[90] Stone, P. The general inquirer: a computer approach to content
+analysis. Journal of Regional Science , 8(1), 1968.
+[91] Stoyanov, V. and C. Cardie. Partially supervised coreference reso-
+lution for opinion summarization through structured rule learning.InProceedings of Conference on Emp irical Methods in Natural Lan-
+guage Processing (EMNLP-2006) , 2006.A Survey of Opinion Mining and Sentiment Analysis 461
+[92] Su, Q., X. Xu, H. Guo, Z. Guo, X. Wu, X. Zhang, B. Swen, and
+Z. Su. Hidden sentiment association in chinese web opinion min-ing. InProceedings of I nternational Conference on World Wide Web
+(WWW-2008) , 2008.
+[93] Taboada, M., J, Brooke, M. Toﬁloski, K. Voll, and M. Stede,
+Lexicon-based methods for sentiment analysis. Computational In-
+telligence , 2010.
+[94] Takamura,H.,T.Inui,andM.Okumura.Extractingsemanticorien-
+tationsofphrasesfromdictionary.In Proceedings of the Joint Human
+Language Technology/North American Chapter of the ACL Confer-ence (HLT-NAACL-2007) , 2007.
+[95] Tan, S., Y. Wang., and X. Cheng. Combining learn-based and
+lexicon-based techniques for sentiment detection without using la-beled examples. In Proceedings of ACM S IGIR Conference on Re-
+search and Development in Information Retrieval (SIGIR-2008) ,
+2008.
+[96] Tata,S.andB.DiEugenio.Generatingﬁne-grainedreviewsofsongs
+from album reviews. In Proceedings of Annual Meeting of the Asso-
+ciation for Computational Linguistics (ACL-2010) , 2010.
+[97] Tesniere, L. Elements de syntaxe structurale: Pref. de Jean Four-
+quet. 1959: C. Klincksieck.
+[98] Titov, I. and R. McDonald. A joint model of text and aspect ratings
+for sentiment summarization. In Proceedings of Annual Meeting of
+the Association for Computational Linguistics (ACL-2008) , 2008.
+[99] Titov, I. and R. McDonald. Modeling online reviews with multi-
+grain topic models. In Proceedings of I nternational Conference on
+World Wide Web (WWW-2008) , 2008.
+[100] Turney, P. Thumbs up or thumbs down?: semantic orientation ap-
+plied to unsupervised classiﬁcation of reviews. In Proceedings of An-
+nual Meeting of the Association for Computational Linguistics (ACL-
+2002), 2002.
+[101] Wan, X. Co-training for cross-lingual sentiment classiﬁcation. In
+Proceedings of Annual Meeting of the Association for Compu tational
+Linguistics (ACL-2009) , 2009.
+[102] Wang, H., Y. Lu, and C. Zhai. Latent aspect rating analysis on
+review text data: a rating regression approach. In Proceedings of
+ACM SIGKDD International Conference on Knowledge Discoveryand Data Mining (KDD-2010) , 2010.
+[103] Wiebe, J. Learning subjective adjectives from corpora. In Proceed-
+ings of National Conf. on Artiﬁcial Intelligence (AAAI-2000) , 2000.462 MINING TEXT DATA
+[104] Wiebe, J., R. Bruce, and T. O’Hara. Development and use of a
+gold-standard data set for subjectivity classiﬁcations. In Proceedings
+of the Association for Computational Linguistics (ACL-1999) , 1999.
+[105] Wiebe, J. and E. Riloﬀ. Creating subjective and objective sentence
+classiﬁers from unannotated texts. Computational Linguistics and
+Intelligent Text Processing , p. 486-497, 2005.
+[106] Wiebe, J., T. Wilson, R. Bruce, M. Bell, and M. Martin. Learning
+subjective language. Computational Linguistics , 30(3): p. 277-308,
+2004.
+[107] Wiebe, J., T. Wilson, and C. Cardie. Annotating expressions of
+opinions and emotions in language. Language Resources and Evalu-
+ation, 39(2): p. 165-210, 2005.
+[108] Wilson, T., J. Wiebe, and P. Hoﬀmann. Recognizing contextual
+polarity in phrase-level sentiment analysis. In Proceedings of the Hu-
+man Language Technology Conference and the Conference on Empir-ical Methods in Natural Language Processing (HLT/EMNLP-2005) ,
+2005.
+[109] Wilson, T., J. Wiebe, and R. Hwa. Just how mad are you? ﬁnding
+strong and weak opinion clauses. In Proceedings of National Confer-
+ence on Artiﬁcial Intelligence (AAAI-2004) , 2004.
+[110] Wilson, T., J. Wiebe, and R. Hwa. Recognizing strong and weak
+opinion clauses. Computational Intelligence , 22(2): p. 73-99, 2006.
+[111] Wu, Y., Q. Zhang, X. Huang, and L. Wu. Phrase dependency pars-
+ing for opinion mining. In Proceedings of Conference on Emp irical
+Methods in Natural Language Processing (EMNLP-2009) , 2009.
+[112] Yang, H., L. Si, and J. Callan. Knowledge transfer and opinion
+detection in the TREC2006 blog track. In Proceedings of TREC ,
+2006.
+[113] Yu, H. and V. Hatzivassiloglou. Towards answering opinion ques-
+tions: separating facts from opinions and identifying the polarity ofopinion sentences. In Proceedings of Conference on Empirical Meth-
+ods in Natural Language Processing (EMNLP-2003) , 2003.
+[114] Zhai, Z., B. Liu, H. Xu, and P. Jia. Grouping product features us-
+ing semi-supervised learning with soft-constraints. In Proceedings of
+International Conference on Computational Linguistics (COLING-
+2010), 2010.
+[115] Zhai, Z., B. Liu., L. Zhang., H. Xu., and P. Jia. Identifying evalua-
+tive sentences in online discussions. In Proceedings of National Conf.
+on Artiﬁcial Intelligence (AAAI-2011) , 2011.A Survey of Opinion Mining and Sentiment Analysis 463
+[116] Zhang,L.andB.Liu.Identifyingnounproductfeaturesthatimply
+opinions. In Proceedings of Annual Meeting of the Association for
+Computational Linguistics (ACL-2011) , 2011.
+[117] Zhang, M. and X. Ye. A generation model to unify topic relevance
+and lexicon-based sentiment for opinion retrieval. In Proceedings of
+ACM SIGIR Conference on Research and Development in Informa-tion Retrieval (SIGIR-2008) , 2008.
+[118] Zhang, Z. and B. Varadarajan. Utility scoring of product reviews.
+InProceedings of ACM I nternational Conference on Information and
+Knowledge Management (CIKM-2006), 2006.
+[119] Zhao, W., J. Jiang, H. Yan, and X. Li. Jointly modeling as-
+pects and opinions with a MaxEnt-LDA hybrid In Proceedings of
+Conference on Empirical Methods in Natural Language Processing(EMNLP-2010) , 2010.
+[120] Zhuang, L., F. Jing, and X. Zhu. Movie review mining and sum-
+marization. In Proceedings of ACM I nternational Conference on In-
+formation and Knowledge Management (CIKM-2006), 2006.Chapter 14
+BIOMEDICAL TEXT MINING: A SURVEY
+OF RECENT PROGRESS
+Matthew S. Simpson
+Lister Hill National Center for Biomedical Communications
+United States National Library of Medicine, National Institutes of Health
+simpsonmatt@mail.nih.gov
+Dina Demner-Fushman
+Lister Hill National Center for Biomedical Communications
+United States National Library of Medicine, National Institutes of Health
+ddemner@mail.nih.gov
+Abstract The biomedical community makes extensive use of text mining tech-
+nology. In the past several years, enormous progress has been made
+in developing tools and methods, and the community has been witness
+to some exciting developments. Although the state of the community
+is regularly reviewed, the sheer volume of work related to biomedical
+text mining and the rapid pace in which progress continues to be made
+make this a worthwhile, if not necessary, endeavor. This chapter pro-
+vides a brief overview of the current state of text mining in the biomed-
+ical domain. Emphasis is placed on the resources and tools available
+to biomedical researchers and practitioners, as well as the major text
+mining tasks of interest to the community. These tasks include the
+recognition of explicit facts from biomedical literature, the discovery
+of previously unknown or implicit facts, document summarization, and
+question answering. For each topic, its basic challenges and methods
+are outlined and recent and inﬂuential work is reviewed.
+Keywords: Biomedical information extraction, named entity recognition, relations,
+events, summarization, question answering, literature-based discovery
+© Springer Science+Business Media, LLC 2012  465  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_14,

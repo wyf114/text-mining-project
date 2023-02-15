@@ -1,0 +1,1125 @@
+Chapter 8
+PROBABILISTIC MODELS FOR
+TEXT MINING
+Yizhou Sun
+Department of Computer Science
+University of Illinois at Urbana-Champaign
+sun22@illinois.edu
+Hongbo Deng
+Department of Computer Science
+University of Illinois at Urbana-Champaign
+hbdeng@illinois.edu
+Jiawei Han
+Department of Computer Science
+University of Illinois at Urbana-Champaign
+hanj@illinois.edu
+Abstract A number of probabilistic methods such as LDA, hidden Markov mod-
+els, Markov random ﬁelds have arisen in recent years for probabilistic
+analysis of text data. This chapter provides an overview of a variety
+of probabilistic models for text mining. The chapter focuses more on
+the fundamental probabilistic techniques, and also covers their various
+applications to diﬀerent text mining problems. Some examples of such
+applications include topic modeling, language modeling, document clas-
+siﬁcation, document clustering, and information extraction.
+Keywords: Probabilisticmodels, mixturemodel, stochasticprocess, graphicalmodel
+ 
+© Springer Science+Business Media, LLC 2012  259  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_8,260 MINING TEXT DATA
+1. Introduction
+Probabilistic models are widely used in text mining nowadays, and
+applications range from topic modeling, language modeling, documentclassiﬁcation and clustering to information extraction. For example,the well known topic modeling methods PLSA and LDA are specialapplications of mixture models.
+A probabilistic model is a model that uses probability theory to model
+the uncertainty in the data. For example, terms in topics are modeledby multinomial distribution; and the observations for a random ﬁeld aremodeled by Gibbs distribution. A probabilistic model describes a setof possible probability distributions for a set of observed data, and thegoal is to use the observed data to learn the distribution (usually associ-ated with parameters) in the probabilistic model that can best describe
+the current data. In this chapter, we introduce several frequently used
+fundamental probabilistic models and their applications in text mining.For each probabilistic model, we will introduce their general frameworkof modeling, the probabilistic explanation, the standard algorithms tolearn the model, and their applications in text mining.
+The major probabilistic models covered in this chapter include:
+Mixture Models. Mixture models are used for clustering datapoints, where each component is a distribution for that cluster,and each data point belongs to one cluster with a certain proba-bility. Finite mixture models require user to specify the number ofclusters. The typical applications of mixture model in text mining
+include topic models, like PLSA and LDA.
+Bayesian Nonparametric Models. Beyesian nonparametric models
+refer to probabilistic models with inﬁnite-dimensional parameters,which usually have a stochastic process that is inﬁnite-dimensionalasthepriordistribution. Inﬁnitemixturemodelisonetypeofnon-parametric models, which can deal with the problem of selectingthe number of clusters for clustering. Dirichlet process mixture
+model belongs to inﬁnite mixture model, and can help to detect
+the number of topics in topic modeling.
+Bayesian Networks. A Bayesian network is a graphical model withdirected acyclic links indicating the dependency relationship be-tween random variables, which are represented as nodes in thenetwork. A Bayesian network can be used to inference the unob-served node in the network, by learning parameters via training
+datasets.Probabilistic Models for Text Mining 261
+Hidden Markov Model. A hidden Markov model (HMM) is a sim-
+ple case of dynamic Bayesian network, where the hidden states areforming a chain and only some possible value for each state can beobserved. One goal of HMM is to infer the hidden states accordingto the observed values and their dependency relationships. A veryimportant application of HMM is part-of-speech tagging in NLP.
+Markov Random Fields. A Markov random ﬁeld (MRF) belongsto undirected graphical model, where the joint density of all therandom variables in the network is modeled as a production ofpotential functions deﬁned on cliques. An application of MRF is
+to model the dependency relationship between queries and doc-
+uments, and thus to improve the performance of information re-trieval.
+Conditional Random Fields. A conditional random ﬁeld (CRF) is
+a special case of Markov random ﬁeld, but each state of node is
+conditional on some observed values. CRFs can be considered as atype of discriminative classiﬁers, as they do not model the distri-bution over observations. Name entity recognition in informationextraction is one of CRF’s applications.
+This chapter is organized as follows. In Section 2, mixture models
+that are frequently used in topic modeling and clustering is introduced,as well as its standard learning algorithms. In Section 3, we present sev-eralBayesiannonparametricmodels, wherestochasticprocessesareused
+as priors and can be used in modeling the uncertainty of the number of
+clusters in mixture models. In Section 4, several well-known graphicalmodels that use nodes to represent random variables and use links inthe graph to model the dependency relations between variables are in-troduced. Section 5 introduces several situations that constraints withdomain knowledge can be integrated into probabilistic models. Section6 is a brief introduction of parallel computing of probabilistic models for
+large scale datasets. The concluding remarks are given in Section 7.
+2. Mixture Models
+Mixture model [39] is a probabilistic model originally proposed to ad-
+dress the multi-modal problem in the data, and now is frequently usedfor the task of clustering in data mining, machine learning and statis-tics. Generally, a mixture model deﬁnes the distribution of a random
+variable, which contains multiple components and each component rep-
+resentsadiﬀerentdistributionfollowingthesamedistributionfamilybut
+with diﬀerent parameters. The number of components are speciﬁed by262 MINING TEXT DATA
+users in this section, and these mixture models are called ﬁnite mixture
+models. Inﬁnite mixture models that deal with how to learn the numberof components in mixture models will be covered in Section 3. To learn
+the model, not only the probability membership for each observed data
+point but also the parameter set for each component need to be learned.In this section, we introduce the basic framework of mixture models,their variations and applications in text mining area, and the standardlearning algorithms for them.
+2.1 General Mixture Model Framework
+In a mixture model, given a set of data points, e.g., the height of
+people in a region, they are treated as an instantiation of a set of ran-
+dom variables, which are following the mixture model. Then, according
+to the observed data points, the parameters in the mixture model canbe learned. For example, we can learn the mean and standard devi-ation for female and male height distributions, if we model height ofpeople as a mixture model of two Gaussian distributions. Formally,assume we have ni.i.d. random variables X
+1,X2,...,X nwith observa-
+tionsx1,x2,...,x n, following the mixture model with Kcomponents.
+Let each of the kth component be a distribution following a distribution
+family with parameters ( θk) and have the form of F(x|θk), and let πk
+(πk≥0a n d/summationtext
+kπk= 1) be the weight for kth component denoting the
+probability that an observation is generated from the component, thenthe probability of x
+ican be written as:
+p(xi)=K/summationdisplay
+k=1πkf(xi|θk)
+wheref(xi|θk) is the density or mass function for F(x|θk). The joint
+probability of all the observations is then:
+p(x1,x2,...,x n)=n/productdisplay
+i=1K/summationdisplay
+k=1πkf(xi|θk)
+LetZi∈{1,2,...,K}be the hidden cluster label for Xi, the prob-
+ability function can be viewed as the summation over a complete jointdistribution of both X
+iandZi:
+p(xi)=/summationdisplay
+zip(xi,zi)=/summationdisplay
+zip(xi|Zi=zi)p(zi)
+whereXi|Zi=zi∼F(xi|θzi)a n dZi∼MK(1;π1,...,π K), the multino-
+mial distribution of Kdimensions with 1 observation. Ziis also referredProbabilistic Models for Text Mining 263
+to missing variable or auxiliary variable, which identiﬁes the cluster la-
+bel of the observation xi. From generative process point of view, each
+observed data xiis generated by:
+1 sample its hidden cluster label by zi|π∼MK(1;π1,...,π K)
+2 sample the data point in component zi:xi|zi,{θk}∼F(xi|θzi)
+The most well-known mixture model is the Gaussian mixture model,
+where each component is a Gaussian distribution. In this case, the
+parameter set for kth component is θk=(μk,σ2
+k), where μkandσ2
+kare
+the mean and variance of the Gaussian distribution.
+Example: Mixture of Unigrams. The most common choice
+of the component distribution for terms in text mining is multinomial
+distribution, which can be considered as a unigram language model and
+determines the probability of a bag of terms. In Nigam et al. [50], adocument d
+icomposed of a bag of words wi=(ci,1,ci,2,...,ci,m), where
+mis the size of the vocabulary and ci,jis the number of term wjin
+document di, is considered as a mixture of unigram language models.
+That is, each component is a multinomial distribution over terms, withparameters β
+k,j, denoting the probability of term wjin cluster k, i.e.,
+p(wj|βk), fork=1,...,Kandj=1,...,m. The joint probability of
+observing the whole document collection is then:
+p(w1,w2,...,wn)=n/productdisplay
+i=1K/summationdisplay
+k=1πkm/productdisplay
+j=1(βk,j)ci,j
+whereπkis the proportion weight for cluster k. Note that, in mixture of
+unigrams, one document is modeled as being sampled from exactly onecluster, which is not typically true, since one document usually coversseveral topics.
+2.2 Variations and Applications
+Besides the mixture of unigrams, there are many other applications
+for mixture models in text mining, with some variations to the general
+framework. The most frequent variation to the framework of generalmixture models is to adding all sorts of priors to the parameters, whichare sometimes called Bayesian (ﬁnite) mixture models [33]. The topicmodels PLSA [29, 30] and LDA [11, 28] are among the most famousapplications, which have been introduced in Chapter 5 in a dimensionreduction view. In this section, we brieﬂy describe them in the view
+of mixture models. Some other applications in text mining, such as264 MINING TEXT DATA
+comparative text mining, contextual text mining, and topic sentiment
+analysis, are introduced too.
+2.2.1 Topic Models.
+PLSA. Probabilistic latent semantic analysis (PLSA) [29] is alsoknown as probabilistic latent semantic indexing (PLSI) [30]. Dif-ferentfromthemixtureunigram, whereeachdocument d
+iconnects
+to one latent variable Zi, in PLSA, each observed term wjindi
+corresponds to a diﬀerent latent variable Zi,j. The probability of
+observation term wjindiis then deﬁned by the mixture in the
+following:
+p(wj|di)=K/summationdisplay
+k=1p(k|di)p(wj|βk)
+wherep(k|di)=p(zi,j=k) is the mixing proportion of diﬀerent
+topics for di,βkis the parameter set for multinomial distribution
+over terms for topic k,a n dp(wj|βk)=βk,j.p(k|di) is usually de-
+noted by the parameter θi,k,a n dZi,jis then following the discrete
+distribution with K-d vector parameter θi=(θi,1,...,θi,K). The
+joint probability of observing all the terms in document diis:
+p(di,wi)=p(di)m/productdisplay
+j=1p(wj|di)ci,j
+wherewiis the same deﬁned as in the mixture of unigrams and
+p(di) is the probability of generating di. And the joint probability
+of observing all the document corpus is/producttextn
+i=1p(di,wi).
+LDA.LatentDirichletallocation(LDA)[11]extends PLSAbyfur-
+ther adding priors to the parameters. That is, Zi,j∼MK(1;θi)
+andθi∼Dir(α), where MKis theK-dimensional multinomial
+distribution, θiis theK-d parameter vector denoting the mix-
+ing portion of diﬀerent topics for document di,Dir(α) denotes
+a Dirichlet distribution with K-d parameter vector α, which is
+the conjugate prior of multinomial distribution. Usually, anotherDirichlet prior β∼Dir(η) [11, 28] is added further to the multi-
+nomial distribution βover terms, which serves as a smoothing
+functionality over terms, where ηis am-d parameter vector and
+mis the size of the vocabulary. The probability of observing all
+the terms in document d
+iis then:
+p(wi|α,β)=/integraldisplay
+p(wi,θi|α,β)dθiProbabilistic Models for Text Mining 265
+where
+p(wi,θi|α,β)=p(wi|θi,β)p(θi|α)
+and
+p(wi|θi,β)=m/productdisplay
+j=1(K/summationdisplay
+k=1p(zi,j=k|θi)p(wj|βk))ci,j
+The probability of observing all the document corpus is:
+p(w1,...,wn|α,η)=n/productdisplay
+i=1/integraldisplay
+p(wi|α,β)p(β|η)dβ
+Notice that, compared with PLSA, LDA has stronger generative
+power, as it describes how to generate the topic distribution θifor
+an unseen document di.
+2.2.2 Other Applications. Now, we brieﬂy introduce some
+other applications of mixture models in text mining.
+Comparative Text Mining. Comparative text mining (CTM) isproposed in [71]. Given a set of comparable text collections (e.g.,
+the reviews for diﬀerent brands of laptops), the task of compara-
+tive text mining is to discover any latent common themes acrossall collections as well as special themes within one collection. Theidea is to model each document as a mixture model of the back-ground theme, common themes cross diﬀerent collection, and spe-ciﬁc themes within its collection, where a theme is a topic distri-bution over terms, the same as in topic models.
+Contextual Text Mining. Contextual text mining (CtxTM) is pro-posed in [43], which extracts topic models from a collection of textwith context information (e.g., time and location) and models thevariations of topics over diﬀerent context. The idea is to model adocument as a mixture model of themes, where the theme coveragein a document would be a mixture of the document-speciﬁc themecoverage and the context-speciﬁc theme coverage.
+Topic Sentiment Analysis. Topic Sentiment Mixture (TSM) is pro-posed in [42], which aims at modeling facets and opinions in we-blogs. The idea is to model a blog article as a mixture model of abackground language model, a set of topic language models, andtwo (positive and negative) sentiment language models. Therefore,not only the topics but their sentiments can be detected simulta-neously for a collection of weblogs.266 MINING TEXT DATA
+2.3 The Learning Algorithms
+In this section, several frequently used algorithms for learning param-
+eters in mixture models are introduced.
+2.3.1 Overview. The general idea of learning parameters
+in mixture models (and other probabilistic models) is to ﬁnd a set of“good” parameters θthat maximizes the probability of generating the
+observed data. Two estimation criterions are frequently used, one ismaximum-likelihood estimation (MLE) and the other is maximum-a-posteriori-probability (MAP).
+The likelihood (or likelihood function) of a set of parameters given
+the observed data is deﬁned as the probability of all the observationsunder those parameter values. Formally, let x
+1,...,x n(assumed iid) be
+the observations, let the parameter set be θ, the likelihood of θgiven
+the data set is deﬁned as:
+L(θ|x1,...,x n)=p(x1,x2,...,x n|θ)=n/productdisplay
+i=1p(xi|θ)
+In the general form of mixture models, the parameter set includes both
+the component distribution parameter θkfor each component k, and the
+mixing proportion of each component πk. MLE estimation is then to
+ﬁnd the parameter values that maximizes the likelihood function. Most
+of the time, log-likelihood is optimized instead, as it converts products
+into summations and makes the computation easier:
+logL(θ|x1,...,x n)=n/summationdisplay
+i=1logp(xi|θ)
+Whenpriorsareincorporatedtothemixturemodels(suchasinLDA),
+the MAP estimation is used instead, which is to ﬁnd a set of parameters
+θthat maximizes the posterior density function of θgiven the observed
+data:
+p(θ|x1,...,x n)∝p(x1,...,x n|θ)p(θ)
+wherep(θ) is the prior distribution for θand may involve some further
+hyper-parameters.
+Several frequently used algorithms of ﬁnding MLE or MAP estima-
+tions for parameters in mixture models are introduced brieﬂy in the
+following.
+2.3.2 EM Algorithm. Expectation-Maximum(EM)[7,22,21,
+12] algorithm is a method for learning MLE estimations for probabilisticProbabilistic Models for Text Mining 267
+models with latent variables, which is a standard learning algorithm for
+mixture models. For mixture models, the likelihood function can befurther viewed as the marginal over the complete likelihood involving
+hidden variables:
+L(θ|x
+1,...,x n)=/summationdisplay
+Zp(x1,...,x n,z1,...,zn|θ)=n/productdisplay
+i=1/summationdisplay
+zip(xi,zi|θ)
+The log-likelihood function is then:
+logL(θ|x1,...,x n)=n/summationdisplay
+i=1log/summationdisplay
+zip(xi|θ,zi)p(zi)
+which is diﬃcult to maximize directly, as there is summation inside the
+logarithm operation. EM algorithm is an iterative algorithm involvingtwo steps that maximizes the above log-likelihood, which can solve thisproblem. The two steps in each iteration are E-step and M-step respec-tively.
+InE-step (Expectation step) , a tight lower bound for the log-
+likelihood called Q-function is calculated, which is the expectation of
+the complete log-likelihood function with respect to the conditional dis-
+tribution of hidden variable Zgiven the observations of the data Xand
+current estimation of parameters θ
+(t):
+Q(θ|θ(t))=EZ|X,θ(t)[logL(θ;X,Z)]
+NoteL(θ;X,Z) is a complete likelihood function as it uses both the
+observed data Xand the hidden cluster labels Z.
+InM-step (Maximization-step) ,an e w θ=θ(t+1)is computed
+which maximizes the Q-function that is derived in E-step:
+θ(t+1)= argmax
+θQ(θ|θ(t))
+It is guaranteed that EM algorithm converges to a local maximum of
+the log-likelihood function, since Q-function is a tight lower bound and
+the M-step can always ﬁnd a θthat increases the log-likelihood. The
+learning algorithm in PLSA is a typical application of EM algorithm.Notice that, in M-step there could exist no closed form solution for θ
+(t+1)
+and requires iterative solutions via methods such as gradient descent or
+Newton’s method (also called Newton-Raphson method) [34].
+There are several variants for EM algorithm when the original EM
+algorithm is diﬃcult to compute, and some of which are listed in the
+following:268 MINING TEXT DATA
+Generalized EM. For generalized EM (GEM) [12], it relaxes the
+requirement of ﬁnding the θthat maximizes Q-function in M-step
+toﬁndinga θthatincreasesQ-functionsomehow. Theconvergence
+can still be guaranteed using GEM, and it is often used whenmaximization in M-step is diﬃcult to compute.
+Variational EM. Variational EM is one of the approximate algo-rithms used in LDA [11]. The idea is to ﬁnd a set of variationalparameters with respective to the hidden variables that attempts
+to obtain the tightest possible lower bound in E-step, and to max-
+imize the lower bound in M-step. The variational parameters arechosen in a way that simpliﬁes the original probabilistic model andare thus easier to calculate.
+2.3.3 Gibbs Sampling. Gibbs sampling is the simplest form
+of Markov chain Monte Carlo (MCMC) algorithm, which is a sampling-based approximation algorithm for model inference. The basic idea ofGibbs sampling is to generate samples that converge to the target distri-bution, which itself is diﬃcult to obtain, and to estimate the parametersusing the statistics of the distribution according to the samples.
+In [28], a Gibbs sampling-based inference algorithm is proposed for
+LDA. The goal is to maximize the posterior distribution of hidden vari-
+ables(MAPestimation)giventheobservationsofthedocuments p(Z|w),
+which is a very complex density function with hyper-parameters αand
+ηthat are speciﬁed by users. As it is diﬃcult to directly maximize the
+posterior, Gibbs sampling is then used to construct a Markov chain of Z,
+which converges to the posterior distribution in the long run. The hid-den cluster z
+i,jfor term wi,j, i.e., the term wjin document di, is sampled
+according to the conditional distribution of zi,j, given the observations
+of all the terms as well as the their hidden cluster labels except for wi,j
+in the corpus:
+p(zi,j|z−i,j,w)∝p(zi,j,wi,j|z−i,j,w−i,j)=p(wi,j|z,w−i,j)p(zi,j|z−i,j)
+which turns out to be easy to calculate, where z−i,jdenotes the hidden
+variables of all the terms except for wi,jandw−i,jdenotes the all the
+terms except wi,jin the corpus. Note that the conditional probability
+is also involving the hyper-parameters αandη, which are not shown
+explicitly. After thousands of iterations (called burning period), theMarkov chain is considered to be stable and converges to the targetposterior distribution. Then the parameters of θandβcan be estimated
+according to the sampled hidden cluster labels from the chain as well as
+thegivenobservationsandthehyper-parameters. Pleasereferto[28]andProbabilistic Models for Text Mining 269
+[53] for more details of Gibbs sampling in LDA, and more fundamental
+introductions for Gibbs sampling and other MCMC algorithms in [3].
+3. Stochastic Processes in Bayesian
+Nonparametric Models
+Priors are frequently used in probabilistic models. For example, in
+LDA, Dirichlet priors are added for topic distributions and term distri-butions, which are both multinomial distributions. A special type of pri-ors that are stochastic processes, which emerges recently in text relatedprobabilistic models, is introduced in this section. Diﬀerent from previ-
+ous methods, with the introduction of priors of stochastic processes, the
+parameters in such models become inﬁnite-dimensional. These modelsbelong to the category of Bayesian nonparametric models [51].
+Diﬀerent from the traditional priors as static distributions, stochastic
+process priors can model more complex structures for the probabilisticmodels, such as the number of the components in the mixture model, thehierarchical structures and evolution structure for topic models, and the
+power law distribution for terms in language models. For example, it is
+always a diﬃcult task for users to determine the number of topics whenapplying topic models for a collection of documents, and a Dirichletprocess prior can model inﬁnite number of topics and ﬁnally determinethe best number of topics.
+3.1 Chinese Restaurant Process
+The Chinese Restaurant Process (CRP) [33, 9, 67] is a discrete-time
+stochastic process, which deﬁnes a distribution on the partitions of the
+ﬁrstnintegers, for each discrete time index n. As for each n, CRP
+deﬁnes the distribution of the partitions over the nintegers, it can be
+used as the prior for the sizes of clusters in the mixture model-basedclustering, and thus provides a way to guide the selection of K, which
+is the number of clusters, in the clustering process.
+Chinese restaurant process can be described using a random process
+as a metaphor of costumers choosing tables in a Chinese restaurant.
+Suppose there are countably inﬁnite tables in a restaurant, and the nth
+costumer walks in the restaurant and sits down at some table with thefollowing probabilities:
+1 The ﬁrst customer sits at the ﬁrst table (with probability 1).
+2T h enth customer either sits at an occupied table kwith proba-
+bility
+mk
+n−1+α, or sits at the ﬁrst unoccupied table with probability270 MINING TEXT DATA
+α
+n−1+α, wheremkis the number of existing customers sitting at
+tablekandαis a parameter of the process.
+It is easy to see that the customers can be viewed as data points
+in the clustering process, and the tables can be viewed as the clusters.
+Letz1,z2,...,znbe the table label associated with each customer, let
+Knbe the number of tables in total, and let mkbe the number of
+customerssittinginthe kthtable,theprobabilityofsuchanarrangement
+(a partition of nintegers into Kngroups) is as follows:
+p(z1,z2,...,z n)=p(z1)p(z2|z1)...p(zn|zn−1,...,z 1)=αKn/producttextKn
+k=1(mk−1)!
+α(α+1)...(α+n−1)
+The expected number of tables Kngivenncustomers is:
+E(Kn|α)=n/summationdisplay
+i=1α
+i−1+α≈αlog(1+n
+α)=O(αlogn)
+In summary, CRP deﬁnes a distribution over partitions of the data
+points, that is, a distribution over all possible clustering structures with
+diﬀerent number of clusters. Moreover, prior distributions can also be
+provided over cluster parameters, such as a Dirichlet prior over termsin LDA for each topic. A stochastic process called Dirichlet processcombines the two types of priors, and thus is frequently used as theprior for mixture models, which is introduced in the following section.
+3.2 Dirichlet Process
+We now introduce Dirichlet process and Dirichlet process-based mix-
+ture model, the inference algorithms and applications are also brieﬂy
+mentioned.
+3.2.1 Overview of Dirichlet Process. Dirichlet process
+(DP) [33, 67, 68] is a stochastic process, which is a distribution deﬁned
+on distributions. That is, if we draw a sample from a DP, it would be
+a distribution over values instead of a single value. In addition to CRP,which only considers the distribution over partitions of data points, DPalso deﬁnes the data distribution for each cluster, with an analogy of thedishes served for each table in the Chinese restaurant metaphor. For-mally, we say a stochastic process Gis a Dirichlet process with base dis-
+tribution Hand concentration parameter α, written as G∼DP(α,H),
+if for an arbitrary ﬁnite measurable partition A
+1,A2,...,A rof the prob-
+ability space of H, denoted as Θ, the following holds:
+(G(A1),G(A2),...,G(Ar))∼Dir(αH(A1),αH(A2),...,αH (Ar))Probabilistic Models for Text Mining 271
+whereG(Ai)a n dH(Ai) are the marginal probability of GandHover
+partition Ai. In other words, the marginal distribution of Gmust be
+Dirichlet distributed, and this is why it is called Dirichlet process. Intu-itively, the base distribution His the mean distribution of the DP, and
+the concentration parameter αcan be understood as an inverse variance
+of the DP, namely, an larger αmeans a smaller variance and thus a
+more concentrated DP around the mean H. Notice that, although the
+base distribution Hcould be a continuous distribution, Gwill always
+be a discrete distribution, with point masses at most countably inﬁnite.This can be understood by studying the random process of generatingdistribution samples φ
+i’s fromG:
+φn|φn−1,...,φ 1=/braceleftBigg
+φ∗
+k, with probabilitymk
+n−1+α
+new draw from H,with probabilityα
+n−1+α
+whereφ∗
+krepresents the kthuniquedistribution sampled from H, indi-
+cating the distribution for kth cluster, and φidenotes the distribution
+for theith sample, which could be a distribution from existing clusters
+or a new distribution.
+In addition to the above deﬁnition, a DP can also be deﬁned through
+a stick-breaking construction [62]. On one hand, the proportion of eachclusterkamong all the clusters, π
+k, is determined by a stick-breaking
+process:
+βk∼Beta(1,α)and πk=βkk−1/productdisplay
+l=1(1−βl)
+Metaphorically, assuming we have a stick with length 1, we ﬁrst break
+it atβ1that follows a Beta distribution with parameter α, and assign
+it toπ1; for the remaining stick with length 1 −β1, we repeat the pro-
+cess, break it at β2∼Beta(1,α), and assign it ( β2(1−β1)) toπ2;
+we recursively break the remaining stick and get π3,π4and so on. The
+stick-breaking distribution over πis sometimes written as π∼GEM(α),
+where the letters GEMstand for the initials of the inventors. On the
+other hand, for each cluster k, its distribution φ∗
+kis sampled from H.G
+is then a mixture model over these distributions, G∼/summationtext
+kπkδφ∗
+k, where
+δφ∗
+kdenotes a point mass at φ∗
+k.
+Further, hierarchical Dirichlet process (HDP) [68] can be deﬁned,
+where the base distribution Hfollows another DP. HDP can model top-
+ics across diﬀerent collections of documents, which share some common
+topics across diﬀerent corpora but may have some special topics withineach corpus.272 MINING TEXT DATA
+3.2.2 Dirichlet Process Mixture Model. By using DP as
+priors for mixture models, we can get Dirichlet process mixture model(DPM) [48, 67, 68], which can model the number of components ina mixture model, and sometimes is also called inﬁnite mixture model.For example, we can model inﬁnite topics for topic modeling, inﬁnitecomponents in inﬁnite Gaussian mixture model [57], and so on. In suchmixture models, to sample a data value, it will ﬁrst sample a distribution
+φ
+iand then sample a value xiaccording to the distribution φi. Formally,
+letx1,x2,...,x nbenobserved data points, and let θ1,θ2,...,θnbe the
+parameters for the distributions of latent clusters associated with eachdata point, where the distribution φ
+iwith parameter θiis drawn i.i.d
+fromG, the generative model for xiis then:
+xi|θi∼F(θi)
+θi|G∼G
+G|α,H∼DP(α,H)
+whereF(θi) is the distribution for xiwith the parameter θi. Notice that,
+sinceGis a discrete distribution, multiple θi’s can share the same value.
+From the generative process point of view, the observed data xi’s are
+generated by:
+1 Sample πaccording to π|α∼GEM(α), namely, the stick-breaking
+distribution;
+2 Sample the parameter θ∗
+kfor each distinctive cluster kaccording
+toθk|H∼H;
+3 For each xi,
+(a) ﬁrst sample its hidden cluster label zibyzi|π∼M(1;π),
+(b) then sample the value according to xi|zi,{θ∗
+k}∼F(θ∗
+zi).
+whereF(θ∗
+k) is the distribution of data in component kwith parameter
+θ∗
+k. That is, each xiis generated from a mixture model with component
+parameters θ∗
+k’s and the mixing proportion π.
+3.2.3 The Learning Algorithms. As DPM is a nonpara-
+metric model with inﬁnite number of parameters in the model, EMalgorithm cannot be directly used in the inference for DPM. Instead,MCMC approaches [48] and variational inference [10] are standard in-ference methods for DPM.
+The general goal for learning DPM is to learn the hidden cluster labels
+z
+i’s and the parameters θi’s for its associated cluster component for allProbabilistic Models for Text Mining 273
+the observed data points. It turns out that Gibbs sampling is very con-
+venient to implement for such models especially when Gis the conjugate
+prior for the data distribution F, as the conditional distribution of both
+θiandzican be easily computed and thus the posterior distribution
+of these parameters or hidden cluster labels can be easily simulated bythe obtained Markov chain. For more details, please refer to [48], whereseveral MCMC-based algorithms are provided and discussed.
+The major disadvantages of MCMC-based algorithms are that the
+sampling process can be very slow and the convergence is diﬃcult todiagnose. Therefore Blei et al. [10] proposed an alternative approach
+called variational inference for DPMs, which is a class of deterministic
+algorithms that convert inference problems into optimization problems.The basic idea of variational inference methods is to relax the originallikelihood function or posterior probability function Pinto a simpler
+variational distribution function Q
+μ, which is indexed by new free vari-
+ablesμthat are called variational parameters. The goal is to compute
+the variational parameters μthat minimizes the KL divergence between
+the variation distribution and the original distribution:
+μ∗= argmin D(Qμ||P)
+whereDrefers to some distance or divergence function. And then Qμ∗
+can be used to approximate the desired P. Please refer to [10] for more
+details of variational inference for DPM.
+3.2.4 Applications in Text Mining. There are many suc-
+cessful applications in text mining by using DPMs, and we select some
+of the most representative ones in the following.
+In [9], a hierarchical LDA model (LDA) that based on nested Chi-
+nese restaurant process is proposed, which can detect hierarchical topicmodels instead of topic models in a ﬂat structure from a collection ofdocuments. In addition, hLDA can detect the number of topics auto-matically, which is the number of nodes in the hierarchical tree of topics.Compared with original LDA, hLDA can detect topics with higher inter-
+pretability and has higher predictive held-out likelihood in the testing
+set.
+In [73], a time-sensitive Dirichlet process mixture model is proposed
+to detect clusters from a collection of documents with time information,for example, detecting subject threads for emails. Instead of consideringeach document equally important, the weights of history documents arediscounted in the cluster. A time-sensitive DPM (tDPM) is then built
+based on the idea, which can not only output the number of clusters,274 MINING TEXT DATA
+but also introduce the temporal dependencies between documents, with
+less inﬂuence from older documents.
+Evolution structure can also be detected using DPMs. A temporal
+Dirichlet process mixture model (TDPM) [2] is proposed as a frame-
+work to model the evolution of topics, such as retain, die out or emergeover time. In [1], an inﬁnite dynamic topic model (iDTM) is furtherproposed to allow each document to be generated from multiple topics,by modeling documents in each time epoch using HDP instead of DP.An evolutional hierarchical Dirichlet process approach (EvoHDP) is pro-posed in [72] to detect evolutionary topics from multiple but correlated
+corpora, which can discover diﬀerent evolving patterns of topics, in-
+cluding emergence, disappearance, evolution within a corpus and acrossdiﬀerent corpora.
+3.3 Pitman-Yor Process
+Pitman-Yor process [52, 66], also known as two-parameter Poisson-
+Dirichlet process, is a generalization over DP, which can successfullymodel data with power law [18] distributions. For example, if we want tomodel the distribution of all the words in a corpus, Pitman-Yor process
+is a better option than DP, where each word can be viewed as a table
+and the number of occurrences of the word can be viewed as the numberof customers sitting in the table, in a restaurant metaphor.
+Compared with CP, Pitman-Yor process has one more discount pa-
+rameter 0 ≤d<1, in addition to the strength parameter α>−d,
+which is written as G∼PY(d,α,H), where His the base distribution.
+This can be understood by studying the random process of generating
+distribution samples φ
+i’s fromG:
+φn|φn−1,...,φ 1=/braceleftBigg
+φ∗
+k, with probabilitymk−d
+n−1+α
+new draw from H,with probabilityα+dKn
+n−1+α
+whereφ∗
+kis the distribution of table k,mkis the number of customers
+sitting at table k,a n dKnis the number of tables so far. Notice that
+whend= 0, Pitman-Yor process reduces to DP.
+Two salient features of Pitman-Yor process compared with CP are:
+(1) given more occupied tables, the chance to have even more tables ishigher; (2) tables with small occupancy number have a lower chance toget more customers. This implies that Pitman-Yor process has a powerlaw(e.g., Zipf’slaw)behavior. Theexpectednumberoftablesis O(αn
+d),
+which has the power law form. Compared with the expected number oftablesO(αlogn) for DP, Pitman-Yor process indicates a faster growing
+in the expected number of tables.Probabilistic Models for Text Mining 275
+In [66], a hierarchial Pitman-Yor n-gram language model is proposed.
+Itturnsoutthattheproposedmodelhasthebestperformancecomparedwith the state-of-the-art methods, and has demonstrated that Bayesianapproach can be competitive with the best smoothing techniques in lan-guages modeling.
+3.4 Others
+TherearemanyotherstochasticprocessesthatcanbeusedinBayesian
+nonparametric models, such as Indian buﬀet process [27], Beta process
+[69], Gaussian process [58] for inﬁnite Gaussian mixture model, Gaus-sian process regression, and so on. We now brieﬂy introduce them in thefollowing, and the readers can refer to the references for more details.
+Indian buﬀet process. In mixture models, one data point can only
+belong to one cluster, with the probability determined by the mix-
+ing proportions. However, sometimes one data point can havemultiple features. For example, a person can participate in a num-ber of communities, all with a large strength. Indian buﬀet pro-cess is a stochastic process that can deﬁne the inﬁnite-dimensionalfeatures for data points. It has a metaphor of people choosing (in-ﬁnite) dishes arranged in a line in Indian buﬀet restaurant, which
+is where the name “Indian buﬀet process” is from.
+Beta process. As mentioned in [69], a beta process (BP) plays
+the role for the Indian buﬀet process that the Dirichlet processplays for the Chinese restaurant process. Also, a hierarchical betaprocess (hBP)-based method is proposed in [69] for the document
+classiﬁcation task.
+Gaussian process. Intuitively, a Gaussian process (GP) extends
+a multivariate Gaussian distribution to the one with inﬁnite di-mensionality, similar to DP’s role to Dirichlet distribution. Any
+ﬁnite subset of the random variables in a GP follows a multivari-
+ate Gaussian distribution. The applications for GP include Gaus-sian process regression, Gaussian process classiﬁcation, and so on,which are discussed in [58].
+4. Graphical Models
+A Graphical model [32, 36] is a probabilistic model for which a graph
+denotes the conditional independence structure between random vari-ables. Graphical model provides a simple way to visualize the structure
+of a probabilistic model and can be used to design and motivate new276 MINING TEXT DATA
+models. In a probabilistic graphical model, each node represents a ran-
+dom variable, and the links express probabilistic relationships betweenthese variables. The graph then captures the way in which the joint
+distribution over all of the random variables can be decomposed into
+a product of factors each depending only on a subset of the variables.There are two branches of graphical representations of distributions thatare commonly used: directedandundirected . In this chapter, we discuss
+thekeyaspectsofgraphicalmodelsandtheirapplicationsintextmining.
+4.1 Bayesian Networks
+Bayesiannetworks(BNs), alsoknownas belief networks (or Bayes nets
+for short), belong to the directed graphical models , in which the links of
+the graphs have a particular directionality indicated by arrows.
+4.1.1 Overview. Formally, BNs are directed acyclic graphs
+(DAG) whose nodes represent random variables, and edges represent
+conditional dependencies. For example, a link from xtoycan be infor-
+mally interpreted as indicating that x“causes” y.
+Conditional Independence. The simplest conditional indepen-
+dence relationship encoded in a BN can be stated as follows: a nodeis conditionally independent of its non-descendants given its parents,
+where the parent relationship is with respect to some ﬁxed topologicalordering of the nodes. This is also called local Markov property ,d e -
+noted by X
+v⊥ ⊥XV\de(v)|Xpa(v)for allv∈V, wherede(v) is the set of
+descendants of v. For example, as shown in Figure 8.1(a), we obtain
+x1⊥ ⊥x3|x2.
+Factorization Deﬁnition. In a BN, the joint probability of all
+random variables can be factored into a product of density functionsfor all of the nodes in the graph, conditional on their parent variables.More precisely, for a graph with nnodes (denoted as x
+1,...,xn), the joint
+distribution is given by:
+p(x1,...,xn)=Πn
+i=1p(xi|pai), (8.1)
+wherepaiis the set of parents of node xi. By using the chain rule of
+probability, the above joint distribution can be written as a product of
+conditional distributions, given the topological order of these random
+variables:
+p(x1,...,xn)=p(x1)p(x2|x1)...p(xn|xn−1,...,x1).(8.2)Probabilistic Models for Text Mining 277
+(a) (b) (c)
+Figure 8.1. Examples of directed acyclic graphs describing the joint distributions.
+The diﬀerence between the two expressions is the conditional indepen-
+denceof the variables encoded in a BN, that variables are conditionally
+independent of their non-descendants given the values of their parent
+variables.
+Consider the graph shown in Figure 8.1, we can go from this graph
+to the corresponding representation of the joint distribution written interms of the product of a set of conditional probability distributions, onefor each node in the graph. The joint distributions for Figure 8.1(a)-(c) are therefore p(x
+1,x2,x3)=p(x1|x2)p(x2)p(x3|x2),p(x1,x2,x3)=
+p(x1)p(x2|x1,x3)p(x3), andp(x1,x2,x3)=p(x1)p(x2|x1)p(x3|x2), re-
+spectively.
+4.1.2 The Learning Algorithms. Because a BN is a com-
+plete model for the variables and their relationships, a complete joint
+probability distribution (JPD) over all the variables is speciﬁed for a
+model. Given the JPD, we can answer all possible inference queriesby summing out (marginalizing) over irrelevant variables. However, theJPD has size O(2
+n), where nis the number of nodes, and we have as-
+sumed each node can have 2 states. Hence summing over the JPD takesexponential time. The most common exact inference method is Vari-
+able Elimination [19]. The general idea is to perform the summation
+to eliminate the non-observed non-query variables one by one by dis-tributing the sum over the product. The reader can refer to [19] formore details. Instead of exact inference, a useful approximate algorithm
+calledBelief propagation [46] is commonly used on general graphs in-
+cluding Bayesian network, which will be introduced in Section 4.3.
+4.1.3 Applications in Text Mining. Bayesian networks
+have been widely used in many applications in text mining, such asspam ﬁltering [61] and information retrieval [20]. In [61], a Bayesianapproach is proposed to identify spam email by making use of a naiveBayes classiﬁer. The intuition is that particular words have particular
+probabilities of occurring in spam emails and in legitimate emails. For278 MINING TEXT DATA
+(a) Regular Markov model
+ (b) Hidden Markov model
+Figure 8.2. Graphical structures for the regular and hidden Markov model.
+instance, the words “free” and “credit” will frequently appear in spam
+emails, but will seldom occur in other emails. To train the ﬁlter, the usermust manually indicate whether an email is spam or not for a trainingset. Withsuchatrainingdataset, Bayesianspamﬁlterswilllearnaspam
+probability for each word, e.g., a high spam probability for the words
+“free” and “credit”, and a relatively low spam probability for words suchas the names of friends. Then, the email’s spam probability is computedover all words in the email, and if the total exceeds a certain threshold,the ﬁlter will mark the email as a spam.
+4.2 Hidden Markov Models
+In a regular Markov model as Figure 8.2(a), the state xiis directly
+visible to the observer, and therefore the state transition probabilities
+p(xi|xi−1) are the only parameters. Based on the Markov property, the
+joint distribution for a sequence of nobservations under this model is
+given by
+p(x1,...,xn)=p(x1)n/productdisplay
+i=2p(xi|xi−1). (8.3)
+Thus if we use such a model to predict the next observation in a se-quence, the distribution of predictions will depend on the value of the
+immediately preceding observation and will be independent of all earlierobservations, conditional on the preceding observation.
+4.2.1 Overview. A hidden Markov model (HMM) can be con-
+sidered as the simplest dynamic Bayesian network. In a hidden Markovmodel, the state y
+iis not directly visible, and only the output xiis visi-
+ble, which is dependent on the state. The hidden state space is discrete,and is assumed to consist of one of Npossible values, which is also
+called latent variable. The observations can be either discrete or con-tinuous, which are typically generated from a categorical distribution
+or a Gaussian distribution. Generally, a HMM can be considered as aProbabilistic Models for Text Mining 279
+generalization of a mixture model where the hidden variables are related
+through a Markov process rather than independent of each other.
+Suppose the latent variables form a ﬁrst-order Markov chain as shown
+inFigure 8.2(b). The random variable ytis the hidden state at time t,
+and the random variable xtis the observation at time t. The arrows in
+the ﬁgure denote conditional dependencies. From the diagram, it is clear
+thatyt−1andyt+1areindependentgiven yt, sothatyt+1⊥ ⊥yt−1|yt. This
+is the key conditional independence property, which is called the Markov
+property. Similarly, the value of the observed variable xtonly depends
+on the value of the hidden variable yt. Then, the joint distribution for
+this model is given by
+p(x1,...,xn,y1,...,yn)=p(y1)n/productdisplay
+t=2p(yt|yt−1)n/productdisplay
+t=1p(xt|yt),(8.4)
+wherep(yt|yt−1) is the state transition probability, and p(xt|yt) is the
+observation probability.
+4.2.2 The Learning Algorithms. Given a set of possi-
+ble states Ω Y={q1,...,qN}and a set of possible observations Ω X=
+{o1,...,oM}. The parameter learning task of HMM is to ﬁnd the best
+set of state transition probabilities A={aij},aij=p(yt+1=qj|yt=qi)
+and observation probabilities B={bi(k)},bi(k)=p(xt=ok|yt=qi)
+as well as the initial state distribution Π = {πi},πi=p(y0=qi) for a
+set of output sequences. Let Λ = {A,B,Π}denote the parameters for
+a given HMM with ﬁxed Ω Yand ΩX. The task is usually to derive the
+maximum likelihood estimation of the parameters of the HMM given the
+set of output sequences. Usually a local maximum likelihood can be de-rived eﬃciently using the Baum-Welch algorithm [5], which makes use of
+forward-backward algorithm [55], and is a special case of the generalized
+EM algorithm [22].
+Given the parameters of the model Λ, there are several typical in-
+ference problems associated with HMMs, as outlined below. One com-mon task is to compute the probability of a particular output sequence,which requires summation over all possible state sequences: The prob-ability of observing a sequence X
+T
+1=o1,...,oTof length Tis given by
+P(XT
+1|Λ) =/summationtext
+YT
+1P(XT
+1|YT
+1,Λ)P(YT
+1|Λ), where the sum runs over all
+possible hidden-node sequences YT
+1=y1,...,yT.
+Thisproblemcanbehandledeﬃcientlyusingthe forward-backward
+algorithm. Before we describe the algorithm, let us deﬁne the forward(alpha) values and backward (beta) values as follows: α
+t(i)=P(x1=
+o1,...,xt=ot,yt=qi|Λ) andβt(i)=P(xt+1=ot+1,...,xT=oT|yt=280 MINING TEXT DATA
+qi,Λ). Note the forward values enable us to solve the problem through
+marginalizing, then we obtain
+P(XT
+1|Λ) =N/summationdisplay
+i=1P(o1,...,oT,yT=qi|Λ) =N/summationdisplay
+i=1αT(i).
+The forward values can be computed eﬃciently with the principle of
+dynamic programming :
+α1(i)=πibi(o1),
+αt+1(j)=/bracketleftBiggN/summationdisplay
+i=1αt(i)aij/bracketrightBigg
+bj(ot+1).
+Similarly, the backward values can be computed as
+βT(i)=1,
+βt(i)=N/summationdisplay
+j=1aijbj(ot+1)βt+1(j).
+The backward values will be used in the Baum-Welch algorithm.
+Given the parameters of HMM and a particular sequence of observa-
+tions, another interesting task is to compute the most likely sequence ofstates that could have produced the observed sequence. We can ﬁnd
+the most likely sequence by evaluating the joint probability of both
+the state sequence and the observations for each case. For example, inpart-of-speech (POS) tagging [37], we observe a token (word) sequenceX
+T
+1=o1,...,oT, and the goal of POS tagging is to ﬁnd a stochastic opti-
+mal tag sequence YT
+1=y1y2...yTthat maximizes P(Yn
+1,Xn
+1). In general,
+ﬁnding the most likely explanation for an observation sequence can besolved eﬃciently using the Viterbi algorithm [24] by the recurrence
+relations:
+V
+1(i)=bi(o1)πi,
+Vt(j)=bi(ot)max
+i(Vt−1(i)aij).
+HereVt(j) is the probability of the most probable state sequence respon-
+sible for the ﬁrst tobservations that has qjas its ﬁnal state. The Viterbi
+path can be retrieved by savingbackpointersthat remember which statey
+t=qjwas used in the second equation. Let Ptr(yt,qi) be the function
+that returns the value of yt−1used to compute Vt(i) as follows:
+yT= arg max
+qi∈ΩYVT(i),
+yt−1=Ptr(yt,qi).Probabilistic Models for Text Mining 281
+The complexity of this algorithm is O(T×N2), where Tis the length
+of observed sequence and Nis the number of possible states.
+Now we need a method of adjusting the parameters Λ to maximize the
+likelihood for a given training set. The Baum-Welch algorithm [5] is
+used to ﬁnd the unknown parameters of HMMs, which is a particular
+case of a generalized EM algorithms [22]. We start by choosing arbitraryvalues for the parameters, then compute the expected frequencies giventhe model and the observations. The expected frequencies are obtainedbyweightingtheobservedtransitionsbytheprobabilitiesspeciﬁedinthecurrent model. The expected frequencies obtained are then substitutedfor the old parameters and we iterate until there is no improvement. On
+each iteration we improve the probability of being observed from the
+model until some limiting probability is reached. This iterative proce-dure is guaranteed to converge to a local maximum [56].
+4.2.3 Applications in Text Mining. HMM models have
+been applied to a wide variety of problems in information extraction andnatural language processing, which have been introduced in Chapter 2,including POS tagging [37] and named entity recognition [6]. TakingPOS tagging [37] as an example, each word is labeled with a tag indi-cating its appropriate part of speech, resulting in annotated text, suchas: “[VB heat] [NN water] [IN in] [DT a] [JJ large] [NN vessel]”. Given
+a sequence of words X
+n
+1, e.g., “heat water in a large vessel”, the task is
+to assign a sequence of labels Yn
+1, e.g., “VB NN IN DT JJ NN”, for the
+words. Based on HMM models, we can determine the sequence of labelsby maximizing a joint probability distribution p(X
+n
+1,Yn
+1).
+With the success of HMMs in POS tagging, it is natural to develop a
+variant of an HMM for the name entity recognition task [6]. Intuitively,the locality of phenomena may indicate names in the text, such as titles
+like “Mr.” preceding a person’s name. The HMM classiﬁer models such
+kinds of dependencies, and performs sequence classiﬁcation by assigningeach word to one of the named entity types. The states in the HMM areorganized into regions, one region for each type of named entity. Withineach of the regions, a statistical bi-gram language model is used to com-pute the likelihood of words occurring within that region (named entitytype). The transition probabilities are computed by deleted interpola-
+tion, and the decoding is done through the Viterbi algorithm.282 MINING TEXT DATA
+4.3 Markov Random Fields
+Now we turn to another major class of graphical models that are de-
+scribed by undirected graphs and that again specify both a factorizationand a set of conditional independence relations.
+4.3.1 Overview. A Markov random ﬁeld (MRF), also known
+as an undirected graphical model [35], has a set of nodes each of whichcorresponds to a variable or group of variables, as well as a set of linkseach of which connects a pair of nodes. The links are undirected, thatis they do not carry arrows.
+Conditional Independence. Given three sets of nodes, denoted
+A,B,a n dC, in an undirected graph G,i fAandBare separated in G
+after removing a set of nodes CfromG, thenAandBare conditionally
+independent given the random variables C, denoted as A⊥⊥B|C.T h e
+conditional independence is determined by simple graph separation. In
+other words, a variable is conditionally independent of all other vari-ables given its neighbors, denoted as X
+v⊥⊥XV\{v∪ne(v)}|Xne(v), where
+ne(v) is the set of neighbors of v. In general, an MRF is similar to a
+Bayesian network in its representation of dependencies, and there aresome diﬀerences. On one hand, an MRF can represent certain depen-dencies that a Bayesian network cannot (such as cyclic dependencies);
+on the other hand, MRF cannot represent certain dependencies that a
+Bayesian network can (such as induced dependencies).
+Clique Factorization. As the Markov properties of an arbitrary
+probability distribution can be diﬃcult to establish, a commonly used
+class of MRFs are those that can be factorized according to the cliquesof the graph. A cliqueis deﬁned as a subset of the nodes in a graph
+such that there exists a link between all pairs of nodes in the subset. Inother words, the set of nodes in a clique is fully connected.
+We can therefore deﬁne the factors in the decomposition of the joint
+distribution to be functions of the variables in the cliques. Let us denote
+a clique by Cand the set of variables in that cliques by x
+C. Then the
+joint distribution is written as a product of potential functions ψC(xC)
+over the maximal cliques of the graph
+p(x1,x2,...,xn)=1
+ZΠCψC(xC),
+where the partition function Zis a normalization constant and is given
+byZ=/summationtext
+xΠCψC(xC). In contrast to the factors in the joint distri-
+bution for a directed graph, the potentials in an undirected graph doProbabilistic Models for Text Mining 283
+not have a speciﬁc probabilistic interpretation. Therefore, how to moti-
+vate a choice of potential function for a particular application seemsto be very important. One popular potential function is deﬁned as
+ψ
+C(xC)=e x p ( −/epsilon1(xC)), where /epsilon1(xC)=−lnψC(xC)i sa nenergy func-
+tion[45] derived from statistical physics. The underlying idea is that
+the probability of a physical state depends inversely on its energy. Inthe logarithmic representation, we have
+p(x
+1,x2,...,xn)=1
+Zexp/parenleftBigg
+−/summationdisplay
+C/epsilon1(xC)/parenrightBigg
+.
+The joint distribution above is deﬁned as the product of potentials, and
+so the total energy is obtained by adding the energies of each of themaximal cliques.
+Alog-linear model is a Markov random ﬁeld with feature functions f
+k
+such that the joint distribution can be written as
+p(x1,x2,...,xn)=1
+Zexp/parenleftBiggK/summationdisplay
+k=1λkfk(xCk)/parenrightBigg
+,
+wherefk(xCk) is the function of features for the clique Ck,a n dλkis the
+weight vector of features. The log-linear model provides a much morecompactrepresentationformanydistributions, especiallywhenvariableshave large domains such as text.
+4.3.2 The Learning Algorithms. In MRF, we may compute
+theconditionaldistributionofasetofnodesgivenvalues Atoanotherset
+of nodes Bby summing over all possible assignments to v/∈A, B, which
+iscalledexact inference . However, theexactinferenceiscomputationally
+intractable in the general case. Instead, approximation techniques suchasMCMCapproach[3]andloopy belief propagation [46,8]areoftenmore
+feasible in practice. In addition, there are some particular subclasses ofMRFs that permit eﬃcient maximum-a-posterior (MAP) estimation, ormore likely assignment, inference, such as associate networks. Here wewill brieﬂy describe belief propagation algorithm.
+Belief propagation is a message passing algorithm for performing in-
+ference on graphical models, including Bayesian networks and MRFs.It calculates the marginal distribution for each unobserved node, con-ditional on any observed nodes. Generally, belief propagation operateson a factor graph, which is a bipartite graph containing nodes corre-sponding to variables Vand factors U, with edges between variables
+and the factors in which they appear. Any Bayesian network and MRF
+can be represented as a factor graph. The algorithm works by passing284 MINING TEXT DATA
+Figure 8.3. Graphical structure for the conditional random ﬁeld model.
+real valued function called messages along the edges between the nodes.
+Taking pairwise MRF as an example, let mij(xj) denote the message
+from node ito nodej, and a high value of mij(xj) means that node i
+“believes” the marginal value P(xj) to be high. Usually the algorithm
+ﬁrst initializes all messages to uniform or random positive values, and
+then updates message from itojby considering all messages ﬂowing
+intoi(except for message from j) as follows:
+mij(xj)=/summationdisplay
+xifij(xi,xj)/productdisplay
+k∈ne(i)\jmki(xi),
+wherefij(xi,xj) is the potential function of the pairwise clique. After
+enough iterations, this process is likely to converge to a consensus. Once
+messages have converged, the marginal probabilities of all the variables
+can be determines by
+p(xi)∝/productdisplay
+k∈ne(i)mki(xi).
+The reader can refer to [46] for more details. The main cost is the
+message update equation, which is O(N2) for each pair of variables ( N
+is the number of possible states).
+4.3.3 Applications in Text Mining. Recently, MRF has
+been widely used in many text mining tasks, such as text categoriza-
+tion [16] and information retrieval [44]. In [44], MRF is used to model
+the term dependencies using the joint distribution over queries and doc-
+uments. The model allows for arbitrary text features to be incorporated
+as evidence. In this model, an MRF is constructed from a graph G,
+which consists of query nodes qiand a document node D. The authors
+explore full independence, sequential dependence, and full dependence
+variants of the model. Then, a novel approach is developed to train the
+model that directly maximizes the mean average precision. The results
+show signiﬁcant improvements are possible by modeling dependencies,
+especially on the larger web collections.Probabilistic Models for Text Mining 285
+4.4 Conditional Random Fields
+So far, we have described the Markov network representation as a
+joint distribution. In this subsection, we introduce one notable variant
+of an MRF, i.e., conditional random ﬁeld (CRF) [38, 65], which is yetanother popular model for sequence labeling and has been widely usedin information extraction as described in Chapter 2.
+4.4.1 Overview. A CRF is an undirected graph whose nodes
+can be divided into exactly two disjoint sets, the observed variablesXand the output variables Y, which can be parameterized as a set of
+factors in the same way as an ordinary Markov network. The underlyingideaisthatofdeﬁningaconditionalprobabilitydistribution p(Y|X)o v er
+labelsequences Ygivenaparticularobservationsequence X, ratherthan
+a joint distribution over both label and observation sequences p(Y,X).
+The primary advantage of CRFs over HMMs is their conditional nature,resulting in the relaxation of the independence assumptions required byHMMs in order to ensure tractable inference.
+Considering a linear-chain CRF with Y={y
+1,y2,...,yn}andX=
+{x1,x2,...,xn}as shown in Figure 8.3, an input sequence of observed
+variable Xrepresents a sequence of observations and Yrepresents a
+sequence of hidden state variables that needs to be inferred given theobservations. The y
+i’s are structured to form a chain, with an edge
+between each yiandyi+1. The distribution represented by this network
+has the form:
+p(y1,y2,...,yn|x1,x2,...,xn)=1
+Z(X)exp/parenleftBiggK/summationdisplay
+k=1λkfk(yi,yi−1,xi)/parenrightBigg
+,
+whereZ(X)=/summationtext
+yiexp/parenleftBig/summationtextK
+k=1λkfk(yi,yi−1,xi)/parenrightBig
+.
+4.4.2 The Learning Algorithms. For general graphs, the
+problem of exact inference in CRFs is intractable. Basically, the infer-
+ence problem for a CRF is the same as for an MRF. If the graph isa chain or a tree, as shown in Figure 8.3, message passing algorithms
+yield exact solutions, which are similar to the forward-backward [5, 55]
+and Viterbi algorithms [24] for the case of HMMs. If exact inferenceis not possible, generally the inference problem for a CRF can be de-rived using approximation techniques such as MCMC [48, 3], loopy belief
+propagation [46, 8], and so on. Similar to HMMs, the parameters are
+typically learned by maximizing the likelihood of training data. It canbe solved using an iterative technique such as iterative scaling [38] and
+gradient-descent methods [63].286 MINING TEXT DATA
+4.4.3 Applications in Text Mining. CRF has been applied
+to a wide variety of problems in natural language processing, includ-ing POS tagging [38], shallow parsing [63], and named entity recogni-tion [40], being an alternative to the related HMMs. Based on HMMmodels, we can determine the sequence of labels by maximizing a jointprobability distribution p(X,Y). In contrast, CRMs deﬁne a single log-
+linear distribution, i.e., p(Y|X), over label sequences given a particular
+observation sequence. The primary advantage of CRFs over HMMs is
+their conditional nature, resulting in the relaxation of the independenceassumptions required by HMMs in order to ensure tractable inference.As expected, CRFs outperform HMMs on POS tagging and a numberof real-word sequence labeling tasks [38, 40].
+4.5 Other Models
+Recently, there are many extensions of basic graphical models as men-
+tioned above. Here we just brieﬂy introduce the following two mod-
+els, probabilistic relational model (PRM) [25] and Markov logic net-
+work (MLN) [59]. A Probabilistic relational model is the counterpartof a Bayesian network in statistical relational learning, which consistsof relational schema, dependency structure, and local probability mod-els. Compared with BN, PRM has some advantages and disadvantages.PRMs allow the properties of an object to depend probabilistically bothon other properties of that object and on properties of related objects,
+while BN can only model relationships between at most one class of in-
+stances at a time. In PRM, all instances of the same class must use thesame dependency mode, and it cannot distinguish two instances of thesame class. In contrast, each instance in BN has its own dependencymodel, but cannot generalize over instances. Generally, PRMs are sig-niﬁcantly more expressive than standard models, such as BNs. Thewell-known methods for learning BNs can be easily extended to learn
+these models.
+A Markov logic network [59] is a probabilistic logic which combines
+ﬁrst-order logic and probabilistic graphical models in a single represen-tation. It is a ﬁrst-order knowledge base with a weight attached to eachformula, and can be viewed as a template for constructing Markov net-works. Basically, probabilistic graphical models enable us to eﬃcientlyhandle uncertainty. First-order logic enables us to compactly represent a
+wide variety of knowledge. From the point of view of probability, MLNs
+provide a compact language to specify very large Markov networks, andthe ability to ﬂexibly and modularly incorporate a wide range of domainknowledge into them. From the point of view of ﬁrst-order logic, MLNsProbabilistic Models for Text Mining 287
+add the ability to handle uncertainty, tolerate imperfect and contradic-
+tory knowledge, and reduce brittleness. The inference in MLNs can beperformed using standard Markov network inference techniques over the
+minimal subset of the relevant Markov network required for answering
+the query. These techniques include belief propagation [46] and Gibbssampling [23, 3].
+5. Probabilistic Models with Constraints
+In probabilistic models, domain knowledge is encoded into the model
+implicitly for most of the time. In this section, we introduce severalsituations that domain knowledge can be modeled as explicit constraintsto the original probabilistic models.
+By merely using PLSA or LDA, we may derive diﬀerent topic models
+when the algorithms converge to diﬀerent local maximums. It will bevery useful if users can explicitly state which topic model they favor.A simple way to handle this issue is to list the terms that are desiredby the users in each topic. For example, if “sport”, “football” must becontained in Topic 1, users can indicate a related term distribution asprior distribution for Topic 1. This prior can be integrated into PLSA.
+Another sort of guidance is to specify which terms should have similar
+probabilities in one topic (must-link) and which terms should not havesimilar probabilities in any topic (cannot-link). This kind of prior canbe modeled as Dirichlet forest prior, which is discussed in [4].
+Intraditionaltopicmodels,documentsareconsideredindepedentwith
+each other. However, in reality there could be correlations among doc-uments. For example, linked webpages tends to be similar with each
+other, a paper cites another paper indicates the two papers are some-
+howsimilar. NetPLSA[41]andiTopicModel[64]aretwoalgorithmsthatimprove the original PLSA by consider the network constraints amongthe documents. NetPLSA takes the network constraints as an additionalgraph regularization term that forces two linked documents much simi-lar, while iTopicModel models the network constraints using a Markovrandom ﬁeld and also considers the direction of links in the network.
+These algorithms can still be solved by EM algorithm. By looking at
+the E-step, we can see that the constraints can be integrated into E-step,with a nice interpretation.
+In [26], it proposes a framework of posterior regularization for prob-
+abilistic models. Diﬀerent from traditional priors that are directly ap-plied onto parameters, posterior regularization framework allows usersto specify the constraints which are dependent on data space. For exam-
+ple, in an unsupervised part-of-speech tagging task, users may require288 MINING TEXT DATA
+each sentence have at least one verb according to domain knowledge,
+which is diﬃcult to encode as priors for model parameters only. In orderto take the data-dependent constraints into consideration, a posterior
+regularization likelihood is proposed, which integrates both the model
+likelihood and the constraints. By studying several tasks with diﬀerentconstraint types, the new method has shown its ﬂexibility and eﬀective-ness.
+Another line of systematical study of integrating probabilistic models
+and constraints are Constrained Conditional Models (CCMs) [54, 60,13, 14]. CCM is a learning and inference framework that augments
+the learning of conditional models with declarative constraints. The
+objective function of a CCM includes two parts, one part involves thefeatures of a task, and the other involves the penalties when constraintsare violated. To keep the simplicity of the probabilistic model, complexglobalconstraintsareencodedasconstraintsinsteadoffeatures. Usually,the inference problem given a trained model can be solved using integerlinear programming. There are two strategies for the training stage, a
+local model that decouples learning and inference and a global model
+(joint learning) that optimizes the whole objective function. In practice,the local model for training is especially beneﬁcial when joint learningfor global model is computationally intractable or when training datais not available for joint learning. That is, it is more practical to trainsimple models using limited training data but inference with both thetrained model and the global constraints at the decision stage.
+6. Parallel Learning Algorithms
+The eﬃciency of the learning algorithms is always an issue, especially
+for large scale of datasets, which is quite common for text data. Inorder to deal with such large datasets, algorithms with linear or evensub-linear time complexity are required, for which parallel learning al-gorithms provide a way to speed up original algorithms signiﬁcantly. Wenow introduce several such algorithms among them.
+The time complexity for original EM learning algorithm for PLSA
+is about linear to the total document-word occurrences in the corpus
+and the number of topics. By partitioning the document-word occur-rence table into blocks, the calculation of the conditional probabilityfor each term in each document can be parallelized for blocks with noconﬂicts. The tricky part is to partition the blocks such that the work-load for each processing unit is balanced. Under this idea, [31] proposesa parallelized PLSA with 6 times’ speedup on an eight-processor ma-
+chine compared with the baseline. In [15], a Graphic Processing UnitProbabilistic Models for Text Mining 289
+(GPU) instead of a multi-core machine is used to parallelize PLSA. GPU
+has a hundreds-of-core structure and high memory bandwith. It wasdesigned to handle high-granularity graphics-related applications wheremanyworkloadscanbesimultaneouslydispatchedtoprocessorelements,and now gradually becomes a general platform for parallel computing.In [15], both co-occurrence table-based partition and document-based
+partition are studied for the parallelization, which turn out to gain a
+signiﬁcant speedup.
+There are also some parallel learning algorithms for fast computing
+LDA. [47] proposes parallel version of algorithms based on variationalEM algorithm for LDA. Two settings of implementations are considered,one is in a multiprocessor architecture and the other is in a distributedenvironment. In both settings, multiple threads or machines calculate
+E-step simultaneously for diﬀerent partitions of the dataset, and a main
+program or a master machine will aggregate all the information andcalculate M-step. In [49], parallel algorithms for LDA are based onGibbs sampling algorithm. Two versions of algorithms, AD-LDA andHD-LDA, are proposed. AD-LDA is an approximate algorithm thatapplies local Gibbs sampling on each processor with periodic updates.HD-LDA is an algorithm with a theoretical guarantee to converge to
+Gibbs sampling using only one processor, which relies on a hierarchi-
+cal Bayesian extension of the standard LDA model. Both algorithmshave similar eﬀectiveness performance as the single-processor learning,but with a signiﬁcant time speedup. In PLDA [70], a further improve-ment is made by implementing AD-LDA on MPI (Message Passing In-terface) and MapReduce, where MPI is a standardized and portablemessage-passing system for communicating between parallel computers,
+and MapReduce is a software framework introduced by Google to sup-
+port distributed computing on clusters of computers.
+In [17], instead of parallelizing one algorithm at a time, it proposes a
+broadlyapplicableparallelingprogrammingmethod, whichiseasytoap-ply to many diﬀerent learning algorithms. In the paper, it demonstratesthe eﬀectiveness of their methodology on a variety of learning algorithmsby using MapReduce paradigm, which include locally weighted linear re-
+gression (LWLR), k-means, logistic regression (LR), naive Bayes (NB),
+SVM, ICA, PCA, gaussian discriminant analysis (GDA), EM, and back-propagation (NN).
+7. Conclusions
+In this chapter, we have introduced the most frequently used proba-
+bilistic models in text mining, which include mixture models with the290 MINING TEXT DATA
+applications of PLSA and LDA, the nonparametric models that use
+stochastic processes as priors and thus can model inﬁnite-dimensionaldata, the well-known graphical models including Bayesian networks,
+HMM, Markov random ﬁeld and conditional random ﬁeld. In some
+scenarios, it will be helpful to model user guidance as constraints to theexisting probabilistic models.
+The goal of learning algorithms for these probabilistic models are to
+ﬁnd MLE, MAP estimators for parameters in these models. Most of thetime, noclosedformsolutionscanbeprovided. Iterativealgorithmssuchas EM algorithm is a powerful tool to learn mixture models. In other
+cases, exactsolutionsarediﬃculttoobtain, andsamplingmethodsbased
+on MCMC, belief propagation or variational inference methods are theoptions. When dealing with large scale of text data, parallel algorithmscould be the right way to go.
+References
+[1] A. Ahmed and E. Xing. Timeline: A dynamic hierarchical dirichlet
+process model for recovering birth/death and evolution of topics intext stream. Uncertainty in Artiﬁcial Intelligence , 2010.
+[2] A.AhmedandE.P.Xing. Dynamicnon-parametricmixturemodels
+and the recurrent chinese restaurant process: with applications toevolutionary clustering. In SDM, pages 219–230, 2008.
+[3] C. Andrieu, N. De Freitas, A. Doucet, and M. Jordan. An introduc-
+tion to mcmc for machine learning. Machine learning , 50(1):5–43,
+2003.
+[4] D. Andrzejewski, X. Zhu, and M. Craven. Incorporating domain
+knowledge into topic modeling via dirichlet forest priors. In Pro-
+ceedings of the 26th Annual International Conference on Machine
+Learning ,ICML’09,pages25–32,NewYork,NY,USA,2009.ACM.
+[5] L. Baum, T. Petrie, G. Soules, and N. Weiss. A maximization tech-
+nique occurring in the statistical analysis of probabilistic functionsof markov chains. The annals of mathematical statistics , 41(1):164–
+171, 1970.
+[6] D. Bikel, R. Schwartz, and R. Weischedel. An algorithm that learns
+what’s in a name. Machine learning , 34(1):211–231, 1999.
+[7] J. Bilmes. A gentle tutorial of the EM algorithm and its application
+to parameter estimation for Gaussian mixture and hidden Markovmodels. Technical Report TR-97-021, ICSI, 1997.
+[8] C. Bishop. Pattern recognition and machine learning. Springer,
+New York, 2006.Probabilistic Models for Text Mining 291
+[9] D. M. Blei, T. L. Griﬃths, and M. I. Jordan. The nested chinese
+restaurant process and bayesian nonparametric inference of topic
+hierarchies. J. ACM, Aug 2009.
+[10] D. M. Blei and M. I. Jordan. Variational inference for dirichlet
+process mixtures. Bayesian Analysis , 1:121–144, 2005.
+[11] D. M. Blei, A. Ng, and M. Jordan. Latent dirichlet allocation.
+JMLR, 3:993–1022, 2003.
+[12] S. Borman. The expectation maximization algorithm: A short tu-
+torial.Unpublished Technical report , 2004.
+Available online at http://www.seanborman.com/publications.
+[13] M. Chang, D. Goldwasser, D. Roth, and V. Srikumar. Discrimi-
+native learning over constrained latent representations. In Proc. of
+the Annual Meeting of the North American Association of Compu-tational Linguistics (NAACL), 6, 2010.
+[14] M.-W.Chang, N.Rizzolo,andD. Roth. Integerlinearprogramming
+in nlp – constrained conditional models. Tutorial, NAACL, 2010.
+[15] H. Chen. Parallel implementations of probabilistic latent semantic
+analysis on graphic processing units. Computer science, Universityof Illinois at Urbana–Champaign, 2011.
+[16] S. Chhabra, W. Yerazunis, and C. Siefkes. Spam ﬁltering using a
+markov random ﬁeld model with variable weighting schemas. InICDM Conference , pages 347–350, 2004.
+[17] C. T. Chu, S. K. Kim, Y. A. Lin, Y. Yu, G. R. Bradski, A. Y. Ng,
+and K. Olukotun. Map-Reduce for machine learning on multicore.InNIPS, pages 281–288, 2006.
+[18] A. Clauset, C. R. Shalizi, and M. E. J. Newman. Power-law dis-
+tributions in empirical data. SIAM Rev., 51:661–703, November
+2009.
+[19] F. Cozman. Generalizing variable elimination in bayesian networks.
+InWorkshop on Probabilistic Reasoning in Artiﬁcial Intelligence ,
+pages 27–32, 2000.
+[20] L. de Campos, J. Fern´ andez-Luna, and J. Huete. Bayesian networks
+and information retrieval: an introduction to the special issue. In-
+formation processing & management, 40(5):727–733, 2004.
+[21] F. Dellaert. The expectation maximization algorithm. Technical
+report, 2002.
+[22] A.P.Dempster,N.M.Laird,andD.B.Rubin. Maximumlikelihood
+from incomplete data via the em algorithm. Journal of the Royal
+Statistical Society, Series B, 39(1):1–38, 1977.292 MINING TEXT DATA
+[23] J. R. Finkel, T. Grenager, and C. D. Manning. Incorporating non-
+local information into information extraction systems by gibbs sam-pling. In ACL, 2005.
+[24] G. Forney Jr. The viterbi algorithm. Proceedings of the IEEE ,
+61(3):268–278, 1973.
+[25] N. Friedman, L. Getoor, D. Koller, and A. Pfeﬀer. Learning prob-
+abilistic relational models. In International Joint Conference on
+Artiﬁcial Intelligence , volume 16, pages 1300–1309, 1999.
+[26] K. Ganchev, J. A. Gra¸ ca, J. Gillenwater, and B. Taskar. Poste-
+rior regularization for structured latent variable models. Journal of
+Machine Learning Research , 11:2001–2049, Aug. 2010.
+[27] T. Griﬃths and Z. Ghahramani. Inﬁnite latent feature models and
+the indian buﬀet process. In NIPS, pages 475–482, 2005.
+[28] T. L. Griﬃths and M. Steyvers. Finding scientiﬁc topics. PNAS,
+101(suppl. 1):5228–5235, 2004.
+[29] T. Hofmann. Probabilistic latent semantic analysis. In Proceedings
+of Uncertainty in Artiﬁcial Intelligence, UAI , 1999.
+[30] T.Hofmann. Probabilisticlatentsemanticindexing. In ACM SIGIR
+Conference , pages 50–57, 1999.
+[31] C. Hong, W. Chen, W. Zheng, J. Shan, Y. Chen, and Y. Zhang.
+Parallelization and characterization of probabilistic latent semanticanalysis. International Conference on Parallel Processing , 0:628–
+635, 2008.
+[32] M. I. Jordan. Graphical models. Statistical Science , 19(1):140–155,
+2004.
+[33] M. I. Jordan. Dirichlet processes, chinese restaurant processes and
+all that. Tutorial presentation at the NIPS Conference , 2005.
+[34] C. T. Kelley. Iterative methods for optimization. Frontiers in Ap-
+plied Mathematics , SIAM, 1999.
+[35] R. Kindermann, J. Snell, and A. M. Society. Markov random ﬁelds
+and their applications . American Mathematical Society Providence,
+RI, 1980.
+[36] D. Koller and N. Friedman. Probabilistic graphical models .M I T
+press, 2009.
+[37] J. Kupiec. Robust part-of-speech tagging using a hidden markov
+model.Computer Speech & Language , 6(3):225–242, 1992.
+[38] J. D. Laﬀerty, A. McCallum, and F. C. N. Pereira. Conditional
+random ﬁelds: Probabilistic models for segmenting and labeling se-
+quence data. In ICML, pages 282–289, 2001.Probabilistic Models for Text Mining 293
+[39] J.-M. Marin, K. L. Mengersen, and C. Robert. Bayesian modelling
+and inference on mixtures of distributions. In D. Dey and C. Rao,editors,Handbook of Statistics: Volume 25 . Elsevier, 2005.
+[40] A. McCallum and W. Li. Early results for named entity recognition
+withconditionalrandomﬁelds,featureinductionandweb-enhancedlexicons. In Proceedings of the seventh conference on Natural lan-
+guage learning at HLT-NAACL 2003-Volume 4 , pages 188–191. As-
+sociation for Computational Linguistics, 2003.
+[41] Q. Mei, D. Cai, D. Zhang, and C. Zhai. Topic modeling with net-
+work regularization. In WWW Conference , 2008.
+[42] Q. Mei, X. Ling, M. Wondra, H. Su, and C. Zhai. Topic senti-
+ment mixture: modeling facets and opinions in weblogs. In WWW
+Conference , pages 171–180, 2007.
+[43] Q. Mei and C. Zhai. A mixture model for contextual text mining.
+InACM KDD Conference , pages 649–655, 2006.
+[44] D. Metzler and W. Croft. A markov random ﬁeld model for term
+dependencies. In ACM SIGIR Conference , pages 472–479, 2005.
+[45] T. Minka. Expectation propagation for approximate bayesian in-
+ference. In Uncertainty in Artiﬁcial Intelligence , volume 17, pages
+362–369, 2001.
+[46] K. Murphy, Y. Weiss, and M. Jordan. Loopy belief propagation
+for approximate inference: An empirical study. In Proceedings of
+Uncertainty in AI , volume 9, pages 467–475, 1999.
+[47] R. Nallapati, W. Cohen, and J. Laﬀerty. Parallelized variational em
+for latent dirichlet allocation: An experimental evaluation of speedand scalability. In Proceedings of the Seventh IEEE International
+Conference on Data Mining Workshops , pages 349–354, 2007.
+[48] R. M. Neal. Markov chain sampling methods for dirichlet process
+mixturemodels. Journal of Computational and Graphical Statistics ,
+9(2):249–265, 2000.
+[49] D. Newman, A. Asuncion, P. Smyth, and M. Welling. Distributed
+inference for latent dirichlet allocation. In NIPS Conference , 2007.
+[50] K. Nigam, A. K. McCallum, S. Thrun, and T. Mitchell. Text classi-
+ﬁcation from labeled and unlabeled documents using em. Machine
+Learning , 39:103–134, May 2000.
+[51] P. Orbanz and Y. W. Teh. Bayesian nonparametric models. In
+Encyclopedia of Machine Learning , pages 81–89. 2010.
+[52] J. Pitman and M. Yor. The Two-Parameter Poisson-Dirichlet dis-
+tribution derived from a stable subordinator. The Annals of Prob-
+ability, 25(2):855–900, 1997.294 MINING TEXT DATA
+[53] I. Porteous, D. Newman, A. Ihler, A. Asuncion, P. Smyth, and
+M. Welling. Fast collapsed gibbs sampling for latent dirichlet allo-cation. In ACM KDD Conference , pages 569–577, 2008.
+[54] V. Punyakanok, D. Roth, W. Yih, and D. Zimak. Learning and
+inference over constrained output. In Proc. of the International
+Joint Conference on Artiﬁcial Intelligence (IJCAI) , pages 1124–
+1129, 2005.
+[55] L. Rabiner. A tutorial on hidden markov models and selected appli-
+cations in speech recognition. Proceedings of the IEEE , 77(2):257–
+286, 1989.
+[56] L. R. Rabiner and B. H. Juang. An introduction to hidden Markov
+models. IEEE ASSP Magazine , pages 4–15, January 1986.
+[57] C. E. Rasmussen. The inﬁnite gaussian mixture model. In In Ad-
+vances in Neural Information Processing Systems 12 , volume 12,
+pages 554–560, 2000.
+[58] C. E. Rasmussen and C. Williams. Gaussian Processes for Machine
+Learning . MIT Press, 2006.
+[59] M. Richardson and P. Domingos. Markov logic networks. Machine
+Learning , 62(1):107–136, 2006.
+[60] D. Roth and W. Yih. Integer linear programming inference for
+conditional random ﬁelds. In International Conference on Machine
+Learning (ICML) , pages 737–744, 2005.
+[61] M. Sahami, S. Dumais, D. Heckerman, and E. Horvitz. A bayesian
+approach to ﬁltering junk e-mail. In AAAI Workshop on Learning
+for Text Categorization , 1998.
+[62] J. Sethuraman. A constructive deﬁnition of dirichlet priors. Statis-
+tica Sinica , 4:639–650, 1994.
+[63] F. Sha and F. Pereira. Shallow parsing with conditional random
+ﬁelds. In Proceedings of the 2003 Conference of the North Amer-
+ican Chapter of the Association for Computational Linguistics on
+Human Language Technology-Volume 1 , pages 134–141, 2003.
+[64] Y. Sun, J. Han, J. Gao, and Y. Yu. itopicmodel: Information
+network-integrated topic modeling. In ICDM, pages 493–502, 2009.
+[65] C. Sutton and A. McCallum. An introduction to conditional ran-
+dom ﬁelds for relational learning. Introduction to statistical rela-
+tional learning , pages 95–130, 2006.
+[66] Y. W. Teh. A hierarchical bayesian language model based on
+pitman-yor processes. In Proceedings of the 21st I nternational Con-
+ference on Computational Linguistics and the 44th annual meetingProbabilistic Models for Text Mining 295
+of the Association for Computational Linguistics , ACL-44, pages
+985–992, 2006.
+[67] Y. W. Teh. Dirichlet processes. In Encyclopedia of Machine Learn-
+ing. Springer, 2010.
+[68] Y. W. Teh, M. I. Jordan, M. J. Beal, and D. M. Blei. Hierarchical
+Dirichletprocesses. Journal of the American Statistical Association ,
+101(476):1566–1581, 2006.
+[69] R. Thibaux and M. I. Jordan. Hierarchical beta processes and the
+indian buﬀet process. Journal of Machine Learning Research – Pro-
+ceedings Track , 2:564–571, 2007.
+[70] Y. Wang, H. Bai, M. Stanton, W.-Y. Chen, and E. Y. Chang. Plda:
+Parallel latent dirichlet allocation for large-scale applications. InProceedings of the 5th I nternational Conference on Algorithmic As-
+pects in Information and Management , pages 301–314, 2009.
+[71] C. Zhai, A. Velivelli, and B. Yu. A cross-collection mixture model
+for comparative text mining. In ACM KDD Conference , pages 743–
+748, 2004.
+[72] J. Zhang, Y. Song, C. Zhang, and S. Liu. Evolutionary hierarchical
+dirichlet processes for multiple correlated time-varying corpora. InACM KDD Conference , pages 1079–1088, New York, NY, USA,
+2010. ACM.
+[73] X. Zhu, Z. Ghahramani, and J. Laﬀerty. Time-sensitive dirichlet
+process mixture models. Technical report, Carnegie Mellon Univer-
+sity, 2005.Chapter 9
+MINING TEXT STREAMS
+Charu C. Aggarwal
+IBM T. J. Watson Research Center
+Hawthorne, NY 10532, USA
+charu@us.ibm.com
+Abstract The large amount of text data which are continuously produced over
+time in a variety of large scale applications such as social networks re-
+sults in massive streams of data. Typically massive text streams are
+created by very large scale interactions of individuals, or by structured
+creations of particular kinds of content by dedicated organizations. An
+example in the latter category would be the massive text streams cre-
+ated by news-wire services. Such text streams provide unprecedented
+challenges to data mining algorithms from an eﬃciency perspective. In
+this chapter, we review text stream mining algorithms for a wide variety
+of problems in data mining such as clustering, classiﬁcation and topic
+modeling. We also discuss a number of future challenges in this area of
+research.
+Keywords: Text Mining, Data Streams
+1. Introduction
+Text streams have become ubiquitous in recent years because of a
+wide variety of applications in social networks, news collection, and
+other forms of activity which result in the continuous creation of mas-
+sive streams. Some speciﬁc examples of applications which create text
+streams are as follows:
+In social networks, users continuously communicate with one an-
+other with the use of text messages. This results in massive vol-
+umes of text streamswhichcan be leveraged for a varietyof mining
+and search purposes in the social network. This is because the text
+© Springer Science+Business Media, LLC 2012 297  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_9,

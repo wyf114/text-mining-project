@@ -1,0 +1,247 @@
+Chapter 1
+AN INTRODUCTION TO TEXT MINING
+Charu C. Aggarwal
+IBM T. J. Watson Research Center
+Yorktown Heights, NY
+charu@us.ibm.com
+ChengXiang Zhai
+University of Illinois at Urbana-Champaign
+Urbana, IL
+czhai@cs.uiuc.edu
+Abstract
+The problem of text mining has gained increasing attention in recent
+years because of the large amounts of text data, which are created in
+a variety of social network, web, and other information-centric applica-
+tions. Unstructureddataistheeasiestformofdatawhichcanbecreated
+in any application scenario. As a result, there has been a tremendous
+need to design methods and algorithms which can eﬀectively process a
+wide variety of text applications. This book will provide an overview
+of the diﬀerent methods and algorithms which are common in the text
+domain, with a particular focus on mining methods.
+1. Introduction
+Datamining isaﬁeld whichhasseen rapid advancesin recentyears[8]
+because of the immense advances in hardware and software technology
+which has lead to the availability of diﬀerent kinds of data. This is
+particularly true for the case of text data, where the development of
+hardware and software platforms for the web and social networks has
+enabled the rapid creation of large repositories of diﬀerent kinds of data.
+In particular, the web is a technological enabler which encourages the
+ 
+© Springer Science+Business Media, LLC 2012 1  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_1,2 MINING TEXT DATA
+creation of a large amount of text content by diﬀerent users in a form
+which is easy to store and process. The increasing amounts of text dataavailable from diﬀerent applications has created a need for advances in
+algorithmic design which can learn interesting patterns from the data in
+a dynamic and scalable way.
+While structured data is generally managed with a database system,
+text data is typically managed via a search engine due to the lack ofstructures [5]. A search engine enables a user to ﬁnd useful informa-tion from a collection conveniently with a keyword query, and how toimprove the eﬀectiveness and eﬃciency of a search engine has been a
+central research topic in the ﬁeld of information retrieval [13, 3], where
+many related topics to search such as text clustering, text categoriza-tion, summarization, and recommender systems are also studied [12, 9,7].
+However, research in information retrieval has traditionally focused
+more on facilitating information access [13] rather than analyzing infor-mation to discover patterns, which is the primary goal of text mining.
+The goal of information access is to connect the right information with
+the right users at the right time with less emphasis on processing ortransformation of text information. Text mining can be regarded as go-ing beyond information access to further help users analyze and digestinformation and facilitate decision making.There are also many applica-tions of text mining where the primary goal is to analyze and discoverany interesting pattterns, including trends and outliers, in text data,
+and the notion of a query is not essential or even relevant.
+Technically, mining techniques focus on the primary models, algo-
+rithms and applications about what one can learn from diﬀerent kindsof text data. Some examples of such questions are as follows:
+What are the primary supervised and unsupervised models forlearning from text data? How are traditional clustering and clas-siﬁcation problems diﬀerent for text data, as compared to the tra-
+ditional database literature?
+What are the useful tools and techniques used for mining text
+data? Which are the useful mathematical techniques which oneshould know, and which are repeatedly used in the context of dif-ferent kinds of text data?
+What are the key application domains in which such mining tech-niques are used, and how are they eﬀectively applied?
+A number of key characteristics distinguish text data from other forms
+of data such as relational or quantitative data. This naturally aﬀects theAn Introduction to Text Mining 3
+mining techniques which can be used for such data. The most important
+characteristic of text data is that it is sparseandhigh dimensional .F o r
+example, a given corpus may be drawn from a lexicon of about 100,000
+words, butagiventextdocumentmaycontainonlyafewhundredwords.
+Thus, a corpus of text documents can be represented as a sparse term-
+document matrix of sizen×d,w h e nnis the number of documents, and
+dis the size of the lexicon vocabulary. The ( i,j)th entry of this matrix
+is the (normalized) frequency of the jth word in the lexicon in document
+i. The large size and the sparsity of the matrix has immediate implica-
+tions for a number of data analytical techniques such as dimensionality
+reduction. In such cases, the methods for reduction should be speciﬁ-
+cally designed while taking this characteristic of text data into account.The variation in word frequencies and document lengths also lead to anumber of issues involving document representation and normalization,which are critical for text mining.
+Furthermore, text data can be analyzed at diﬀerent levels of represen-
+tation. For example, text data can easily be treated as a bag-of-words,
+or it can be treated as a string of words. However, in most applica-
+tions, it would be desirable to represent text information semantically
+so that more meaningful analysis and mining can be done. For exam-ple, representing text data at the level of named entities such as people,organizations, and locations, and their relations may enable discoveryof more interesting patterns than representing text as a bag of words.Unfortunately, the state of the art methods in natural language process-
+ing are still not robust enough to work well in unrestricted text domains
+to generate accurate semantic representation of text. Thus most textmining approaches currently still rely on the more shallow word-basedrepresentations, especially the bag-of-wrods approach, which, while los-ing the positioning information in the words, is generally much simplerto deal with from an algorithmic point of view than the string-basedapproach. In special domains (e.g., biomedical domain) and for special
+mining tasks (e.g., extraction of knowledge from the Web), natural lan-
+guage processing techniques, especially information extraction, are alsoplaying an important role in obtaining a semantically more meaningfulrepresentation of text.
+Recently, there has been rapid growth of text data in the context
+of diﬀerent web-based applications such as social media, which oftenoccur in the context of multimedia or other heterogeneous data domains.
+Therefore, a number of techniques have recently been designed for the
+joint mining of text data in the context of these diﬀerent kinds of data
+domains. For example, the Web contains text and image data whichare often intimately connected to each other and these links can be used4 MINING TEXT DATA
+to improve the learning process from one domain to another. Similarly,
+cross-lingual linkages between documents of diﬀerent languages can alsobe used in order to transfer knowledge from one language domain to
+another. This is closely related to the problem of transfer learning [11].
+The rest of this chapter is organized as follows. The next section
+will discuss the diﬀerent kinds of algorithms and applications for textmining. We will also point out the speciﬁc chapters in which they arediscussed in the book. Section 3 will discuss some interesting futureresearch directions.
+2. Algorithms for Text Mining
+In this section, we will explore the key problems arising in the con-
+text of text mining. We will also present the organization of the diﬀerent
+chapters of this book in the context of these diﬀerent problems. We in-tentionally leave the deﬁnition of the concept ”text mining” vague tobroadly cover a large set of related topics and algorithms for text anal-ysis, spanning many diﬀerent communities, including natural languageprocessing, information retrieval, data mining, machine learning, andmany application domains such as the World Wide Web and Biomedi-
+cal Science. We have also intentionally allowed (sometimes signiﬁcant)
+overlaps between chapters to allow each chapter to be relatively selfcontained, thus useful as a standing-alone chapter for learning about aspeciﬁc topic.Information Extraction from Text Data: Information Extraction
+is one of the key problems of text mining, which serves as a startingpoint for many text mining algorithms. For example, extraction of enti-
+ties and their relations from text can reveal more meaningful semantic
+information in text data than a simple bag-of-words representation, andis generally needed to support inferences about knowledge buried in textdata. Chapter 2 provides an survey of key problems in Information Ex-traction and the major algorithms for extracting entities and relationsfrom text data.Text Summarization: Another common function needed in many text
+mining applications is to summarize the text documents in order to ob-
+tain a brief overview of a large text document or a set of documents ona topic. Summarization techniques generally fall into two categories. Inextractive summarization, a summary consists of information units ex-tracted from the original text; in contrast, in abstractive summarization,a summary may contain “synthesized” information units that may notnecessarily occur in the text documents. Most existing summarization
+methods are extractive, and in Chapter 3, we give a brief survey of theseAn Introduction to Text Mining 5
+commonly used summarization methods.
+Unsupervised Learning Methods from Text Data: Unsupervised
+learning methods do not require any training data, thus can be applied
+to any text data without requiring any manual eﬀort. The two main un-
+supervised learning methods commonly used in the context of text dataareclustering andtopic modeling . The problem of clustering is that
+of segmenting a corpus of documents into partitions, each correspond-ing to a topical cluster. The problems of clustering and topic modelingare closely related. In topic modeling we use a probabilistic model inorder to determine a softclustering, in which each document has a
+membership probability of the cluster, as opposed to a hard segmenta-
+tion of the documents. Topic models can be considered as the processof clustering with a generative probabilistic model. Each topiccan be
+considered a probability distribution over words, with the representativewords having the highest probability. Each document can be expressedas a probabilistic combination of these diﬀerent topics. Thus, a topiccan be considered to be analogous to a cluster, and the membership
+of a document to a cluster is probabilistic in nature. This also leads
+to a more elegant cluster membership representation in cases in whichthe document is known to contain distinct topics. In the case of hardclustering, it is sometimes challenging to assign a document to a sin-gle cluster in such cases. Furthermore, topic modeling relates elegantlyto the dimension reduction problem, where each topic provides a con-ceptual dimension, and the documents may be represented as a linear
+probabilistic combination of these diﬀerent topics. Thus, topic-modeling
+provides an extremely general framework, which relates to both the clus-tering and dimension reduction problems. In chapter 4, we study theproblem of clustering, while topic modeling is covered in two chapters(Chapters 5 and 8). In Chapter 5, we discuss topic modeling from theperspective of dimension reduction since the discovered topics can serveas a low-dimensional space representation of text data, where semanti-
+cally related words can “match” each other, which is hard to achieve
+with bag-of-words representation. In chapter 8, topic modeling is dis-cussed as a general probabilistic model for text mining.LSI and Dimensionality Reduction for Text Mining: The prob-
+lem of dimensionality reduction is widely studied in the database liter-ature as a method for representing the underlying data in compressedformat for indexing and retrieval [10]. A variation of dimensionality re-
+duction which is commonly used for text data is known as latent seman-
+tic indexing [6]. One of the interesting characteristics of latent semantic
+indexing is that it brings our the key semantic aspects of the text data,whichmakesitmoresuitableforavarietyofminingapplications. Forex-6 MINING TEXT DATA
+ample, the noise eﬀects of synonymy and polysemy are reduced because
+of the use of such dimensionality reduction techniques. Another familyof dimension reduction techniques are probabilistic topic models,notably
+PLSA, LDA, and their variants; they perform dimension reduction in a
+probabilistic way with potentially more meaningful topic representationsbased on word distributions. In chapter 5, we will discuss a variety ofLSI and dimensionality reduction techniques for text data, and their usein a variety of mining applications.Supervised Learning Methods for Text Data: Supervised learning
+methods are general machine learning methods that can exploit train-
+ing data (i.e., pairs of input data points and the corresponding desired
+output) to learn a classiﬁer or regression function that can be used tocompute predictions on unseen new data. Since a wide range of applica-tion problems can be cast as a classiﬁcation problem (that can be solvedusing supervised learning), the problem of supervised learning is some-times also referred to as classiﬁcation. Most of the traditional methodsfor text mining in the machine learning literature have been extended
+to solve problems of text mining. These include methods such as rule-
+based classiﬁer, decision trees, nearest neighbor classiﬁers, maximum-margin classiﬁers, and probabilistic classiﬁers. In Chapter 6, we willstudy machine learning methods for automated text categorization, amajor application area of supervised learning in text mining. A moregeneral discussion of supervised learning methods is given in Chapter 8.A special class of techniques in supervised learning to address the issue
+of lack of training data, called transfer learning , are covered in Chapter
+7.Transfer Learning with Text Data: The afore-mentioned example
+of cross-lingual mining provides a case where the attributes of the textcollection may be heterogeneous. Clearly, the feature representations inthe diﬀerent languages are heterogeneous, and it can often provide use-ful to transfer knowledge from one domain to another, especially when
+their is paucity of data in one domain. For example, labeled English
+documents are copious and easy to ﬁnd. On the other hand, it is muchharder to obtain labeled Chinese documents. The problem of transferlearning attempts to transferthe learned knowledge from one domain to
+another. Some other scenarios in which this arises is the case where wehave a mixture of text and multimedia data. This is often the case inmany web-based and social media applications such as Flickr,Youtube
+or other multimedia sharing sites. In such cases, it may be desirable to
+transfer the learned knowledge from one domain to another with the useof cross-media transfer. Chapter 7 provides a detailed survey of suchlearning techniques.An Introduction to Text Mining 7
+Probabilistic Techniques for Text Mining: A variety of probabilis-
+tic methods, particularly unsupervised topic models such as PLSA andLDA and supervised learning methods such as conditional random ﬁelds
+are used frequently in the context of text mining algorithms. Since such
+methods are used frequently in a wide variety of contexts, it is usefulto create an organized survey which describes the diﬀerent tools andtechniques that are used in this context. In Chapter 8, we introducethe basics of the common probabilistic models and methods which areoften used in the context of text mining. The material in this chapter isalso relevant to many of the clustering, dimensionality reduction, topic
+modeling and classiﬁcation techniques discussed in Chapters 4, 5, 6 and
+7.Mining Text Streams: Many recent applications on the web create
+massive streams of text data. In particular web applications such associal networks which allow the simultaneous input of text from a widevariety of users can result in a continuous stream of large volumes oftext data. Similarly, news streams such as Reutersor aggregators such
+asGoogle news create large volumes of streams which can be mined con-
+tinuously. Such text data are more challenging to mine, because theyneed to be processed in the context of a one-pass constraint [1]. Theone-pass constraint essentially means that it may sometimes be diﬃcultto store the data oﬄine for processing, and it is necessary to performthe mining tasks continuously, as the data comes in. This makes algo-rithmic design a much more challenging task. In chapter 9, we study
+the common techniques which are often used in the context of a variety
+of text mining tasks.Cross-Lingual Mining of Text Data: With the proliferation of web-
+based and other information retrieval applications to other applications,it has become particularly useful to apply mining tasks in diﬀerent lan-guages, or use the knowledge or corpora in one language to another.For example, in cross-language mining, it may be desirable to cluster a
+group of documents in diﬀerent languages, so that documents from dif-
+ferent languages but similar semantic topics may be placed in the samecluster. Such cross-lingual applications are extremely rich, because theycan often be used to leverage knowledge from one data domain into an-other. In chapter 10, we will study methods for cross-lingual mining oftext data, covering techniques such as machine translation, cross-lingualinformation retrieval, and analysis of comparable and parallel corpora.
+Text Mining in Multimedia Networks: Text often occurs in the
+context of many multimedia sharing sites such as FlickrorYoutube.
+A natural question arises as to whether we can enrich the underlyingmining process by simultaneously using the data from other domains8 MINING TEXT DATA
+together with the text collection. This is also related to the problem of
+transfer learning, which was discussed earlier. In chapter 11, a detailedsurvey will be provided on mining other multimedia data together with
+text collections.
+Text Mining in Social Media: One of the most common sources of
+text on the web is the presence of social media, which allows humanactors to express themselves quickly and freely in the context of a widerange of subjects [2]. Social media is now exploited widely by commer-cial sites for inﬂuencing users and targeted marketing. The process ofmining text in social media requires the special ability to mine dynamic
+data which often contains poor and non-standard vocabulary. Further-
+more, the text may occur in the context of linked social networks. Suchlinks can be used in order to improve the quality of the underlying min-ing process. For example, methods that use both link and content [4]are widely known to provide much more eﬀective results which use onlycontent or links. Chapter 12 provides a detailed survey of text miningmethods in social media.
+Opinion Mining from Text Data: A considerable amount of text on
+web sites occurs in the context of product reviews or opinions of diﬀerentusers. Mining such opinionated text data to reveal and summarize theopinions about a topic has widespread applications, such as in support-ing consumers for optimizing decisions and business intelligence. spamopinions which are not useful and simply add noise to the mining pro-cess. Chapter 13 provides a detailed survey of models and methods for
+opinion mining and sentiment analysis.
+Text Mining from Biomedical Data: Text mining techniques play
+an important role in both enabling biomedical researchers to eﬀectivelyand eﬃciently access the knowledge buried in large amounts of literatureand supplementing the mining of other biomedical data such as genomesequences, gene expression data, and protein structures to facilitate andspeed up biomedical discovery. As a result, a great deal of research work
+has been done in adapting and extending standard text mining methods
+to the biomedical domain, such as recognition of various biomedical en-tities and their relations, text summarization, and question answering.Chapter 14 provides a detailed survey of the models and methods usedfor biomedical text mining.
+3. Future Directions
+The rapid growth of online textual data creates an urgent need for
+powerful text mining techniques. As an interdisciplinary ﬁeld, text data
+mining spans multiple research communities, especially data mining,An Introduction to Text Mining 9
+natural language processing, information retrieval, and machine learn-
+ing with applications in many diﬀerent areas, and has attracted muchattention recently. Many models and algorithms have been developed
+for various text mining tasks have been developed as we discussed above
+and will be surveyed in the rest of this book.
+Looking forward, we see the following general future directions that
+are promising:
+Scalable and robust methods for natural language under-standing: Understanding text information is fundamental to text
+mining. While the current approaches mostly rely on bag of wordsrepresentation, it is clearly desirable to go beyond such a simple
+representation. Informationextractiontechniquesprovideonestep
+forward toward semantic representation, but the current informa-tion extraction methods mostly rely on supervised learning andgenerally only work well when suﬃcient training data are avail-able, restricting its applications. It is thus important to developeﬀective and robust information extraction and other natural lan-guage processing methods that can scale to multiple domains.
+Domain adaptation and transfer learning: Many text min-
+ing tasks rely on supervised learning, whose eﬀectiveness highlydepends on the amount of training data available. Unfortunately,it is generally labor-intensive to create large amounts of trainingdata. Domain adaptation and transfer learning methods can al-leviate this problem by attempting to exploit training data thatmight be available in a related domain or for a related task. How-
+ever, the current approaches still have many limitations and are
+generally inadequate when there is no or little training data inthe target domain. Further development of more eﬀective domainadaptation and transfer learning methods is necessary for moreeﬀective text mining.
+Contextual analysis of text data: Textdataisgenerallyassoci-
+atedwithalotofcontextinformationsuchasauthors, sources, and
+time, or more complicated information networks associated with
+text data. In many applications, it is important to consider thecontext as well as user preferences in text mining. It is thus impor-tant to further extend existing text mining approaches to furtherincorporate context and information networks for more powerfultext analysis.
+Parallel text mining: In many applications of text mining, the
+amount of text data is huge and is likely increasing over time,10 MINING TEXT DATA
+thus it is infeasible to store the data in one machine, making it
+necessary to develop parallel text mining algorithms that can runon a cluster of computers to perform text mining tasks in parallel.
+Inparticular, howtoparallelizeallkindsoftextminingalgorithms,
+including both unsupervised and supervised learning methods is amajor future challenge. This direction is clearly related to cloudcomputing and data-intensive computing, which are growing ﬁeldsthemselves.
+References
+[1] C. Aggarwal. Data Streams: Models and Algorithms , Springer, 2007.
+[2] C. Aggarwal. Social Network Data Analytics , Springer, 2011.
+[3] R. A. Baeza-Yates, B. A. Ribeiro-Neto, Modern Information Re-
+trieval - the concepts and technology behind search, Second edition ,
+Pearson Education Ltd., Harlow, England, 2011.
+[4] S. Chakrabarti, B. Dom, P. Indyk. Enhanced Hypertext Categoriza-
+tion using Hyperlinks, ACM SIGMOD Conference , 1998.
+[5] W. B. Croft, D. Metzler, T. Strohma, Search Engines - Information
+Retrieval in Practice , Pearson Education, 2009.
+[6] S. Deerwester, S. Dumais, T. Landauer, G. Furnas, R. Harshman.
+Indexing by Latent Semantic Analysis. JASIS, 41(6), pp. 391–407,
+1990.
+[7] D. A. Grossman, O. Frieder, Information Retrieval: Algorithms and
+Heuristics (The Kluwer International Series on Information Re-trieval), Springer-Verlag New York, Inc, 2004.
+[ 8 ]J .H a n ,M .K a m b e r . Data Mining: Concepts and Techniques ,2 n d
+Edition, Morgan Kaufmann, 2005.
+[9] C. Manning, P. Raghavan, H. Schutze, Introduction to Information
+Retrieval , Cambridge University Press, 2008.
+[10] I. T. Jolliﬀee. Principal Component Analysis. Springer, 2002.
+[11] S. J. Pan, Q. Yang. A Survey on Transfer Learning, IEEE Trans-
+actions on Knowledge and Data Engineering , 22(10): pp 1345–1359,
+Oct. 2010.
+[12] G. Salton. An Introduction to Modern Information Retrieval ,M c
+Graw Hill, 1983.
+[13] K. Sparck Jones P. Willett (ed.). Readings in Information Retrieval ,
+Morgan Kaufmann Publishers Inc, 1997.Chapter 2
+INFORMATION EXTRACTION FROM
+TEXT
+Jing Jiang
+Singapore Management University
+jingjiang@smu.edu.sg
+Abstract Informationextractionisthetaskofﬁndingstructuredinformationfrom
+unstructured or semi-structured text. It is an important task in text
+mining and has been extensively studied in various research commu-
+nities including natural language processing, information retrieval and
+Web mining. It has a wide range of applications in domains such as
+biomedical literature mining and business intelligence. Two fundamen-
+tal tasks of information extraction are named entity recognition and
+relation extraction. The former refers to ﬁnding names of entities such
+as people, organizations and locations. The latter refers to ﬁnding the
+semanticrelationssuchas FounderOf andHeadquarteredIn betweenen-
+tities. In this chapter we provide a survey of the major work on named
+entity recognition and relation extraction in the past few decades, with
+a focus on work from the natural language processing community.
+Keywords: Information extraction, named entity recognition, relation extraction
+1. Introduction
+Information extraction from text is an important task in text min-
+ing. The general goal of information extraction is to discover structured
+information from unstructured or semi-structured text. For example,
+given the following English sentence,
+In 1998, Larry Page and Sergey Brin founded Google Inc.
+we can extract the following information,
+FounderOf( Larry Page ,Google Inc. ),
+FounderOf( Sergey Brin ,Google Inc. ),
+FoundedIn( Google Inc. ,1998 ).
+© Springer Science+Business Media, LLC 2012 11  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_2,
