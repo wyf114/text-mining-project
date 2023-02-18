@@ -1,0 +1,911 @@
+Chapter 10
+TRANSLINGUAL MINING FROM TEXT
+DATA
+Jian-Yun Nie
+University of Montreal
+Montreal, H3C 3J7, Quebec, Canada
+nie@iro.umontreal.ca
+Jianfeng Gao
+Microsoft Corporation
+Redmond, WA, USA
+jfgao@microsoft.com
+Guihong Cao
+Microsoft Corporation
+Redmond, WA, USA
+gucao@microsoft.com
+Abstract Like full-text translation, cross-language information retrieval (CLIR)
+is a task that requires some form of knowledge transfer across languages.
+Although robust translation resources are critical for constructing high
+quality translation tools, manually constructed resources are limited
+both in their coverage and in their adaptability to a wide range of ap-
+plications. Automatic mining of translingual knowledge makes it pos-
+sible to complement hand-curated resources. This chapter describes a
+growing body of work that seeks to mine translingual knowledge from
+text data, in particular, data found on the Web. We review a number
+of mining and ﬁltering strategies, and consider them in the context of
+statistical machine translation, showing that these techniques can be ef-
+fective in collecting large quantities of translingual knowledge necessary
+for CLIR.
+ 
+© Springer Science+Business Media, LLC 2012  323  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_10,324 MINING TEXT DATA
+Keywords: cross-lingual mining, translingual mining, cross-lingual information re-
+trieval
+1. Introduction
+The principle goal of text mining is to discover knowledge from text
+data. Various forms of knowledge may be involved, including possibly
+concepts and relations among them. While the bulk of work on text
+mining has been conducted on monolingual texts, relating to identifyingconcepts and relations among them in a single language, a by-no-meansnegligible class of applications involves more than one language. Theprototypical member of this class is Machine translation (MT), whichseeks to transfer a sentence or a text from a language into another.To do this, one has to create or extract various types of translingual
+knowledge such as word translation (usually in the form of a bilingual
+dictionary or a statistical translation model) and methods of syntactictransfer. Whereas classical MT systems were once constructed usingmanually deﬁned rules and dictionaries, modern MT systems exploitlarge bilingual text data from which to obtain translational knowledgeautomatically. The extraction of this translational knowledge is, in itsessence, a form of translingual text mining. Another important applica-
+tion that calls for translingual text mining is cross-language information
+retrieval (CLIR), in which one tries to retrieve documents in a languagediﬀerent from the language of the original query. A person may wish,for example, to retrieve documents in English using a query in Chinese.Although additional translational knowledge may need to be brought tobear in order to compare the returned documents and the query in twolanguages, the informational goal of CLIR is distinct from that of full
+text MT, and the process of extracting translingual knowledge diﬀers
+accordingly.
+In this chapter, we survey some of the approaches used to extract
+translingual knowledge from texts for diﬀerent purposes, in particu-lar, MT and CLIR. We will begin with a description of the classicalapproaches to statistical machine translation, and describing how sta-tistical translation models can be constructed from parallel texts, and
+examining extensions to the classical approaches that attempt to go be-
+yond word-based translation. In the remaining sections, we consider avariety of methods for translingual text mining for CLIR applications.Translingual Mining from Text Data 325
+2. Traditional Translingual Text Mining –
+Machine Translation
+The goal of machine translation (MT) is to use a computer system to
+translate a text written in a source language (e.g., Chinese) into a tar-get language (e.g., English). In this section, we provide an overview oftranslationmodelsthatarewidelyusedinstate-of-the-artstatisticalma-chine translation (SMT) systems. A comprehensive review is providedin a very readable form in Koehn (2009). Although these models are de-signed for translating regular natural language sentences, they can also
+be adapted to the task of search query translation for cross-lingual in-
+formation retrieval (CLIR), as will be discussed in Section 4. The querytranslation task diﬀers from conventional text translation mainly in itstreatment of word order. In text translation word order is crucial to thereadability of the translated sentences which are presented directly tothe end users. In CLIR, query translation is an intermediate step thatprovides a set of translated query terms so that the search engine can
+retrieve documents in the target language. Word order thus has little
+impact on the search quality as long as the translation preservers the un-derlying search intent, rather than the form, of the original query. Thissection focuses only on statistical translation models for regular text.Readers who are interested in statistical models for query translationmay refer to Gao and Nie (2006) and Gao et al. (2001, 2002).
+2.1 SMT and Generative Translation Models
+SMTistypicallyformulatedwithintheframeworkofthenoisychannel
+model. Given a source sentence (in Chinese) C=c1...cJ, we want
+to ﬁnd the best English translation E=e1...eIamong all possible
+translations:
+E∗= argmax
+EP(E|C) (10.1)
+where the argmax operation denotes the decoder, i.e., the search al-
+gorithm used to ﬁnd the target sentence with the highest probability
+among all possible targets.
+ApplyingBayes’decisionruleanddroppingtheconstantdenominator,
+we have
+E∗= argmax
+EP(C|E)P(E) (10.2)
+whereP(E) is the language model, assessing the overall well-formedness
+of the target sentence, and P(C|E) is the translation model, modeling
+the transformation probability from EtoC. In this section, we focus
+our discussion on the translation model only. Notice that, mathemati-
+cally, thetranslationdirectionchangesfrom P(E|C)inEquation(2.1)to326 MINING TEXT DATA
+P(C|E) in Equation (2.2) when Bayes rule is applied. Following Koehn
+(2009), we will seek to avoid potential confusion that might arise from
+this alternation by adhering to the notation P(C|E).
+In a signiﬁcant generalization of the noisy channel model, Och and
+Ney (2002) introduced a log-linear model that models P(E|C) directly.
+This log-linear model is currently adopted by most of state-of-the-art
+SMT systems and is of the form
+P(E|C)=1
+Z(C,E)exp/summationdisplay
+iλihi(C,E) (10.3)
+whereZis the normalization constant, h(·) are a set of features com-
+puted over the translation and λ’s are feature weights optimized on de-
+velopment data using e.g., minimum error rate training (Och 2003). The
+features used in the log-linear model can be binary features or real-valuefeatures derived from probabilistic models. For example, we can deﬁnethe logarithm of language model and translation model probabilities inEquation (2.2) as two features, thereby subsuming the noisy channelmodel as a special case. The log-linear model thus provides a ﬂexiblemathematical framework with which to incorporate a wide variety of
+features useful for MT.
+Conceptually, a translation model tries to “remember” to the extent
+possible how likely it is that a source sentence translates into a target
+sentence in training data. Figure 1 shows a Chinese sentence paired withits English translation. Ideally, if the translation model could remembersuch translation pairs for all possible Chinese sentences, we would have aperfect translation system. Unfortunately, a training corpus, no matter
+how large, can cover only a tiny fraction of all possible sentences. Given
+limited training data, it is usual to break the sentences in the trainingcorpus into smaller translation units (e.g., words) whose distribution
+(i.e., translation probabilities) can be more easily modeled. In Figure
+1, although the translation of the full sentence is unlikely to occur intraining data, individual word translation pairs such as (rescue, ᮁᨤ)
+willbefound. Givenaninputsentencethatisunseenintrainingdata, an
+SMT system can be expected to perform a translation process that runs
+broadly as follows: ﬁrst the input source sentence is broken into smallertranslation units, then each unit is translated into a target language, andﬁnally the translated units are glued together to form a target sentence.The translation models that we detail in the sections below diﬀer inhow the translation units are deﬁned, translated and reassembled. Themethod we use to formulate a translation model is called generative
+modeling , and consists of three steps:Translingual Mining from Text Data 327
+Story making: formulating a generative story about how a target
+sentence is generated step by step from a source sentence.
+Mathematical formulation: modeling each generation step in thegenerative story using a probability distribution.
+Parameterestimation: implementinganeﬀectivewayofestimatingthe probability distributions from training data.
+Thesethreemodelingtasksarecloselyinterrelated. Thewayinwhichwe
+break the generation process into smaller steps in our story determinesthe complexity of the probabilistic models, which in turn determines theset of the model parameters that need to be estimated. We can view the
+threetasksasstraddlingtheartistic(storymaking), thescientiﬁc(math-
+ematical formulation), and the engineering (parameter estimation). Theoverall challenge of generative modeling is to ﬁnd a harmonic combi-nation of the three, an intellectual endeavor that attracts the talent ofsome of the best computer scientists all over the world.
+State-of-the-art translation models used for conventional text transla-
+tion broadly fall into three categories: word-based models, phrase-based
+models, andsyntax-basedmodels. Inwhatfollows, wewilldescribethem
+in turn starting with the generative story, then describing the mathe-matical formulation and the way in which the model parameters areestimated on the training data.
+Figure 10.1. A Chinese sentence and its English translation
+2.2 Word-Based Models
+Word-based models use words as translation units. The models stem
+from pioneering work on statistical machine translation conducted by
+an IBM group in the early 1990s. In what has become classical paper
+Brown et al. (1993) proposed a series of word-based translation modelsof increasing complexity that come to be known as the IBM Models.
+IBM Model 1, one of the simplest and most widely used word-based
+models, is what is termed a lexical translation model , in which the order
+of the words in the source and target sentence is ignored. The generativestory about how the target sentence Eis generated from the source
+sentence C, runs as follows:328 MINING TEXT DATA
+1 First choose the length for the target sentence I, according to the
+distribution P(I|C).
+2 Then, for each position i(i=1...I) in the target sentence, we
+choose a position jin the source sentence from which to generate
+thei-th target word eiaccording to the distribution P(j|C), and
+generate the target word by translating cjaccording to the distri-
+butionP(ei|cj). We include in position zero of the source sentence
+an artiﬁcial “null word”, denoted by <null>the purpose of which
+is to allow the insertion of additional target words.
+Now, let us formulate the above story mathematically. In Step 1, we
+assume that the choice of the length is independent of CandI,t h u s
+we have P(I|C)=/epsilon1, where/epsilon1is a small constant. In Step 2, we assume
+that all positions in the source sentence, including position zero for thenull word, are equally likely to be chosen. Thus we have P(j|C)=
+1
+J+1.
+Then the probability of generating eigivenCis the sum over all pos-
+sible positions, weighted by P(j|C):P(ei|C)=/summationtext
+jP(j|C)P(ei|cj)=
+1
+J+1/summationtext
+jP(ei|cj). Assuming that each target word is generated indepen-
+dently from C, we end up with the ﬁnal form of IBM Model 1.
+P(E|C)=P (I|C)I/productdisplay
+i=1P(ei|C) (10.4)
+=/epsilon1
+(J+1)II/productdisplay
+i=1J/summationdisplay
+j=0P(ei|cj) (10.5)
+We can see that IBM Model 1 has only one type of parameter to
+estimate, the lexical translation probabilities P(e|c). If the training data
+consists of sentence pairs that are word-aligned as shown in Figure 2,
+P(e|c) can be computed via Maximum Likelihood Estimation (MLE) as
+follows:
+P(e|c)=N(c,e)/summationtext
+e/primeN(c,e/prime)(10.6)
+whereN(c,e) is the number of times that the word pair ( c,e) is aligned
+in training data. In practice, it is more realistic to assume that trainingdata is aligned at the sentence level but not at the word level. Ac-cordingly, we apply the Expectation Maximization (EM) algorithm tocompute the values of P(e|c) and the word alignment iteratively. This
+process will determine the best P(e|c) that maximizes the probability of
+the given alignment between sentences. The algorithm works as follows:Translingual Mining from Text Data 329
+1 Initialize the model with a uniform translation probability distri-
+bution.
+2 Apply the model to the data, computing the probabilities of all
+possible word alignments.
+3 (Re-)estimate the model by collecting counts for word translation
+over all possible alignments, weighted by their probabilities com-
+puted in the Step 2.
+4 Iterate through Steps 2 and 3 until convergence.
+Since at every EM iteration the likelihood of the model given the
+training data is guaranteed not to decrease, the EM algorithm is guar-
+anteed to converge. In the case of IBM Model 1, it is guaranteed toreach a global maximum.
+Brown et al. (1993) presents ﬁve word-based translation models of
+increasing complexity, namely IBM Model 1 through 5. In IBM Model 1the order of the words in the source and target sentences is ignored, and
+the model assumes that all word alignments are equally likely. Model 2
+improves on Model 1 by adding an absolute alignment model in whichwords that follow each other in the source language have translationsthat follow each other in the target language. Models 3, 4, and 5 modelthe “fertility” of the generation process with increasing complexity. Fer-tility is a notion reﬂecting the observation that an input word in a sourcelanguage tends to produce a speciﬁc number of output words in a tar-
+get language. The fertility model captures the information that some
+Chinese words are more likely than others to generate multiple Englishwords. All these models have their individual generative stories and cor-responding mathematical formulations, and their model parameters areestimated using the EM algorithm. Readers may refer to Brown et al.(1993) for details.
+2.3 Phrase-Based Models
+Phrase-based models are the basis for most state-of-the-art SMT sys-
+tems. Like the word-based models, these are generative models that
+translate an input sentence in a source language Cinto a sentence in a
+target language E. Instead of translating single words in isolation, how-
+ever, phrase-based models translate sequences of words (i.e., phrases)inCinto sequences of words in E. The use of phrases as translation
+units is motivated by the observation that one word in a source languagefrequently translates into multiple words in a target language, or vice
+versa. Word-based models cannot handle these cases adequately: the330 MINING TEXT DATA
+Figure 10.2. Word alignment: words in the English sentence (rows) are aligned to
+words in the Chinese sentence (columns) as indicated by the ﬁlled boxes in the matrix
+English phrase ”stuﬀy nose”, for example, translates the Chinese word
+”啫ຎ” with relatively high probability, but neither of the individual En-glish words ”stuﬀy” and ”nose” has a high word translation probabilityto ”啫ຎ”.
+The generative story behind the phrase-based models can be stated
+as follows. First, the input source sentence Cis segmented into Knon-
+empty word sequences c
+1,...,cK. Then each is translated to a new non-
+empty word sequence e1,...,eK. Finally these phrases are permuted
+and concatenated to form the target sentence E. Herecandedenote
+consecutive sequences of words.
+To formalize this generative process, let Sdenote the segmentation
+ofCintoKphrasesc1...cK, and let Tdenote the Ktranslation phrases
+e1...eKWe refer to these ( ci,ei) pairs as bilingual phrases . Finally, let
+Mdenote a permutation of Kelements representing the ﬁnal reordering
+step.Figure 3 demonstrates the generative procedure.
+Next let us place a probability distribution over translation pairs. Let
+B(C,E) denote the set of S,T,Mtriples that translate CintoE.I fw e
+assume a uniform probability over segmentations, then the phrase-based
+translation model can be deﬁned as:
+P(E|C)∝/summationdisplay
+(S,T,M)∈B(C,E)P(T|C,S)·P(M|C,S,T) (10.7)
+It is common practice in SMT to use the maximum approximation to
+the sum: the maximum probability assignment can be found eﬃcientlyby using a dynamic programming approach:
+P(E|C)≈max
+(S,T,M)∈B(C,E)P(T|C,S)·P(M|C,S,T) (10.8)Translingual Mining from Text Data 331
+Figure 10.3. Example demonstrating the generative procedure behind the phrase-
+based model.
+Reorderingishandledbyadistance-basedreorderingmodel(Koehnet
+al. 2003)relativetothepreviousphrase. Wedeﬁne startiastheposition
+of the ﬁrst word of the Chinese input phrase that translates to the i-th
+English phrase, and endias the position of the last word of that Chinese
+phrase. The reordering distance is computed as starti−endi−1, i.e.,
+the number of words skipped when taking foreign words out of sequence.We also assume that a phrase-segmented English sentence T=e
+1...
+eKis generated from left to right by translating each phrase c1...cK
+independently. This yields one of the best-known forms of phrase-based
+model:
+P(E|C)∝max
+(S,T,M)∈B(C,Q)K/productdisplay
+k=1P(ek|ck)d(starti−endi−1−1) (10.9)
+In Equation (10.9) the only parameter to be estimated is the trans-
+lation probabilities on the bilingual phrases P(e|c). In what follows, we
+rely mainly on work by Och and Ney (2002) and Koehn et al. (2003) todescribe how bilingual phrases are extracted from the parallel data andP(e|c) is estimated.
+First, welearntwowordtranslationmodelsviaEMtrainingofaword-
+based model (i.e., IBM Model 1 or 4) on sentence pairs in two directions:
+fromsourcetotargetandfromtargettosource. WethenperformViterbi
+word alignment in each direction according to the corresponding modelfor that direction. The two alignments are combined, starting with theintersection of the two alignments, and gradually including more align-ment links according to heuristic rules detailed in Och and Ney (2002).Finally, bilingual phrases that are consistent with the word alignmentare extracted. Consistency here implies two things. First, there must
+be at least one aligned word pair in the bilingual phrase. Second, there332 MINING TEXT DATA
+must be no word alignments from words inside the bilingual phrase to
+words outside the bilingual phrase. That is, we do not extract a phrasepair if there is an alignment from within the phrase pair to an element
+outside the phrase pair. Figure 4 illustrates the bilingual phrases we can
+generate from the word-aligned sentence pair by this process.
+Figure 10.4. An example of a word alignment and the bilingual phrases containing
+up to 3 words that are consistent with the word alignment.
+After gathering all such bilingual phrases from the training data, we
+can estimate conditional relative frequency estimates without smooth-
+ing. For example, the phrase transformation probability P(e|c) in Equa-
+tion (2.7) can be estimated approximately as:
+P(e|c)=N(c,e)/summationtext
+e/primeN(c,e/prime)(10.10)
+whereN(c,e) is the number of times that cis aligned to ein training
+data. These estimates are useful for contextual lexical selection whenthereis suﬃcienttraining data, otherwisecan besubject to datasparsity
+issues.
+An alternate means of estimating translation probabilities that is less
+susceptible to data sparsity is the so-called lexical weight estimate. As-
+sume we have a word translation distribution t(e|c) (deﬁned over indi-
+vidual words, not phrases), and a word alignment Abetween eandc;
+here, the word alignment contains ( i,j) pairs, where i∈1...|e|and
+j∈0...|c|, with 0 indicating an inserted word. Then we can use the
+following estimate:Translingual Mining from Text Data 333
+Pw(e|c,A)=|e|/productdisplay
+i=11
+|{j|(j,i)∈A}|/summationdisplay
+∀(i,j)∈At(ei|cj) (10.11)
+We assume that for every position in e, there is either a single align-
+ment to 0, or multiple alignments to non-zero positions in c. In eﬀect,
+this computes a product of per-word translation scores; the per-word
+scores are averages of all the translations for the alignment links of thatword. We estimate the word translation probabilities using counts from
+the word aligned corpus: t(e|c)=
+N(c,e)/summationtext
+e/primeN(c,e/prime). HereN(c,e) is the num-
+ber of times that the words (not phrases as in Equation (2.8)) cande
+are aligned in the training data. These word-based scores of bilingual
+phrases, though not as eﬀective in contextual selection as previous ones,
+are more robust to noise and sparsity. Both model forms of Equation(2.8) and (2.9) are used as features in the log-linear model for SMT asEquation (2.3).
+2.4 Syntax-Based Models
+The possibility of incorporating syntax information in SMT has been
+a long-standing topic of research. Syntax-based translation models have
+begun to perform as well as state-of-the-art phrase-based models, and in
+the case of some language pairs may even outperform their phrase-basedcounterpart. Research on syntax-based models is a fast-moving area,with numerous open questions. Our description in this section focuseson some basic underlying principles, illustrated by examples from themost successful models proposed so far (e.g., Chiang 2005; Galley et al.2004).
+Syntax-based models rely on parsing the sentence in either the source
+or the target language, or in some cases in both. Figure 5 depicts thesentence pair from Figure 1, but with constituent parses added. Theseparses are generated from a statistical parser trained on Penn Treebank.Each parse is a rooted tree where the leaves are original words of thesentence and the internal nodes cover a contiguous sequence of the wordsin the sentence, called a constituent Each constituent is associated with
+a phrase label describing the syntactic role of the words under its node.
+The tree-structured parse plays similar roles in syntax-based models
+to those of a phrase in phrase-based models. The ﬁrst role is to identify
+translation units in an input sentence. While in phrase-based modelsthe units are phrases, in syntax-based models they are constituents ofthe kind seen in Figure 5. The second is to guide how best to glue thosetranslated constituents into a well-formed target sentence. Again, we
+assume a generative story, similar to that for phrase-based models:334 MINING TEXT DATA
+Figure 10.5. A pair of word-aligned Chinese and English sentences and their parse
+trees.
+1 Parse an input Chinese sentence into a parse tree
+2 Translate each Chinese constituent into English
+3 Glue the English constituents into a well-formed English sentence.
+This generative process is typically formulated under the framework of
+weighted synchronous Context Free Grammar (CFG) (Chiang, 2005),
+which consists of a set of rewriting rules rof the form:
+X→(γ,α,∼) (10.12)
+whereXis a nonterminal, γandαare both strings of terminals and
+non-terminals corresponding respectively to source and target strings,and ˜indicates that any non-terminals in the source and target stringsare aligned. For example, a rule extracted from the example in Figure
+5i s :
+VP→(PPራ᢮NP, search for NP PP ,∼) (10.13)Translingual Mining from Text Data 335
+where∼indicates that PP and NP in the source and target languages
+are aligned. We can see that these non-terminals generalize the phrases
+used in the phrase-based models described in Section 2.2.
+We now deﬁne a derivation Das a sequence of Krewrites r1,...,rK,
+each of which picks a rewriting rule from the grammar, and rewrites aconstituent in Chinese into English, until an English sentence is gener-ated. Let E(D) be the English strings generated by D,a n dC(D)b e
+the Chinese strings generated by D. Assuming that the parse tree of
+the input Chinese sentence is Tree(C), the translation model can be
+formulated as
+P(E|C,Tree(C)) =/summationdisplay
+D:E(D)=E
+andC(D)=CP(D) (10.14)
+As when formulating the phrase-based models, we use the maximumapproximation to the sum:
+P(E|C,Tree(C))∝max
+D:E(D)=E
+andC(D)=CP(D) (10.15)
+A synchronous CFG assumes that each rewriting rule application de-
+pendsonlyonanon-terminal, andnotonanysurroundingcontext. Thuswe have:
+P(D)=K/productdisplay
+k=1P(rk) (10.16)
+Rewriting rule (2.11) not only speciﬁes lexical translations but also
+encapsulates nicely the kind of reordering involved when translatingChinese verb complexes into English. As a result, searching for thederivation that has the maximum probability assignment, as in Equa-
+tion (2.13), simultaneously accomplishes the two tasks of constituent
+translation and sentence reordering (as in Steps 2 and 3 in our genera-tive story). The search can be achieved by chart parsing.
+The synchronous grammar proposed in Chiang (2005) illustrates how
+these rewriting rules may be extracted from data and how their prob-abilities are estimated. The grammar has not underlying linguistic in-terpretation and uses only one non-terminal X. Assume that we have
+the word-alignment sentence pair, as shown in ﬁgure 4. First, we ex-
+tract initial bi-phrases that are consistent with the word-alignment, asdescribed in Section 2.2. We write these bilingual phrases in the formof synchronous grammar:
+X→(൘ق๼Ⲵᡯቻ䟼ራ᢮⭏䘈㘵, srch. for surviv. in collap. home ,∼)336 MINING TEXT DATA
+We then generalize these rules by replacing some substrings with the
+nonterminal symbol X:
+X→(൘X1䟼ራ᢮X2,search for X2inX1,∼)
+using subscript indices to indicate which occurrences of Xare linked
+by ˜. This rule captures information about both lexical translation and
+wordreordering, withtheresultthatthelearnedgrammar canbeviewedas a signiﬁcant generalization of phrase-based models capable of handlelonger range word reordering.
+To limit the number of rules generated in this fashion, the rewrite
+rules are constrained: (a) to contain at least one and at most 5 lexicalitems per language, (b) to have no sequences of non-terminals, (c) to
+have at most two non-terminals, and (d) to span at most 15 words.
+Once the rewrite rules are extracted, their probabilities are estimatedon the word-aligned sentence pairs using a method analogous with thatfor the phrase-based models. Readers may refer to Chiang (2005) for adetailed description.
+3. Automatic Mining of Parallel texts
+The previous section provides an overview of the state of the art in
+SMT. It also describes the most traditional way to exploit a parallel
+corpus to extract translational knowledge in form of translation models.
+These models are the basis for many applications in which translationis required.
+SMT requires a large number of parallel texts for model training. Tra-
+ditionally, one assumed that such parallel texts are available. Indeed,there have been several manually compiled large parallel corpora avail-able. The Canadian Hansard
+1is probably the most widely used and best
+known. This corpus contains all the debates in the Canadian parliamentin both English and French. Translation is made by professionals andit is of very high quality. The ﬁrst research work on statistical MT hasbeen carried out using this corpus. Later on, several other parallel cor-pora became available, in particular, the Hong Kong law documents inEnglish and Chinese
+2and the documents of the European Parliament
+in several European languages3. These manually compiled parallel texts
+can be used in the methods presented in the previous section, often aftera step of sentence alignment (Gale and Church 1993).
+1http://www.parl.gc.ca/ParlBusiness.aspx?Language=E
+2http://www.legco.gov.hk/english/index.htm
+3http://www.europarl.europa.eu/Translingual Mining from Text Data 337
+However, despite the high quality of translation in these parallel cor-
+pora, wedoencounterseveralproblemswhentheyareusedforthetrans-lation purposes. Indeed, although the size of the corpora are large, it is
+stilllimitedforthepurposeofmodeltraining, leavingaconsiderablepro-
+portion of the translation phenomena either uncovered or insuﬃcientlycovered for general translation applications In particular:
+Vocabulary The documents in these manually compiled parallel
+corpora are formal in style and vocabulary. They do not provide
+good coverage of terms or words used in less formal discussionsand communications on the Web. Many terms and words in thelatter will be “unknown” by the models trained on these data
+Structure Highqualitydocumentsandtheirtranslationsarewrit-
+ten in correct syntax. This is not the case for Web documents and
+search queries. A syntax-based SMT system trained on these data
+will be inadequate to cope with the ﬂexible structure of texts andqueries on the Web.
+Adaptability Becausethestatisticaltranslationmodelsaretrained
+on the parallel texts, they tend to ﬁt the latter, including the fre-
+quency of word usage and word translation. Even if a word or a
+term is well covered by translation model, the suggested transla-tions may not be suitable for the intended application.
+Onepossiblesolutiontotheaboveproblemsistodevelopautomatictools
+tocollectappropriateparalleldocumentsaccordingtoone’srequirement.
+The Web is an excellent resource for this purpose, and indeed it is atruly multilingual resource, one on which documents in many diﬀerentlanguages are published. A certain proportion of the documents areparallel, i.e. the same documents are published in several languages.These documents virtually constitute a large parallel corpus. The keyproblem is to collect those parallel texts without including (too many)
+non-parallel ones.
+Attempts to collect parallel texts from the Web date to the late 1990s,
+with Resnik (1998) and Nie et al. (1999). Both studies exploit twofactors to determine whether two texts are parallel: the Web structurein which the texts are stored and published, the text structure of thedocuments themselves.
+3.1 Using Web structure
+Resnik (1998) observed that in many cases, parallel Web pages are
+linkedfromanentrypage(homepage)onawebsite,eachwithalanguage338 MINING TEXT DATA
+identiﬁer such as “English” and “Fran¸ cais” as anchor text. For example,
+the following website (Natural Resources of Canada) is organized in the
+manner shown in Figure 6.
+Figure 10.6. An example of parallel pages linked from a home page
+The mining system STRAND (Resnik, 1998) identiﬁes the referred
+pages as candidate parallel web pages. In the query language of AltaVista used by STRAND, the following query will retrieve parent pagesreferring to two child pages in the relevant languages:
+anchor:”english” AND anchor:”fran¸ cais”
+However, the above criterion can only detect a limited number of
+parallel Web pages. More commonly sites are organized so that each ofthe pages contains a link to the corresponding parallel page, as shownin Figure 7. Again, the link usually contains anchor text that identiﬁes
+the language.
+To retrieve those pages, the following Alta Vista query can be used to
+retrieve the French documents containing an anchor text to an English
+page:
+anchor: ”english” OR anchor: ”anglais”while setting the language of the documents to French. Analogously,
+one can retrieve English documents containing anchor text linking to a
+French page.Translingual Mining from Text Data 339
+Figure 10.7. An example of mutually linked parallel pages.
+This second criterion is the main approach taken by PTMiner (Nie
+et al. 1999, Chen and Nie 2000) to identify candidate pages. PTMiner
+additionally used a site crawler to download all the pages from candidate
+sites (the sites that contain some candidate parallel pages) in order to
+ﬁnd more Web pages on those sites that are not indexed by the searchengine.
+3.2 Matching parallel pages
+Once two sets of candidate pages are determined, the next task is to
+pair the pages up. The contents of the pages will eventually be used, butﬁrst heuristics are applied to quickly identify candidate parallel pagesSince parallel Web pages are usually assigned similar ﬁle names two Web
+pages with the names “description
+en.htm” and “description fr.htm” are
+likely parallel. Similarly, Web sites may use two separate directories to
+store pages in two languages, in which case, the names of the directoriesmay be slightly diﬀerent, e.g. “www.website.com/English/ﬁle1.html”vs. “www.website.com/French/ﬁle1.html”. In both cases the diﬀerencebetween ﬁle and directory names is often related to the language, andthis can be recognized using simple heuristics. Such heuristics are used
+in PTMiner to pair up mined candidate Web pages eﬃciently.340 MINING TEXT DATA
+Tofurtherﬁlteroutnon-parallelpages, additionalchecksonthepages’
+contents can then be applied:
+Are the HTML structures of the two pages similar? The assump-tion is that parallel pages are usually created with the same orsimilar HTML structures. In both STRAND and PTMiner, theHTML markup sequence of each page is extracted, and the pagesare considered to be parallel if their HTML markup sequences
+resemble each other However, more sophisticated comparison of
+document structure can be performed. For example, one can usethe DOM tree of the Web page (Shi et al. 2006).
+Are the two pages of similar lengths? It is generally observed that
+the lengths of parallel texts are similar (or proportional to the
+length ratio of texts in the two languages). This is an easy way toﬁlter out candidate pairs whose content cannot be parallel.
+Finally, what is the content translation probability? If the textsin the two pages have a high mutual translation probability, thenthe pages are likely to be parallel. Although an eﬀective meansof conﬁrming textual parallelism, this ultimate step is costly toimplement and has not been widely used.
+The precision of the Webpages identiﬁcation by STRAND and PTMiner
+is impressive: it is estimated that more than 90% of the identiﬁed pairsof Web pages are indeed parallel. Evaluation of recall, on the otherhand, presents greater diﬃculty: Resnik calculated recall of STRAND at62.5%, while Nie et al. estimated the lower bound of recall of PTMinerat a little over 50% on the assumption that every Web page from a
+candidatewebsitehasaparallelpageinanotherlanguage, anassumption
+that obviously overestimates the case Nevertheless, lower recall ratioscan be tolerated because the number of potential parallel pages on theWeb is very large, and it is more important to have a mining processwith high precision than high recall.
+In term of volume, STRAND has mined a relatively small number of
+parallel pages while PTMiner has successfully collected large amounts of
+parallel page data in English-French, English-Chinese, English-German,
+etc., chieﬂy by exploiting criteria that correspond to more commonlyemployed techniques of organizing parallel pages on the Web, as well asthe site crawling process.
+The above mining strategy has been used in a number of studies per-
+taining to diﬀerent language pairs: Ma and Liberman (1999) used asimilar approach to PTMiner to mine parallel pages in German and En-
+glish, with some slight diﬀerences in the process: the similarity betweenTranslingual Mining from Text Data 341
+the ﬁle names of candidate pages is measured by edit distance, and the
+known translations are mapped with some position constraint withinthe texts. Similar approaches have been used by Nagata et al. (2001)
+and Yang and Li (2003) to mine English-Japanese and English-Chinese
+parallel pages. Resnik et al. (2003) have further explored the mining ofparallel Web pages from Web archives.
+The above processes are designed for mining on general websites. It
+is possible to incorporate additional criteria according to the speciﬁc or-ganization of a website. For example, parallel texts on the same website(e.g. Wikipedia, newswire websites) can share common resources such
+as pictures. Metadata can also be incorporated in documents. The use
+of such indications can further improve the mining process.
+Bilingual and multilingual newswire websites are a common source
+from which parallel texts are mined. Many newswire publishers publisharticles in several languages, and in many cases, the articles in diﬀerentlanguages are translations. For example, China Daily publishes cer-tain bilingual news articles that are aligned in paragraphs. Some of the
+news articles are translated and published in several languages such as
+Chinese, English and French. Several European newspapers also pub-lish simultaneously articles in several languages. This provides an easyway to collect parallel news articles. However, the collection of parallelnews articles depends on the speciﬁc organization of each newspaper.In some cases, there is a systematic schema of correspondence, whilein other cases no clear structural information is available to determine
+whether two articles are parallel. In the latter case, the mined result is
+often comparable texts rather than parallel texts. We will describe someattempts of this kind in Section 5.
+4. Using Translation Models in CLIR
+It is safe to assume that not all automatically mined Web pages are
+strictly parallel. Indeed, during manual evaluation, it turns out thatsome pages, which presumably should contain the same information,are not parallel in content: one of the pages can be outdated, contain
+only part of the information, or even consist of an “under construction”
+message. The precision and recall numbers mentioned earlier are subjectto human judgment: If the contents are parallel above some threshold,we consider the pages to be parallel a situation that is less ideal than theHansardcorpus, especiallyfortaskssuchasfull-textmachinetranslationthat call for high quality parallel texts for training.
+For other less demanding tasks such as CLIR, however, translation
+modelstrainedfromautomaticallycollectedWebpagescanperformvery342 MINING TEXT DATA
+well. A translation model trained on a parallel corpus can be naturally
+integrated into the CLIR process. General IR can be processed using alanguage modeling approach as follows:
+Score(Q,D)=/summationdisplay
+t∈VP(t|MQ)logP(t|MD) (10.17)
+whereMQandMDare respectively a statistical language model esti-
+mated for the query and the document, and Vis the vocabulary. Notice
+that both MQandMDare generation models, i.e. no word order or rela-
+tionship is taken into account. Such an approach is often called “bag ofwords” approach. Using such an approach, translation in CLIR is alsoperformed at the word level: Each word is translated independently.Therefore, the simple IBM Model 1 is widely used.
+ForCLIR,eitherthedocumentorthequeryshouldbetranslated. One
+can of course use an MT system to translate them. Because the Websearch engine only uses words and ignores word order, MT oﬀers morethan what is needed. One may argue that this is not necessarily a badthing to have a tool oﬀering more than required. Indeed, in the CLIRexperiments, it is usually found that a high-quality MT system leads toa good CLIR result when it is used to translate queries or documents.
+However, oﬀ-the-shelf MT systems also have weaknesses:
+An MT system chooses only one translation word (or expression)
+for each source word. In reality, there may be multiple transla-tions. For example, “drug” (illegal substance) can be translatedinto “drogue” or “stup´ eﬁant” in French. By limiting to one trans-
+lation, documents in French using the other term cannot be found.For CLIR, keeping multiple translations for a word is often pre-ferred.
+The translation by an MT system is limited to the true “transla-
+tions” of the words in a query or a document. In IR, on the other
+hand, it is usually preferred to add related terms in the query (ordocument) to expand it. Query (or document) expansion is a com-mon method in IR to increase retrieval eﬀectiveness. By includingonly true translation words in a query translation, CLIR does notbeneﬁt from query expansion. It is preferred to include also re-lated terms in the target language when doing query translation
+in CLIR.
+The ﬁnal translation result by an MT system does not distinguish
+the words in their importance, i.e. all the words are un-weighted.Translingual Mining from Text Data 343
+In IR, the weighting of terms in the query is crucial, and the trans-
+lation probability or weight can greatly help distinguishing impor-tant terms vs. unimportant ones.
+The above reasons have motivated a number of attempts to design CLIR
+approaches without, or in addition to, the use of MT systems. Theprinciple of CLIR can be well described within the language-modelingframework for IR. It includes a translation of the query or documentmodel as follows:
+Score(Q,D)=/summationdisplay
+t∈Vt[/summationdisplay
+s∈VsP(t|s)P(s|MQ)]logP(t|MD) (10.18)
+Score(Q,D)=/summationdisplay
+t∈VtP(s|MQ)log[/summationdisplay
+t∈VtP(s|t)P(t|MD)] (10.19)
+in which VsandVtare respectively the vocabulary in source and target
+languages, and P(s|t)a n dP(t|s) are translation probability (in IBM
+model 1) of a target language term ( t) to a source language term ( s)
+and vice versa. In practice, rather than using the whole vocabulary in/summationtext
+s∈VsP(t|s)P(s|MQ)a n d/summationtext
+t∈VtP(s|t)P(t|MD), one can select a sub-
+set of the translation terms, for example, the translation terms whosetranslation probability is higher than a threshold, or the N best transla-tion terms for the query. Diﬀerent from general MT, query or documenttranslation in CLIR usually selects multiple translation words (rather
+than the best one), thereby producing a desired expansion eﬀect. In
+addition, the translation probability is used explicitly to determine termweighting for the retrieval process.
+The use of automatically mined parallel corpora in CLIR has been
+successful. In an early experiment on CLIR, Nie et al. (1999) reportedthat using the Web corpus, the CLIR eﬀectiveness is very similar to us-ing the Hansard corpus. Further experiments (Kraaij et al. 2003) have
+shown that CLIR using the Web parallel corpus outperforms methods
+thatuseanexistingdictionary-basedMTsystem-Systran. Theseresultsindicate that CLIR does not require as high quality corpora for trainingtranslation models. A noisy corpus can be as eﬀective as a manuallycompiled high-quality corpus. In addition, a query or document trans-lation properly incorporated into the retrieval model (as Equations 2.16and 2.17) is a better solution than using an MT system as an individual
+tool, separated from the retrieval model.344 MINING TEXT DATA
+5. Collecting and Exploiting Comparable Texts
+The success of using a noisy parallel corpus in CLIR indicates that
+one can tolerate certain noise in the text data used for model training.To what extent is the process tolerant to noise? There is no clear answerto this question, but there is a series of experiments using comparabletexts for CLIR, which have shown encouraging results: comparable texts
+are good complements to other translation resources.
+In general, comparable texts are deﬁned as texts that are not neces-
+sarily parallel, but describe the same event. Other terminologies are alsoused. Fung and Cheung (2004) deﬁned quasi-comparable and compara-ble documents because they were written independently but on more orless the same topic. Noisy-parallel documents refer to a pair of sourceand translated documents that were either adapted or evolved in diﬀer-
+ent ways such as Wikipedia articles. There are indeed a variety of com-
+parabletextswithdiﬀerentdegreesofrelatedness. Fung(1995)considersa continuum from parallel, comparable to unrelated texts. Brashchlerand Scha¨ uble (1998) deﬁned the following levels of relatedness:
+1 Same story: The two documents deal with the same event.
+2 Related story: The two documents deal with the same event or
+topic from slightly diﬀerent viewpoints. Or one of them deals withthe topic from a broader story.
+3 Shared aspect: The documents deal with related events. They
+may share locations or persons.
+4 Common terminology: The events or topics are not directly re-
+lated, but the documents share a considerable amount of termi-nology.
+5 Unrelated: The similarities between the documents are slight or
+nonexistent.
+Depending on the process used, diﬀerent types of comparable texts
+can be collected. In general, the following indicators can be used todetermine comparable texts from a website, especially from a newswire:
+The publication dates of two comparable texts should be the sameor close;
+Some articles incorporate metadata to describe the content cate-gories, in which case, the category of the comparable texts should
+be the same;Translingual Mining from Text Data 345
+The fact that two texts contain links to the same objects (e.g.
+pictures) increases the chance that the texts are about the sameevent;
+Although one cannot expect exact mutual translation at sentencelevel between comparable texts, the main vocabulary should betranslatable and this can be veriﬁed using a simple resource such
+as a bilingual dictionary;
+The texts may contain similar special elements: named entities –
+they talk about the same persons and describe events of the samedates, or domain-speciﬁc words and their translations;
+UsingaCLIRmethod,onecanformaquerywithasourcelanguagetext, and retrieve a set of potential comparable texts in the target
+language.
+Sheridan and Ballerini (1996) are among the ﬁrst to exploit comparable
+texts for CLIR. They mined newspaper articles in German and Ital-ian from the website of Schweizerische Depeschenagentur (SDA) using
+content descriptor metadata and publication dates.
+Intheirstudy,BrashchlerandScha¨ uble(1998)“translated”thenamed
+entities as well as words from the source language text, and used thetranslation to retrieve comparable texts. Their evaluation revealed thatabout 60% of the texts mined are documents that share one or moreevents, and 75% of them share a common terminology. The mined textshave been used in a CLIR task, leading to a retrieval result only slightlyworse than the best participants in TREC-7. Similar approaches have
+been used in other studies (e.g. Talvensaari et al, 2006, Talvensaari
+2007, Huang et al. 2010). Huang et al (2010) investigated the transla-tion of key terms in the above process: Not only single-word terms butalso multi-word terms are extracted from the source-language documentand translated. By doing so, they reduced the translation ambiguity,and produced more precise description in the target language.
+Instead of using the translated terms in a CLIR process to mine com-
+parable texts, in several studies, the frequencies and ranks of the source
+terms and their translations have also been used. Fung and Lo (1998),Fung and Cheng (2004) and Carpuat et al. (2006) used a diﬀerent ap-proachtoaligncomparabletexts. Theyuseasetofseedwords, forwhichthe translations are known. Seed words in source- and target-languagetexts are extracted and their frequencies are compared. It is assumedthat the seed words should be comparable in their frequency ranks. Tao
+et al. (2005) used a more elaborated method based on Pearson correla-346 MINING TEXT DATA
+tion: words and their known translations in a pair of comparable texts
+should have a strong correlation in their ranks.
+The mined comparable texts can be used to derive a general bilingual
+lexicon (Rapp, 1995) or for translations of speciﬁc named entities (Fung,
+1995,Ji,2009). Ingeneral,itismorediﬃculttotrainatranslationmodelusing comparable texts than using parallel texts. A less strict bilingualterm similarity is determined instead. The principle is analogous toword co-occurrence analysis in monolingual texts: two terms in diﬀerentlanguages have a strong translingual relationship if they co-occur oftenin comparable texts in respective languages. The following formula (or
+some variants) can be used:
+sim(w
+s,wt)=coocc(ws,wt)
+Z(10.20)
+wherewsandwtare source and target words, coocc(ws,wt) is a mea-
+sure of their co-occurrence and Za normalization factor. coocc(ws,wt)
+can take diﬀerent forms: the number of pairs of comparable documents
+which contain the two words respectively, the minimal frequency of the
+two terms in the respective document, or some transformed measurebased on these. As not all the words in the source document have theirtranslations in the target document, the translingual relationships canbebuiltuponlyforthemostfrequentwords, orfornamedentities(Fung,1995, Ji, 2009). Needless to say, the translingual relationships are muchless precise than those extracted from truly parallel texts. There are two
+main reasons:
+The comparable texts are noisier by nature. A pair of compa-
+rable documents is not mutual translation, and the relationshipsbetween terms extracted from them are more translingual relatedthan translation relations.
+Asnoprocesssimilartosentencealignmentonparalleltextscanbeperformed, it is usually assumed that a word in a document corre-sponds to any word in the document in another language. In other
+words, the correspondence is not bound within a smaller portion
+of text than the entire document. The translingual relationshipsextracted are very noisy.
+The translingual relationships can be hardly used alone for MT. At best,
+it can be used to complement other translation resources. For CLIR, thenoisy translingual relationships extracted from comparable corpora havebeen found to perform quite well (Braschler and Sha¨ uble, 1998) indicat-
+ing that the utility of comparable texts, when exploited in a simple
+manner, is limited to less demanding tasks such as CLIR.Translingual Mining from Text Data 347
+An alternative approach to exploiting a parallel/comparable corpus
+is pseudo-relevance feedback (Carbonell et al. 1997): Use a query inthe source language to retrieve a set of texts in the parallel/comparablecorpus. One can then select the set of corresponding texts in the tar-get language, from which a set of terms can be extracted. These latterconstitute a “translation” of the original query. As one may notice, this
+approach is similar to those on translingual term similarity. However,
+the diﬀerence is that, rather than determining the translingual relationsbetween individual terms, this approach determines a translingual rela-tion between sets of terms. There is potentially a larger eﬀect of localcontext (Xu and Croft 1996).
+Another approach is to construct a new representation space to which
+terms in both languages can be mapped. CLIR using Latent Semantic
+Indexing (Dumais et al. 1997) exploits this principle: parallel (compa-
+rable) texts are concatenated for form a composed document; A latentrepresentation space is created and implicit translation is generated bymapping a term, a document or a query into the new space. One canalso use a generative topic model instead of LSI.
+In addition to the above methods, comparable texts can be exploited
+in a more reﬁned manner by extracting a subset of strongly compa-
+rable or parallel parts (sentences) from them. We will describe these
+approaches in the next section.
+6. Selecting Parallel Sentences, Phrases and
+Translation Words
+The mining approaches described in the previous sections all rely on
+heuristics relating to the organization and other characteristics of paral-lelWebpages. Sincesomeoftheminingresultsarelikelytonon-parallel,or only partially parallel it is pertinent to ask whether it is possible andbeneﬁcial to clean the mined results in order to minimize noise.
+There have been a number of attempts to extract a subset of high
+quality parallel texts or sentences from a corpus that has been initially
+mined by some other means. An original corpus can be extracted by anapplication such as PTMiner or STRAND. Or it might take the form aset of comparable texts minded from a newswire Web site. Even withthe truly parallel corpora, a certain ﬁltering is made. In fact, beforetranslation models are trained on a set of parallel texts, the sentences inthe texts are aligned (Gale and Church 1993) Diﬀerent patterns of sen-
+tences alignment can be recognized: 0-1 or 1-0 (i.e. a sentence is aligned
+with no sentence), 1-1 (one sentence is aligned with one sentence), 1-2or 2-1, and so forth. It has been observed that errors (i.e. non-parallel348 MINING TEXT DATA
+sentences) most often appear in alignments other than 1-1. For example,
+1-0 or 0-1 alignments may be due to insertion and deletion during themanual translation. Therefore, a simple ﬁltering process is to use only1-1 aligned sentence pairs for model training.
+It is also possible to clean up an initial parallel corpus using other
+heuristics. In Nie and Cai (2001), the following criteria are used to ﬁlter
+the data extracted by PTMiner:
+The length ratio of the text pair should be close to the standard
+length ratio of the two languages;
+The proportion of the 1-1 alignments of a text pair should be high;
+A relatively large percentage of the terms should be translatableinto terms of another text using a dictionary.
+Any text pair that does not comply with these conditions is removed
+from the corpus. The experiments of Nie and Cai show that a combina-tion of the above criteria can eﬀectively remove some non-parallel textsand retrain the parallel ones. They also observe that translation modelstrained on the resulting cleaned corpus mined by PTMiner are of higherquality, and are more eﬀective when used in CLIR.
+While Nie and Cai’s study sought to ﬁlter out non-parallel documents
+from the corpus, other researchers have attempted to extract parallelsentences more directly from comparable corpora. Munteanu and Marcu(2005) use the following process to extract parallel sentences in Chinese,Arabic, and English: 1). Candidate document pairs are ﬁrst selectedusing their publication dates (within a date window of 5 days). 2).Candidate sentence pairs from the paired documents are selected using
+criteria similar to those used by Nie and Cai (2001), i.e. sentence length
+ratio and percentage of terms that can be translated in another sentenceusing a dictionary. 3). Finally, a maximum entropy classiﬁer is used todetermine if the candidate sentence pair is likely to be parallel. Similarmethods have also been taken by Zhao and Vogel (2002), Utiyama andIsahara (2003) and Hong et al. (2010), who estimate sentence similar-ity variously on the basis of sentence length ratio, sentence alignment,
+IBM-1 translation model and percentage of known translations using a
+dictionary. In manual evaluation, it has been found that the selectedsentence pairs can have a precision of 90% (Utiyama and Isahara 2003).These studies demonstrate that selecting a set of parallel sentences froma comparable corpus is possible. The experiments also showed that theextracted parallel sentences are useful for MT in some context: SMTsystems that use the selected sentence pairs in combination with an ini-
+tial set of parallel texts generally produce a higher BLEU score in SMTTranslingual Mining from Text Data 349
+experiments. However, when these parallel sentences are used alone, the
+performance is usually lower than that of using truly parallel texts.
+Severalstudiesuseaniterativeprocesstograduallyselectparallelsen-
+tences from a noisy corpus for model training. Fung and Leung (2004)
+ﬁrst use a bilingual lexicon to select comparable texts and parallel sen-tencesfromtheoriginalsetofdocuments. Theselectedparallelsentencesare used to train a translation model, which is then used to complementthe bilingual lexicon in a second round of document and sentence selec-tion. Fung and Leung reported a precision of 67% in the extraction ofparallelsentencesusingtheadaptivemethod, 24%higherthanabaseline
+method that only used a bilingual lexicon.
+The common observation that word-based translation is too ambigu-
+ous for precise translation led researchers to propose phrase-based mod-els (Ballesteros and Croft, 1997; Gao et al., 2001; Gao et al., 2006;Koehn et al. 2003). In the translingual relation mining task, likewise,one can go a step further Munteanu and Marcu (2006) word-align pairsofcandidatesentencesusingIBMModel1inconjunctionwithadditional
+heuristics, andtreatasequenceofsourcelanguagewords(phrase)aspar-
+allel to a sequence of target language words if they have a strong mutualalignment score This principle is analogous to the case of phrase-basedSMT (Koehn et al. 2003), where a sequence of words is considered toform a phrase if the constituent words are translated into a sequence ofconsecutive words in another language (see Section 2.2).
+Again, the resulting translation model can be ﬁltered so as to remove
+noise. One may choose to use only those translations whose probability
+is higher than a threshold (e.g. 0.01), or the N best translations for eachword. One can also select translation terms according to the context, i.e.thequerytobetranslated. OnecriterionthathasbeenusedinGaoetal.(2001; 2002; 2006) and Liu et al. (2005) is to assume that the resultingset of translation terms for a query should be consistent, i.e. they shouldco-occur often in the target language. Application of this criterion can
+remove unlikely translation terms that are inconsistent with the other
+words (or their translations) in the query. Interested readers can referto these papers for details.
+7. Mining Translingual Relations From
+Monolingual Texts
+Translingual knowledge is by no means conﬁned in texts in two dif-
+ferent languages. It is by no means rare that one can ﬁnd rich translin-gual knowledge within a “monolingual text”, or more precisely, a mostlymonolingual text that contains glosses (translations or transliterations)350 MINING TEXT DATA
+inlined in the text. For example, the following is a short text in Chinese,
+with personal names glossed in English.
+ᯟ、⢩·䴽ཛᴬ(Scott Huﬀman) ઼ਢ㪲ཛ ·ᑨ(Steve Chang) 㔗㔝䀓䈫〫ࣘ
+ᩌ㍒Ǆ
+Even if one does not understand the whole Chinese sentence, it is
+possible to guess that ᯟ、⢩·䴽ཛᴬis the Chinese transliteration of
+“Scott Huﬀman” and ਢ㪲ཛ·ᑨthe transliteration of “Steve Chang”.
+This phenomenon frequently appears in many (especially Asian) lan-
+guages, in particular, when a personal name or technical term calls fora transliteration or translation gloss. Between languages written in thesame script, glossing of named entities may not be necessary. Indeed, itis seldom necessary for a personal name to be transliterated from oneEuropean language into another. However, when languages are writtenin completely diﬀerent scripts, transliteration or translation is usually
+necessary.
+Since our present focus is on mining Web data, we will not discuss
+the mechanics of transliterating personal names. In general, rules orstatistical translation models trained on a set of name translations areused to determine possible correspondences between phonemes in twolanguages and between characters/syllables and phonemes. Interestedreaders may refer to (Chen et al. 2006; Jeong et al. 1999; Kuo et al.
+2006; Lam et al. 2007; Qu et al. 2003; Sproat et al. 2005) for details.
+The huge volume of documents on the web containing glosses of the
+kind seen provides us with a rich resource for mining translingual knowl-edge for personal and organizational names and technical terms. Onecommon approach is to manually deﬁne a set of common patterns ofglossing. Zhang and Vines (2004) identiﬁed the following patterns in amonolingual text (identiﬁed here as the target language):
+...translation (source
+term) ...e.g. ᯟ、⢩·䴽ཛᴬ(Scott Huﬀman)
+...translation, source term ...e.g. 㖾ഭ㣡ᰇ䬦㹼 , Citibank, ...
+...translation, or source term ...e.g. ▌൘䈝ѹؑ᚟Ự㍒⁑ර ,ᡆLSI...
+These patterns reﬂect the common ways of specifying the correspond-
+ing terms (or their glosses) in their original language, especially whenfor names of persons and organizations and for technical terms.
+A typical mining process based on manually deﬁned patterns runs as
+follows (Zhang and Vine, 2004): First, given a source language term(English) for which translations are sought, the term is used as a searchquery to retrieve Chinese (target language) documents. Then the pat-
+terns are applied to the snippets of the returned results to identify theTranslingual Mining from Text Data 351
+candidate translations. Further analysis of the candidates allows selec-
+tion of the most frequent candidates. A number of studies have used thestrategy (Cheng et al., 2004; Cao et al. 2007) to mine large numbers of
+translation relations from monolingual texts on the Web.
+Additional mining criteria can be added to retrieve more relevant
+candidate snippets. For example, Zhang et al. (2005) and Huang et al.
+(2005) add related target language terms to the search query for snip-pets: To ﬁnd a transliteration of “Leo Tolstoy” in Chinese ( ࡇཛ.ᢈቄᯟ
+⌠), if one knows that the work “War and Peace” is closely connectedto the author’s name, then the Chinese terms “ᡈҹ ”( w a r )a n d“ ઼
+ᒣ” (peace) can be added into the search query to locate highly relatedsnippets.
+Rather than exploiting a set of patterns to mine translingual relation-
+ships, Cheng et al. (2004) tries to mine related terms directly from thesnippets returned by the search engine. Once a set of snippets is col-lected, a similarity measure is used to select terms that are related to theoriginal term. Figure 10.8 shows an example using the query “yahoo”
+to retrieve documents in Chinese:
+Figure 10.8. Results of search for Chinese documents using ĀYahooā as query.
+(from (Cheng et al., 2004))
+The snippet results contain Chinese terms strongly correlated with
+“yahoo” such as ཷ᪙(Yahoo!’s name in Taiwan) and ᩌ㍒(search). Un-
+surprisingly,theextractedtermsaremoreoftenrelatedtermsthantrans-lations, so they may not be appropriate for use in full-text translation,
+but appropriate for less demanding applications such as CLIR (Cheng et
+al 2004). The experiments on CLIR show that these glosses supplementexisting dictionaries, and can reduce the number of unknown words inquery translation. This mining approach can also ﬁnd additional goodtranslations for terms that are already covered by an existing resource.
+8. Mining using hyperlinks
+ModernsearchenginesoftenviewananchortextlinkingtoaWebpage
+as an alternative description of the page. When diﬀerent anchor texts
+linktothesameWebpage, thoseanchortextscanbeconsideredstrongly352 MINING TEXT DATA
+related. Iftheanchortextsareindiﬀerentlanguages,moreover,thenthis
+relationship constitutes a kind of translingual/translational relationship.Figure 10.9, below, shows anchor texts in diﬀerent languages pointing
+to the same Web page (www.yahoo.com).
+Figure 10.9. Possible hyperlinks and anchor texts to the web page www.yahoo.com.
+(from (Lu et al., 2004))
+This is the principle used in (Lu et al. 2004) to extract translations
+using anchor texts. The terms “䳵㱾ᩌ㍒ᕅ᫾ ”, “㖾ഭ䳵㱾 ”, “yahoo!”,
+“Yahoo!ɪɘȬɳ ”, “YahooȃὌ㍒Ȱɻɀɻ ”, etc. correspond to diﬀer-
+ent names for “Yahoo!” in diﬀerent languages. Lu et al. (2004) pro-
+posed a translingual similarity measure to determine relationships be-tween terms in diﬀerent languages. This approach is particularly suitedto mining translations or transliterations of proper names (names of or-ganizationsandcompanies). Itwillﬁnd, forexample, diﬀerenttransliter-
+ations of “Sony” in simpliﬁed Chinese “ ㍒ቬ” and in traditional Chinese
+“ᯠ࣋;” and translations and transliterations of “General Electric” or
+“GE” in simpliﬁed Chinese “䙊⭘⭥≄ ” and in Traditional Chinese “ ཷ
+ᔲ” (transliteration of “GE”).
+Mining on Wikipedia is a special case of hyperlink mining. Wikipedia
+is increasingly used in CLIR experiments to ﬁnd equivalent expressions
+across languages, in particular proper names and technical terms. The
+encyclopedia contains numerous explicit links between diﬀerent entries
+of the same entity in diﬀerent languages that can be assumed to be mu-tual translations (Gamallo et al. 2010) For example, “Chang Kai-Shek”,“Jiang Jieshi”, 㪻ѝ↓and㪻ӻ⸣ are the diﬀerent names of the same per-
+son, and they refer to the same page on Wikipedia. While the coverageprovided by this resource is limited, one can further extend the min-ing process by also assuming that articles on the same topic in diﬀerent
+languages are either “parallel” or comparable. These characteristics ofTranslingual Mining from Text Data 353
+Wikipedia have been successfully exploited to extract translingual rela-
+tions between elements in the two texts and used for CLIR (Potthast etal. 2008; Sch¨ onhofen et al. 2007; Smith et al. 2010).
+9. Conclusions and Discussions
+Translation is an essential component of MT and CLIR Since manu-
+ally constructed resources are limited in coverage there is an acute needto acquire translingual knowledge automatically. In this chapter, wehave presented a broad overview of a growing body of work on miningparallel texts, parallel sentences and phrases on the Web. These studiesshow that the mining processes that employ heuristics based on the or-ganization of parallel texts and the characteristics of parallel sentences,
+or translation knowledge already available (e.g. a bilingual dictionary),
+make it possible to harvest a large amount of parallel and comparabletexts on the Web. The mined texts, without cleaning, can be too noisyfor tasks such as MT. However, for tasks such as CLIR, which does notalways demand high-quality text translations, parallel/comparable cor-pora mined using these mining approaches can be directly used to trainmodels or learn term similarity measures for query translation. Exper-
+imental results show that one can obtain improved CLIR eﬀectiveness
+compared with other resources such as MT and bilingual dictionaries.
+For more demanding tasks like conventional text MT, reﬁnements can
+beimplementedtoacquiremoreprecisetranslationknowledge, includingﬁltering of the mined corpus itself, and selection of parallel sentencesor parallel phrases from the corpus. Experiments with SMT modelsindicate that the smaller and cleaner corpora obtained by ﬁltering do in
+fact help improve the translation quality in terms of BLEU score and
+other metrics.
+Although feasibility and utility of mining translingual knowledge on
+the Web is now well established, much room remains for methodologicalimprovement. Despite application of ﬁltering techniques, a signiﬁcantpercentage of the mined corpora still contain non-parallel data. Suchcorpora may be unreliable when used to train sophisticated translation
+models beyond the IBM-1 models employed in most CLIR studies. For
+MT purposes, moreover, it may be necessary to further reﬁne the miningprocess itself in order to locate strictly parallel texts and sentences. Onthe other end of the spectrum, although a comparable corpus is consid-ered too noisy to be suited to translation model training approaches tosmoothing the models trained using strictly parallel texts and the onesusing translingual term similarity with less strictly matched texts might
+be applicable to produce useful models.354 MINING TEXT DATA
+While it is preferable to extract well-formed phrases for general MT
+tasks, the requirements for other tasks such as CLIR may be less strin-gent. A more ﬂexible phrase-based query translation model may well be
+applicable, in which, for example, context is provided by pairs of query
+terms, with one word deﬁning a context for the translation of the othereven though the two words themselves may not form a single phrase.
+Parallel texts are essential to translation, and identifying translingual
+resources remains a primary goal of mining parallel texts on the Web.But parallelism need not be viewed as limited to cases involving diﬀerentlanguages. Other kinds of data can also potentially be regarded as par-
+allel. For example, two sets of texts in the same language can be treated
+as parallel and used to train a “translation” model to capture the rela-tionships between elements in that language, an approach that has beensuccessfully used in monolingual IR (Burger and Laﬀerty, 1999; Gao etal. 2010). This notion can be further extended to mining trans-mediaknowledge: correspondences between images and textual annotationscan be exploited to generate trans-media relations between visual fea-
+tures and words (Jeon et al. 2003; Oumohmed et al. 2005). These
+studies demonstrate that the SMT paradigm is applicable in tasks otherthan translation and hintat thepossibility of interestingnew approachesin other areas.
+References
+[1] Adafre, S.F. and de Rijke, M. (2006). Finding similar sentences
+acorss multiple languages in Wikipedia. 11thConference of the Eu-
+ropean Chapter of the Association for Computational Linguistics ,
+pp. 62–69.
+[2] Ballesteros, L. and Croft, W. (1997). Phrasal translation and query
+expansion techniques for cross-language information retrieval. InProceedings of S IGIR Conf. pp. 84-91.
+[3] Berger,A.andLaﬀerty,J.(1999).Informationretrievalasstatistical
+translation. In Proceedings of S IGIR Conf. , pp. 222-229.
+[4] Braschler, M., and Sch¨ auble, P. (1998). Multilingual information
+retrieval based on document alignment techniques. ECDL ’98: Pro-
+ceedings of the Second European Conference on Research and Ad-vanced Technology for Digital Libraries , pp. 183–197.
+[5] Braschler, M., and Sch¨ auble, P. (2001). Experiments with the Eu-
+rospider Retrieval System for CLEF 2000, in Proceedings of CLEF
+Conference . pp. 140-148.Translingual Mining from Text Data 355
+[6] Brown, P., Della Pietra, S., Della Pietra, V., and Mercer, R. (1993).
+The mathematics of statistical machine translation: Parameter es-timation. Computational Linguistics , 19(2), pp. 263-311.
+[7] Cao, G., Gao, J., Nie, J.Y. (2007) A system to mine large-scale
+bilingual dictionaries from monolingual Web pages, MT Summit ,
+pp. 57-64.
+[8] Carbonell,J.G,Yang,Y,Frederking,R.E.,Brown,R.,Geng,Y.and
+Lee, D. (1997) Translingual information retrieval: A comparativeevaluation. In: Proceedings of the International Joint Conferenceon Arti?cial Intelligence (IJCAI ’97).
+[9] Chiang, D., (2005) A Hierarchical Phrase-Based Model for Statis-
+tical Machine Translation. ACL.
+[10] Chen, J., Nie, J.Y., (2000) Automatic construction of parallel
+English-Chinese corpus for cross-language information retrieval.ANLP pp. 21-28
+[11] Chen, H.H., Lin, W.C. and Yang, C.H. (2006). Translation-
+Transliterating Named Entities for Multilingual Information Ac-cess.Journal of the American Society for Information Science and
+Technology , 57(5):645-659
+[12] Cheng, P., Teng, J., Chen, R., Wang, J., Lu, W., and Chien, L.
+(2004). Translating Unknown Queries with Web Corpora for Cross-Language Information Retrieval. In Proceedings of S IGIR Conf .,
+pp.162-169.
+[13] Dumais, S. T., Letsche, T. A., Littman, M. L. and Landauer, T. K.
+(1997) Automatic cross-language retrieval using Latent SemanticIndexing. AAAI Spring Symposuim on Cross-Language Text and
+Speech Retri eval, March 1997.
+[14] Franz, M., McCarley, J.S. and Koukos, S. (1999) Ad hoc and mul-
+tilingual information retrieval at IBM. Proceedings of the Seventh
+Text Retrieval Conference (TREC-7), pp. 157–168.
+[15] Fung, P. (1995). A Pattern Matching Method for Finding Noun and
+Proper Noun Translations from Noisy Parallel Corpora. Proceedings
+of the Association for Computational Linguistics , pp. 236-243.
+[16] Pascale Fung and Yuen Yee Lo. 1998. An IR approach for translat-
+ing new words from nonparallel, comparable texts. Proceedings of
+COLING-ACL98 , pp. 414– 420.
+[17] Fung, P. and McKeown, K. (1997) Finding terminology translations
+from non-parallel corpora. In: The 5th Annual Workshop on Very
+Large Corpora.356 MINING TEXT DATA
+[18] Fung, P. and Cheung, P. (2004) Multilevel boot-strapping for ex-
+tracting parallel sentences from a quasi parallel corpus. Conference
+on Empirical Methods in Natural Language Processing (EMNLP04),pp. 1051–1057.
+[19] Gale, W. A., Church K. W. 1993. A Program for Aligning Sentences
+in Bilingual Corpora . Computational Linguistics, 19(3): 75-102.
+[20] Galley, M., Hopkins, M., Knight, K., Marcu, D., (2004) What’s in
+a translation rule? HLT-NAACL , pp. 273-280
+[21] Pablo Gamallo Otero, Isaac Gonzalez Lopez, (2009) Wikipedia as
+Multilingual Source of Comparable Corpora, Proceedings of the 3rd
+Workshop on Building and Using Comparable Corpora ,LREC2010,
+pp. 21–25
+[22] Gao, J., Nie, J.Y., Xun, E., Zhang, J., Zhou, M., and Huang, C.
+(2001). Improving query translation for cross-language informationretrieval using statistical models. In Proceedings of S IGIR Conf. ,
+pp. 96-104.
+[23] Gao, J., Zhou, M., Nie, J.Y., He, H., Chen, W. (2002) Resolving
+query translation ambiguity using a decaying co-occurrence modeland syntactic dependence relations. SIGIR, pp. 183-190
+[24] Gao, J., Nie, J.Y. (2006) Study of Statistical Models for Query
+Translation: Finding a Good Unit of Translation. SIGIR, pp 194-
+201, 2006.
+[25] Gao, J., He, X., Nie. J.Y. (2010) Clickthrough-based translation
+models for web search: from word models to phrase models. CIKM,
+pp 1139-1148, 2010.
+[26] Hong, Gumwon, Li, Chi-Ho, Zhou, Ming and Rim, Hae-Chang
+(2010) An Empirical Study on Web Mining of Parallel Data, COL-
+ING, pp. 474–482.
+[27] Huang, Degen, Zhao, Lian, Li, Lishuang Yu, Haitao (2010) Min-
+ing Large-scale Comparable Corpora from Chinese-English NewsCollections, COLING , pp. 472-480.
+[28] Huang, F., Zhang, Y., and Vogel, S. (2005). Mining Key Phrase
+Translations from Web Corpora. In Proceedings of HLT-EMNLP
+Conf.,pp. 483-490.
+[29] Jeon, J. Lavrenko, V. and Manmatha, R. (2003) Automatic Image
+Annotation and Retrieval using Cross-Media Relevance Models, SI-
+GIR, pp. 119-126.
+[30] Jeong, K.S., Myaeng, S.H., Lee, J.S, and Choi, K.S., (1999) Auto-
+matic identiﬁcation and back-transliteration of foreign words forTranslingual Mining from Text Data 357
+information retrieval, Information Processing and Management,
+35(4), pp. 523-540.
+[31] Ji, Heng (2009) Mining Name Translations from Comparable Cor-
+pora by Creating Bilingual Information Networks, Proceedings of
+the 2ndWorkshop on Building and Using Comparable Corpora,
+ACL-IJCNLP 2009 , pages34–37.
+[32] Koehn, P., Och, F.J., Marcus, D., (2003) Statistical phrase-based
+translation, In Proceedings of HLT-NAACL , pp. 48-54.
+[33] Koehn, P. (2009) Statistical Machine Translation. Cambridge Uni-
+versity Press.
+[34] Kraaij, W., Nie, J.Y., and Simard, M. (2003). Embedding Web-
+Based Statistical Translation Models in Cross-Language Informa-tion Retrieval. Computational Linguistics , 29(3): 381-420.
+[35] Kumano, T. and Tanaka, H., Tokunaga, T. (2007) Extracting
+phrasal alignments from comparable corpora by using joint prob-ability SMT model. 11th International Conference on Theoreticaland Methodological Issues in Machine Translation (TMI’07).
+[36] Kuo, J.S., Li, H., and Yang Y.K (2006). Learning Translitera-
+tion Lexicon from the Web. In the Proceedings of COLING/ACL ,
+pp.1129-1136
+[37] Lam,W.,Chan,S.K.,andHuang,R.(2007).NamedEntityTransla-
+tion Matching and Learning: With Application for Mining UnseenTranslations. ACM Transactions on Information Systems , 25(1),
+pp.
+[38] Liu, Y., Jin R. and Chai, Joyce Y. (2005). A maximum coherence
+model for dictionary-based cross-language information retrieval, InProceedings of S IGIR conf ., pp. 536-543.
+[39] Lu, W. Chien, L.F. and Lee, H. (2004). Anchor Text Mining for
+Translation of Web Queries: A Transitive Translation Approach.ACM Transactions on Information Systems, Vol.22, pp. 242-269.
+[40] Ma,X.andLiberman,M.,(1999).Bits:AMethodforBilingualText
+Search over the Web. Proceedings of Machine Translation Summit
+VII.
+[41] Munteanu, D. S., Marcu, D. (2005) Improving Machine Translation
+Performance by Exploiting Non-Parallel Corpora. 2005. Computa-
+tional Linguistics . 31(4). pp: 477-504.
+[42] Munteanu, D. S. and Marcu D. (2006). Extracting parallel sub-
+sentential fragments from non-parallel corpora. ACL, pp. 81–88.358 MINING TEXT DATA
+[43] Nagata, M., Saito, T., and Suzuki, K. (2001). Using the web as
+a bilingual dictionary. In Proceedings of the Workshop on Data-
+Driven Methods in Machine Translation (with ACL Conf.), pp. 1-8.
+[44] Nie, J.Y., Cai, J. (2001) Filtering parallel corpora of web pages,
+IEEE symposium on NLP and Knowledge Engineering, pp. 453-
+458.
+[45] Nie, J.Y., Simard, M., Isabelle, P., Durand, R. (1999) Cross-
+Language Information Retrieval based on Parallel Texts and Auto-matic Mining of Parallel Texts in the Web, In Proceedings of S IGIR
+Conf., pp. 74-81
+[46] Och, F., and Ney, H. (2002) Discriminative Training and Maximum
+Entropy Models for Statistical Machine Translation. ACL, pp. 295-
+302
+[47] Och, F. (2003). Minimum error rate training in statistical machine
+translation. In Proceedings of ACL . pp. 160-67
+[48] Oumohmed, A.I., Mignotte, M., Nie, J.Y. (2005) Semantic-Based
+Cross-Media Image Retrieval, Pattern Recognition and Image Anal-
+ysis: Third International Conference on Advances in Pattern R ecog-
+nition (ICAPR) , LNCS 3687, pp. 414-423.
+[49] Potthast, M., Stein, B., Anderka, M. (2008) A Wikipedia-based
+Multilingual Retrieval Model. ECIR,LNCS 4956, pp. 522–530.
+[50] Qu, Y., Grefenstette, G., and Evans, D. A. (2003). Automatic
+transliteration for Japanese-to-English text retrieval. In Proceedings
+of SIGIR Conference , pp. 353-360.
+[51] Rapp, R. (1995). Identifying Word Translations in Non-Parallel
+Texts.Proceedings of the 33rd Annual Meeting of the Association
+for Computational Linguistics, pp. 320-322.
+[52] Resnik, P., (1999) Mining the Web for Bilingual Text, 37th Annual
+MeetingoftheAssociationforComputationalLinguistics(ACL’99).
+[53] Resnik P. and Smith. N.A. (2003) The Web as a Parallel Corpus,
+Computational Linguistics, 29(3), pp. 349-380, September 2003.
+[54] Sheridan, P. and Ballerini, J. P. (1996). Experiments in multilingual
+information retrieval using the SPIDER system. In Proceedings of
+SIGIR Conf., pp. 58-65.
+[55] Sch¨onhofen, P., Bencz´ ur, A., B´ ır´o, I., Csa-
+log´ any, K. (2007) Performing cross-language re-trieval with Wikipedia, CLEF-2007 (http://www.clef-
+campaign.org/2007/working
+notes/schonhofenCLEF2007.pdf)Translingual Mining from Text Data 359
+[56] Shi, L., Niu, C., Zhou, M., and Gao, J. (2006) A DOM Tree Align-
+ment Model for Mining Parallel Data from the Web, ACL,pp. 489-
+496.
+[57] Smith, J. R., Quirk, C., and Toutanova, K. (2010) Extracting paral-
+lel sentences from comparable corpora using document level align-ment.HLT, pp. 403–411
+[58] Sproat, R., Tao, T., Zhai, C. (2006) Named Entity Transliteration
+with Comparable Corpora. In Proceedings of ACL .
+[59] Tuomas Talvensaari, Jorma Laurikkala, Kalervo J¨ arvelin, Martti
+Juhola (2006) A study on automatic creation of a comparable doc-ument collection in cross-language information retrieval, Journal ofDocumentation, Vol. 62 No. 3, pp. 372-387
+[60] Tuomas Talvensaari, Jorma Laurikkala, Kalervo J¨ arvelin, Martti
+Juhola, and Heikki Keskustalo (2007). Creating and exploiting acomparable corpus in cross-language information retrieval. ACM
+Trans. Inf. Syst. 25, 1, Article 4.
+[61] Utiyama M. and Isahara, H. (2003) Reliable Measures for Aligning
+Japanese-English News Articles and Sentences. ACL, pp. 72–79.
+[62] Jinxi Xu, W. Bruce Croft (1996) Query Expansion Using Local and
+Global Document Analysis. SIGIR, pp. 4-11
+[63] Yang, Christopher C., and Kar Wing Li. 2003. Automatic construc-
+tion of English/Chinese parallel corpora. Journal of the American
+Society for Information Science and Technology ,54(8),pp.730–742.
+[64] Zhang, Y. and Vines, P. (2004). Using the Web for Automated
+Translation Extraction in Cross-Language Information Retrieval.InProceedings of S IGIR Conf ., pp.162-169.
+[65] Zhang, Y., Huang, F., Vogel, S. (2005) Mining Translations of OOV
+Terms from the Web through Cross-lingual Query Expansion, SI-
+GIR, pp. 669-670.
+[66] Zhao, B., and Vogel, S. (2002). Adaptive Parallel Sentences Min-
+ing from Web Bilingual News Collection. In Proceedings of IEEEinternational conference on data mining, pages 745-750.Chapter 11
+TEXT MINING IN MULTIMEDIA
+Zheng-Jun Zha
+School of Computing, National University of Singapore
+zhazj@comp.nus.edu.sg
+Meng Wang
+School of Computing, National University of Singapore
+wangm@comp.nus.edu.sg
+Jialie Shen
+Singapore Management University
+jlshen@smu.edu.sg
+Tat-Seng Chua
+School of Computing, National University of Singapore
+chuats@comp.nus.edu.sg
+Abstract A large amount of multimedia data (e.g., image and video) is now avail-
+able on the Web. A multimedia entity does not appear in isolation,
+but is accompanied by various forms of metadata, such as surround-
+ing text, user tags, ratings, and comments etc. Mining these textual
+metadata has been found to be eﬀective in facilitating multimedia in-
+formation processing and management. A wealth of research eﬀorts has
+been dedicated to text mining in multimedia. This chapter provides a
+comprehensive survey of recent research eﬀorts. Speciﬁcally, the survey
+focuses on four aspects: (a) surrounding text mining; (b) tag mining;
+(c) joint text and visual content mining; and (d) cross text and visual
+content mining. Furthermore, open research issues are identiﬁed based
+on the current research eﬀorts.
+Keywords: Text Mining, Multimedia, Surrounding Text, Tagging, Social Network
+© Springer Science+Business Media, LLC 2012 361  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_11,

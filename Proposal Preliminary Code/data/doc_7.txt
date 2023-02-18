@@ -1,0 +1,1137 @@
+Chapter 7
+TRANSFER LEARNING FOR TEXT
+MINING
+Weike Pan
+Hong Kong University of Science and Technology
+Clearwater Bay, Kowloon, Hong Kong
+weikep@cse.ust.hk
+Erheng Zhong
+Hong Kong University of Science and Technology
+Clearwater Bay, Kowloon, Hong Kong
+ezhong@cse.ust.hk
+Qiang Yang
+Hong Kong University of Science and Technology
+Clearwater Bay, Kowloon, Hong Kong
+qyang@cse.ust.hk
+Abstract Over the years, transfer learning has received much attention in machine
+learning research and practice. Researchers have found that a major
+bottleneck associated with machine learning and text mining is the lack
+of high-quality annotated examples to help train a model. In response,
+transfer learning oﬀers an attractive solution for this problem. Various
+transfer learning methods are designed to extract the useful knowledge
+from diﬀerent but related auxiliary domains. In its connection to text
+mining, transfer learning has found novel and useful applications. In
+this chapter, we will review some most recent developments in transfer
+learningfortextmining, explainrelatedalgorithmsindetail, andproject
+future developments of this ﬁeld. We focus on two important topics:
+cross-domain text document classiﬁcation and heterogeneous transfer
+learning that uses labeled text documents to help classify images.
+Keywords: Transfer learning, text mining, classiﬁcation, clustering, learning-to-
+rank.
+© Springer Science+Business Media, LLC 2012 223  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_7,224 MINING TEXT DATA
+1. Introduction
+Transfer learning refers to the machine learning framework in which
+one extracts knowledge from some auxiliary domains to help boost thelearning performance in a target domain. Transfer learning as a newparadigm of machine learning has achieved great success in various ar-eas over the last two decades [17, 67], e.g. text mining [8, 26, 23], speech
+recognition [95, 52], computer vision (e.g. image [75] and video [100]
+analysis), and ubiquitous computing [108, 93].
+For text mining, transfer learning can be found in many application
+scenarios, e.g., knowledge transfer from Wikipedia documents (auxil-iary) to Twitter text (target), from WWW webpages to Flick images,from English documents to Chinese documents in search engine, etc.
+One fundamental motivation of transfer learning in text mining is the
+so-called data sparsity problem in a target domain, where data sparsity
+can be deﬁned by a lack of useful labels or suﬃcient data in the trainingset. For example, Twitter messages are short documents that are gener-ated by users. These documents are often unlabeled, which are diﬃcultto classify. Thus, it would be useful for us to transfer the supervisedknowledge from another fully labeled text corpus to help classify Twit-
+ter messages. When datasparsityhappens, overﬁttingcan easily happen
+when we train a model. In the past, many traditional machine learningmethods have been proposed for addressing the data sparsity problem,
+including semi-supervised learning [111, 18], co-training [9] and activelearning [91]. However, in many practical situations, we still have tolook elsewhere for additional knowledge for learning in our domain ofinterest.
+We can take the following two views on knowledge transfer,
+1In theory , transfer learning can be considered as a new learning
+paradigm , where most non-transfer learning methods are consid-
+ered as a special case when learning happens within a single target
+domain only, e.g., text classiﬁcation in Twitter, and
+2In applications , transfer learning can be considered as a new cross-
+domainlearning technique , since it explicitly addresses the various
+aspects of domain diﬀerences, e.g. data distribution, feature andlabel space, noise in the auxiliary data, relevance of auxiliary andtarget domains, etc. For example, we have to address most of theabove issues when we transfer knowledge from Wikipedia docu-
+ments to Twitter text.Transfer Learning for Text Mining 225
+Machine learning algorithms such as classiﬁcation and regression (e.g.
+discriminative learning, ensemble learning) have been widely adoptedin various text mining applications, e.g. text classiﬁcation [42], senti-ment analysis [68], named entity recognition (NER) [106], part-of-speech(POS) tagging [77], relation extraction (RE) [104], etc. In this chapter,wewillsurveysomerecenttransferlearningextensionsinaforementioned
+machine learning and data mining techniques and their applications for
+text mining. The organization of the chapter is as follows. We ﬁrstgive an overview of the scope of text-mining problems that we consider,and motivate the need for transfer learning in text classiﬁcation. Wethen describe some typical approaches in transfer learning, such that wecan subsequently categorize various text-mining approaches under thesetransfer-learning categories. This is followed by an overview of transfer
+learning approaches that extracts knowledge from labeled text data for
+the beneﬁt of image classiﬁcation and processing. This latter approachis known as heterogeneous transfer learning (HTL). Finally, we concludethe chapter with a summary and discussion of future work.
+2. Transfer Learning in Text Classiﬁcation
+We ﬁrst review the problem formulation in cross-domain text clas-
+siﬁcation problems. In the next section, we ﬁrst look at some typicalbenchmark data examples where the cross domain classiﬁcation meth-
+ods are needed. We then consider the nature of these problems, their
+diﬀerences from a traditional text classiﬁcation problem, as well as howto formulate these problems into a machine learning problem.
+2.1 Cross Domain Text Classiﬁcation
+2.1.1 Support Vector Machines for Text Classiﬁcation.
+Text classiﬁcation [42] aims to categorize a document to some predeﬁnedcategories Y, where a document is usually represented in the form of
+bag of words X, denoted as a vector x∈R
+d×1withdunique words.
+The entries in the feature vector xcan be 1 /0 indicating whether the
+corresponding word appears or not or TF-IDF (term frequency inverse-document frequency).
+There are enormous user-generated contents in online products and
+services on social media forums, blogs and microblogs, social networks,etc. It is very important to be able to summarize consumers’ opinions
+on existing products and services. Sentiment analysis (or opinion min-
+ing) [68] addresses this problem, by classifying the reviews or sentimentsinto positive and negative categories. Similar to text classiﬁcation, re-226 MINING TEXT DATA
+views or sentiments can be represented as a feature vector x∈Rd×1,
+and the label space is Y={±1}.
+Extension of text classiﬁcation has also been done in sequence clas-
+siﬁcation areas. For example, POS tagging [77] aims to assign a tag toeach word in a text, or equivalently classify each word in a text to some
+speciﬁed categories such as norm, verb, adjective, etc. POS tagging is
+very important for language pre-processing, speech synthesis, word sensedisambiguation, information retrieval, etc. POS tagging can be consid-ered as a structure prediction problem, and can be reduced to multiplebinary-classiﬁcation problems.
+As support vector machines (SVM) [42] have been recognized as a
+state-of-the-art model in text mining, below, we will use SVM as a rep-
+resentative base model among various discriminative models to illustrate
+how the labeled data in auxiliary domains can be used to achieve knowl-edge transfer from auxiliary domains to the target domain. We ﬁrstconsider the text data representation.
+In text mining, we assume that the data are represented as a bag-
+of-words X=R
+d×1with the same feature space for both auxiliary and
+target learning domains. For notational simplicity, we consider binary
+classiﬁcation problems, Y={±1}, which can be extended to multi-
+class classiﬁcation via common tricks of one-vs-one or one-vs-rest pre-processing. We generally assume the same feature space and label spacein both auxiliary and target domains, but in Section 3, we mentionsome recent works on heterogeneous feature space and/or heterogeneouslabel space learning. We use XandYto denote variables for feature
+space and label space, respectively, and we use x,y,˜x,˜yto denote the
+correspondinginstantiationsofvariablesintargetandauxiliarydomains,
+respectively.
+For each word in a text, we can extract a feature vector based on
+the context information that is represented as x∈R
+d×1. Many text
+mining problems can be modeled this way. In POS tagging, for example,the learning problem is basically a classiﬁcation problem by assigning alabelytox. In Named Entity Recognition (NER) problems [106], the
+aim is to classify each word in a text to some pre-deﬁned categories, e.g.
+location, time, organization, etc. Another interesting problem is relationextraction [104], where each pair of entities in a sentence is representedas a feature vector x, which is assigned to a certain type of relation, e.g.
+family, user-owner, employer-executive, etc.
+Text classiﬁcation can be addressed by discriminative learning meth-
+ods, which explicitly model the conditional distribution P
+r(Y|X). We
+can ﬁnd many text mining formulations as variants of this formulation,
+e.g., maximum entropy (MaxEnt) [5], logistic regression (LR) [36], con-Transfer Learning for Text Mining 227
+ditional random ﬁeld (CRF) [47]. With this in mind, we consider the
+following basic SVM algorithm for text classiﬁcation.Basic SVM for Text Classiﬁcation Given/lscriptlabeled data points
+{(x
+i,yi)}/lscript
+i=1withxi∈Rd×1andyi∈{ ±1}in the target domain, we
+have the following optimization problem for the linear SVM with softmargin [82],
+min
+w,ξ1
+2||w||2
+2+λ/lscript/summationdisplay
+i=1ξi (7.1)
+s.t.yiwTxi≥1−ξi,ξi≥0,i=1,...,/lscript
+wherew∈Rd×1is the model parameter, ξ∈R/lscript×1are the slack vari-
+ables, and λ>0 is the tradeoﬀ parameter to balance the model com-
+plexity||w||2
+2and loss function/summationtext/lscript
+i=1ξi. Solving the convex optimization
+problem in Eq.(7.1), we have a decision function
+f(x)=wTx=d/summationdisplay
+k=1wkxk. (7.2)
+Inthissection, wewillconsiderhowtoextendthisformulationtoinclude
+transfer learning capabilities.
+2.1.2 Cross Domain Text Classiﬁcation Problems. With
+the above baseline algorithm in mind, we now consider several problemdomains where we show examples of cross domain text classiﬁcation.
+These examples illustrates some of the benchmark data often used in
+transfer learning experiments. They also help demonstrate why trans-fer learning is needed when the domain diﬀerence is large between theauxiliary and target learning domains.
+20 Newsgroups First,weconsiderthewell-known20-newsgroupdata.
+The 20-newsgroup [48] is a text collection of approximately 20,000 news-group documents, which are partitioned across 20 diﬀerent newsgroupsnearly evenly. This data collection provides an ideal benchmark forevaluating and comparing diﬀerent transfer learning algorithms for textclassiﬁcation. A typical method is to generate six diﬀerent data sets
+from the 20-newsgroup data for evaluating cross-domain classiﬁcation
+algorithms. For each data set, two top categories
+1are chosen, one as
+positive and the other as negative. Then, we can split the data based on
+1Three top categories, misc,socand altare removed, because they are too small.228 MINING TEXT DATA
+Data Set ˜DD
+comp vs scicomp.graphics comp.sys.ibm.pc.hardware
+comp.os.ms-windows.misc comp.sys.mac.hardware
+sci.crypt comp.windows.x
+sci.electronics sci.med
+sci.space
+rec vs talkrec.autos rec.sport.baseball
+rec.motorcycles rec.sport.hockey
+talk.politics.guns talk.politics.mideast
+talk.politics.misc talk.religion.misc
+rec vs scirec.autos rec.motorcycles
+rec.sport.baseball rec.sport.hockey
+sci.med sci.crypt
+sci.space sci.electronics
+sci vs talksci.electronics sci.crypt
+sci.med sci.space
+talk.politics.misc talk.politics.guns
+talk.religion.misc talk.politics.mideast
+comp vs reccomp.graphics comp.os.ms-windows.misc
+comp.sys.ibm.pc.hardware comp.windows.x
+comp.sys.mac.hardware rec.autos
+rec.motorcycles rec.sport.baseball
+rec.sport.hockey
+comp vs talkcomp.graphics comp.os.ms-windows.misc
+comp.sys.mac.hardware comp.sys.ibm.pc.hardware
+comp.windows.x talk.politics.guns
+talk.politics.mideast talk.politics.misc
+talk.religion.misc
+Table 7.1. A description of 20-newsgroup data sets for cross-domain classiﬁcation.
+sub-categories. Diﬀerent sub-categories can be considered as diﬀerent
+domains, while the task is deﬁned as top category classiﬁcation. The
+splitting strategy ensures the domains of labeled and unlabeled data re-
+lated, since they are under the same top categories. Table 7.1 shows
+details of this data.
+SRAA SRAA[61]isaUseNetdatasetfordocumentclassiﬁcationthat
+describes documents in Simulated/Real/Aviation/Auto classes. 73,218UseNet articles are collected from four discussion groups about simu-lated autos ( sim-auto), simulated aviation (sim-aviation ), real autos
+(real-auto ) and real aviation ( real-aviation ).
+Foratasktopredictlabelsofinstancesbetween realandsimulated ,w e
+can use the documents in real-auto andsim-auto as auxiliary domain
+data, while real-aviation and sim-aviation as target domain data.Transfer Learning for Text Mining 229
+Data Set ˜DD
+auto vs aviation sim-auto & sim-aviation real-auto & real-aviation
+real vs simulated real-aviation & sim-aviation real-auto & sim-auto
+Table 7.2. The description of SRAA data sets for cross-domain classiﬁcation.
+Data Set KL(˜D||D)Documents SVM
+|˜X||X|˜D→DD+CV
+real vs simulated 1.161 8,000 8,000 0.266 0.032
+auto vs aviation 1.126 8,000 8,000 0.228 0.033
+rec vs talk 1.102 3,669 3,561 0.233 0.003
+rec vs sci 1.021 3,961 3,965 0.212 0.007
+comp vs talk 0.967 4,482 3,652 0.103 0.005
+comp vs sci 0.874 3,930 4,900 0.317 0.012
+comp vs rec 0.866 4,904 3,949 0.165 0.008
+sci vs talk 0.854 3,374 3,828 0.226 0.009
+orgs vs places 0.329 1,079 1,080 0.454 0.085
+people vs places 0.307 1,239 1,210 0.266 0.113
+orgs vs people 0.303 1,016 1,046 0.297 0.106
+Table 7.3. Description of the data sets for cross-domain text classiﬁcation, including
+errors given by SVM. “ ˜D→D” means training on the auxiliary domain ˜Dand testing
+on the target domain D;“D+CV” means 10-fold cross-validation using target domain
+data only. The performances are in test error rate. The table is quoted from [22].
+Then, the data set real vs simulated is generated as shown in Table
+7.2.As a result, all the data in the auxiliary domain data set are about
+autos, whileallthedatainthetargetdomainsetareaboutaviation. The
+auto vs aviation data set is generated in the similar way as shown in
+Table 7.2.
+Reuters-21578 Reuters-21578 [49] is a well known test collections for
+evaluating text classiﬁcation techniques. This dataset contains 5 topcategories, among which orgs, peopleandplacesare three large ones.
+Thereisalsoahierarchicalstructurewhichallowsustogeneratediﬀerentdata sets such as orgs vs people, orgs vs places,a n d people vs
+placesfor cross-domain classiﬁcation in a similar way as what we have
+done on the 20-newsgroup and SRAA corpora.
+Properties of the Data Sets Table7.3 givesan overviewof applying
+the basic SVM algorithm to the above data sets. The ﬁrst three columnsof the table show the statistical properties of the data sets. The ﬁrst
+two data sets are from SRAA corpus. The next six are generated using230 MINING TEXT DATA
+Figure 7.1. Document-word co-occurrence distribution on the auto vs aviation
+data set (quoted from [22]).
+20-newsgroup data set. The last three are from Reuters-21578 test col-
+lection. To show the distribution diﬀerences between the training andtesting data, KL-divergence values are calculated by KL( ˜D||D)o na l l
+the data set and are presented in the second column in the table, sorted
+in decreasing order from top down. Note that the Kullback-Leibler (KL)divergence [45] of two distributions of {p
+i}/lscript
+i=1and{qi}/lscript
+i=1is deﬁned as
+KL({pi}/lscript
+i=1||{qi}/lscript
+i=1)=/lscript/summationdisplay
+i=1piln(pi/qi)+(1−pi)ln((1−pi)/(1−qi)) (7.3)
+Here˜Dis the auxiliary domain data and Dis the target domain data.
+It can be seen that the KL-divergence values for all the data sets aremuch larger than the identical-distribution case which has a KL value
+of nearly zero. The next column titled “Documents” shows the size of
+the data sets used.
+Under the column titled “SVM”, we show two groups of classiﬁcation
+results in two sub-columns. First, “ ˜D→D” denotes the test error rate
+obtained when a classiﬁer trained based on the auxiliary domain dataset˜Dis applied to the target domain data set D. The column titled
+“D+CV” denotes the best-case obtained by the corresponding classiﬁer,
+where the best case is to conduct a 10-fold cross-validation on the target
+domain data set Dusing that classiﬁer. Note that in obtaining the best
+case for each classiﬁer, the training part is labeled data from Dand the
+test part is also D, according to diﬀerent folds, which gives the best
+result for that classiﬁer. It can be found that the test error rates, givenby SVM, in the case of “ ˜D→D” is much worse than those in the case
+of “D+CV”. This indicates that for these data sets, it is not suitable to
+apply traditional supervised classiﬁcation algorithms.Transfer Learning for Text Mining 231
+Figure 7.1 shows the document-word co-occurrence distribution on
+theauto vs aviation data set. In this ﬁgure, documents 1 to 8000 are
+from target domain D, while documents 8001 to 16000 are from auxil-
+iary domain ˜D. The documents are order ﬁrst by their domains ( ˜Dor
+D), and second by their categories (positive or negative). The words are
+sorted by n+(w)/n−(w), where n+(w)a n dn −(w) represent the number
+of word positions wappears in positive and negative document, respec-
+tively. From Figure 7.1, it can be found that the distributions of auxil-
+iary domain and target domain data are somewhat diﬀerent, but almost
+consistent. That is, in general, the probabilities of a word belongs to a
+category in two domains do not diﬀer very much.
+2.2 Instance-based Transfer
+One of the most intuitive methods is to transfer the knowledge be-
+tween the domains by identifying a subset of source instances and insert
+them into the training set of the target domain data. We can observethat some instances in auxiliary domains are helpful for training thetarget domain model, while others may do harm to the target learningtask. Thus, we need to select those that are useful and kick out those
+that are not. One eﬀective way to achieve this is to perform instance
+weighting on the source domain data according to their importance tolearning in the target domain. Taking SVM as an example, suppose
+that we have ˜/lscriptlabeled data in the auxiliary domain, {(˜x
+i,˜yi)}˜/lscript
+i=1with
+˜xi∈Rd×1and ˜yi∈{ ±1}, which can be incorporated into the standard
+SVM in Eq.(7.1) as follows [96, 54],
+min
+w,ξ,˜ξ1
+2||w||2
+2+λ/lscript/summationdisplay
+i=1ξi+λ˜/lscript/summationdisplay
+i=1˜ρi˜ξi (7.4)
+s.t.yiwTxi≥1−ξi,ξi≥0,i=1,...,/lscript
+˜yiwT˜xi≥1−˜ξi,˜ξi≥0,i=1,...,˜/lscript
+where ˜ρi∈Ris the weight on the data point ( ˜xi,˜yi) in the auxiliary
+domain, which can be estimated via some heuristics [54, 40] or opti-
+mization techniques [55]. We can see that the only diﬀerence between
+the standard SVM in Eq.(7.1) and SVM with instance-based transfer
+in Eq.(7.4) is from the loss function λ/summationtext˜/lscript
+i=1˜ρi˜ξiand its corresponding
+constraints deﬁned on the labeled data in the auxiliary domain. The
+auxiliary data {(˜xi,˜yi)}˜/lscript
+i=1can be the support vectors of a trained SVM
+in the auxiliary domain [54, 40] or the whole auxiliary data set [96, 55].
+Note that the approach in [96] uses a slightly diﬀerent base model of
+linear programming SVM (LP-SVM) [59] instead of the standard SVM232 MINING TEXT DATA
+in Eq.(7.1). Similar techniques are also developed in the context of in-
+cremental learning [80], where support vectors of a learned SVM in the
+auxiliary domain are combined with labeled data in the target domain
+with diﬀerent weight.
+Research works have also been done in sample selection bias [35, 103]
+with˜Pr(X)/negationslash=Pr(X),˜Pr(Y|X)/negationslash=Pr(Y|X), and covariate shift [88] with
+˜Pr(X)/negationslash=Pr(X),˜Pr(Y|X)=Pr(Y|X). For example, Bickel et al. [6] ex-
+plicitly consider the diﬀerence of conditional distributions, ˜Pr(Y|X)/negationslash=
+Pr(Y|X), andproposeanalternativegradientdescentalgorithmtoauto-
+matically learn the weight of the instances besides the model parameterof Logistic regression. Jiang and Zhai [39] propose a general instanceweighting framework from a distribution view considering diﬀerences
+from both marginal distributions, ˜P
+r(X)/negationslash=Pr(X), and conditional dis-
+tributions, ˜Pr(Y|X)/negationslash=Pr(Y|X).
+Xiang et al. proposed an algorithm known as BIG (Bridging Informa-
+tion Gap) [97], which is a framework to make use of a wolrdwide knowl-
+edge base (e.g. Wikipedia) as a bridge to achieve knowledge transferfrom an auxiliary domain with labeled data to a target domain with test
+data. Speciﬁcally, Xiang et al. [97] study the information gap between
+the target domain and auxiliary domain, and propose a margin related
+criteria to sample unlabeled data from Wikipedia to ﬁll the informa-
+tion gap, which enables more eﬀective knowledge transfer. Transductive
+SVM [41] is then trained using the improved data pool of labeled data inthe auxiliary domain, unlabeled data from Wikipedia, and test data inthe target domain. The proposed framework is studied in cross-domain
+text classiﬁcation, sentiment analysis and query classiﬁcation [97].
+2.3 Cross-Domain Ensemble Learning
+It is well known in text mining that ensemble methods are very eﬀec-
+tive in gaining top performance. AdaBoost [31] and Bagging [11] are two
+of the most popular ensemble learning algorithms in machine learning.In this section, we show how to use AdaBoost [31] as a representativebase algorithm to be extended for transfer learning.
+The AdaBoost [31] algorithm, as shown in Figure 7.2, starts with a
+uniform distribution of instance weights. It then gradually increases the
+weights of misclassiﬁed instances and decreases the weights of correctly
+classiﬁed instances, in order to concentrate more on “hard-to-learn” in-stances to improve overall classiﬁcation performance. AdaBoost [31]ﬁnally generates a set of weighted weak learners {(α
+t,wt)}Γ
+t=1, whichTransfer Learning for Text Mining 233
+Input:labeled data in the target domain {(xi,yi)}/lscript
+i=1
+Initialization: initialize instance weight {ρ1
+i}/lscripti=1
+Fort=1...Γ Step 1. Train a model wtusing{(xi,yi,ρti)}/lscripti=1
+Step 2. Calculate the error /epsilon1tofwton{(xi,yi,ρti)}/lscripti=1
+Step 3. Calculate the weight αtfrom/epsilon1t
+Step 4. Update instance weight {ρt+1
+i}/lscript
+i=1usingαt:decrease ρt+1
+i
+for correct predictions in the target domain increase ρt+1
+ifor
+incorrect predictions in the target domain
+Output: learned weight and weak models {(αt,wt)}Γ
+t=1.
+Figure 7.2. The AdaBoost algorithm [31].
+Input:labeled data in the target domain {(xi,yi)}/lscript
+i=1, labeled
+data in the auxiliary domain {(˜xi,˜yi)}˜/lscripti=1
+Initialization: initialize instance weight {ρ1
+i}/lscripti=1,{˜ρ1i}˜/lscripti=1
+Fort=1...Γ Step 1. Train a model wtusing{(xi,yi,ρt
+i)}/lscripti=1and
+{(˜xi,˜yi,˜ρti)}˜/lscripti=1, which minimizes the weighted error only on labeled
+target data.
+Step 2. Calculate the error /epsilon1tofwton{(xi,yi,ρt
+i)}/lscripti=1
+Step 3. Calculate the weight αtfrom/epsilon1t
+Step 4. Update instance weight {ρt+1
+i}/lscript
+i=1and{˜ρt+1
+i}˜/lscripti=1usingαt:
+decrease ˜ρt+1
+ifor incorrect predictions in the auxiliary domain
+increase ρt+1
+ifor incorrect predictions in the target domain
+Output: learned weight and weak models {(αt,wt)}Γ
+t=⌈Γ/2⌉.
+Figure 7.3. The TrAdaBoost algorithm [23].
+can be used to predict the label of an incoming instance x,
+f(x)=Γ/summationdisplay
+t=1αtwtTx. (7.5)
+TrAdaBoost In order to leverage auxiliary instances, various ensem-
+ble learning based transfer learning algorithms are proposed. TrAd-
+aBoost [23] is a well-known instance-based transfer learning algorithm,which is shown in Figure 7.3. The idea behind this algorithm is to pick
+those auxilary instances which are similar to the target domain and ig-nore others. One observation is that we can integrate some unlabeled
+data from the target domain, if there are any [23]. Although the detailed234 MINING TEXT DATA
+implementations of “Steps 1, 2, 3” in TrAdaBoost [23] are all diﬀerent
+from that of AdaBoost [31], an interesting part of TrAdaBoost [23] is in“Step 4”, which has a diﬀerent instance weight update strategy. TrAd-aBoost [23] aims at transferring the most useful instances from the aux-iliary domain. Thus it decreases the weight of misclassiﬁed instances in
+the auxiliary domain. Furthermore, as in transfer learning, we care more
+about the prediction performance on labeled data in the target domain,
+thus, TrAdaBoost [23] increases the weights of misclassiﬁed instances in
+the target domain.
+TransferBoost [28] extends TrAdaBoost [23] by considering both an
+instance level and set-of-instances level weights of an auxiliary data. Bydoing so it allows the model to be more robust.
+TrAdaBoost.R2 [69] studies the regression problem based on TrAd-
+aBoost [23] and AdaBoost.R2 [27]. It achieves knowledge transfer fromweighted instances from the auxiliary domain. An additional feature isthat TrAdaBoost.R2 [69] proposes a two-stage instance weight updatestrategy in order to avoid model overﬁtting.
+MultiSourceTrAdaBoost [102] extends TrAdaBoost [23] for multiple
+auxiliary data sources, aiming at alleviating negative transfer that mayhappen if we only have a single auxiliary data source. MultiSourceTrAd-aBoost[102]replaces“Step1”intheTrAdaBoostalgorithmin Figure7.3
+as follows,
+“ Step 1. Train a model using {(x
+i,yi,ρt
+i)}/lscripti=1and labeled data from
+one of the naauxiliary data sources. Select one model from those na
+trained models that minimizes the weighted error on labeled data in the
+target domain. The selected model is denoted as wt.”
+MultiSourceTrAdaBoost [102] combines the instance update strategy
+of TrAdaBoost [23] for auxiliary data and that of AdaBoost [31] for the
+target data.
+TrAdaBoost [23] is further extended in [94] by adding an additional
+feature selection step. In [94], the authors replace “Step 1” of TrAd-
+aBoost in Figure 7.3 with the following step, in order to select the most
+discriminative feature in each iteration:
+“Step 1. Select a single-feature and train a single-feature modelwt
+using{(xi,yi,ρt
+i)}/lscripti=1and{(˜xi,˜yi,˜ρti)}˜/lscripti=1, which minimizes the weighted
+error on the labeled data in the target domain.”
+This feature selection approach based on transfer learning models
+achieves very promising results in lunar crater discovery applications,Transfer Learning for Text Mining 235
+as reported in [94], which is quite general and can be adapted for text
+classiﬁcation and ranking.
+2.4 Feature-based Transfer Learning for
+Document Classiﬁcation
+Feature-based transfer is another main transfer learning paradigm,
+where algorithms are designed from the perspective of feature spacetransformation. Examples include feature replication [37, 46], featureprojection [8, 7, 64], dimensionality reduction [63, 65, 66, 89, 21], featurecorrelation [76, 44, 107], feature subsetting [81], feature weighting [2],
+etc.
+Feature Replication The feature replication or feature augmenta-
+tion approach [37] is basically a pre-processing step on the labeled data
+{(˜x
+i,˜yi)}˜/lscript
+i=1in the auxiliary domain and labeled data {(xi,yi)}/lscript
+i=1in
+the target domain ,
+(˜xi,˜yi)→([˜xT
+i˜xT
+i0T]T,˜yi),i=1,...,˜/lscript
+(xi,yi)→([xT
+i0TxTi]T,yi),i=1,...,/lscript
+where the feature dimensionality is expanded from Rd×1toR3d×1,a n d
+standard supervised learning methods can then be used, e.g. SVM inEq.(7.1).
+As a follow-up work, Kumar et al. [46] further generalize the idea
+offeature replication via incorporating unlabeled data {x
+i}n
+i=/lscript+1in the
+target domain,
+xi→([0TxT−xT]T,+1),i=/lscript+1,...,n
+xi→([0TxT−xT]T,−1),i=/lscript+1,...,n
+where the processed data points are all with labels now.
+The relationship of the feature replication method and the model-
+based transfer is discussed in [37] and some theoretical results of gen-eralization bound are given in [46]. Feature replication approach have
+been successfully applied in cross-domain named entity recognition [37],
+part-of-speech tagging [37] and sentiment analysis [46].
+Feature Projection Structured correspondence learning (SCL) [8]
+introduces the concept of pivot features , which possess high frequency
+and similar meaning in both auxiliary and target domains. Non-pivotfeatures can be mapped to each other via the pivot features from the
+unlabeleddataofbothauxiliaryandtargetdomains. LearninginSCL[8]236 MINING TEXT DATA
+is based on the alternating structure optimization (ASO) algorithm [1].
+Typically, SCL [8] goes through the following steps. First, it selectsn
+ppivot features. Then, for each pivot feature, SCL trains an SVM
+model in Eq.(7.1) using unlabeled data instances from both domainswith labels indicating whether the pivot feature appears in the datainstance. In this step it obtains n
+pmodels such that W=[wj]np
+j=1∈
+Rd×np. Third, SCL applies Singular Value Decomposition (SVD) to
+the model parameters W,[UΣVT]=s v d (W), and it takes the top k
+columns of Uas the projection matrix θ∈Rd×k. Finally, it obtains
+the following transformation for each labeled data point in the auxiliary
+domain,
+(˜xi,˜yi)→([˜xT
+iλ(θT˜xi)T]T,˜yi),i=1,...,˜/lscript (7.6)
+In the above equation, λ>0 is a tradeoﬀ parameter. The transformed
+data points is augmented with kadditional features encoded with struc-
+tural correspondence information between the features from auxiliary
+and target domains. With the transformed labeled data in the auxiliarydomain, SCL can train a discriminative model, e.g. SVM in Eq.(7.1).Foranyfuturedatainstance x, itistransformedvia x→[x
+Tλ(θTx)T]T
+beforexis classiﬁed by the learned model according to Eq.(7.2).
+Blitzer et al. [7] successfully apply SCL [8] to cross-domain sentiment
+classiﬁcation, and Prettenhofer and Stein [70, 71] extend SCL [8] with
+an additional cross-language translator to achieve knowledge transfer
+from English to German, French and Japanese for text classiﬁcationand sentiment analysis. Pan et al. [64] propose a spectral learning al-gorithm for cross-domain sentiment classiﬁcation using co-occurrenceinformation from auxiliary-domain-speciﬁc, target-domain-speciﬁc anddomain-independent features. They then align domain-speciﬁc featuresfrom both domains in a latent space via a learned projection matrix
+θ∈R
+k×d. In some practical cases, the cross-domain sentiment and
+review classiﬁcation performance of [64] is empirically shown to be su-perior to SCL [8] and other baselines.
+Dimensionality Reduction In order to bridge two domains to enable
+knowledgetransfer, Panetal.[63]introduce maximum mean discrepancy
+(MMD) [10] as a distribution measurement of unlabeled data from aux-
+iliary and target domains,
+||1
+˜/lscript˜/lscript/summationdisplay
+i=1φ(˜xi)−1
+n−/lscriptn/summationdisplay
+i=/lscript+1φ(x)i||2
+2 (7.7)Transfer Learning for Text Mining 237
+which is used to minimize the distribution distance in a latent space.
+The MMD measurement is formulated as a kernel learning problem [63],which can be solved by SDP (semi-deﬁnite programming) by learning
+a kernel matrix K∈R
+(˜/lscript+n−/lscript)×(˜/lscript+n−/lscript). Principal Component Analysis
+(PCA) is then applied on the learned kernel matrix Kto obtain a low-
+dimensional representation,
+[UΣUT] = PCA( K),U∈R(˜/lscript+n−/lscript)×k(7.8)
+As a result of the transformation, the original data can now be rep-
+resented with a reduced dimensionality of Rk×1in the corresponding
+rows ofU. Standard supervised discriminative method such as SVM
+in Eq.(7.1) can be used to train a model using the transformed labeled
+data in the auxiliary domain.
+Note that as a transductive learning method, the algorithm in [63]
+cannot be directly used to classify out-of-sample test data, which prob-lem is addressed in [65, 66] by learning a projection matrix to minimizethe MMD [10] criteria. Si et al. [89] introduce the Bregman divergencemeasurement as an additional regularization term in traditional dimen-sionality reduction techniques to bring two domains together in the la-
+tent space.
+The EigenTransfer framework [21] introduces a novel approach to
+integrate co-occurrence information of instance-feature, instance-labelfrom both auxiliary and target domains in a single graph. Normalizedcut [85] is then adopted to learn a low-dimensional representation fromthe graph to replace original data in both target and auxiliary domains.
+Finally, standard supervised discriminative model, e.g. SVM in Eq.(7.1)
+is trained using the transformed labeled data in the auxiliary domain.An advantage of EigenTrasnfer is its ability to unify almost all availableinformation in auxiliary and target domains, allowing the considerationof heterogenous feature and label space.
+Feature Correlation Transferring feature correlation from auxiliary
+domains to a target domain is introduced in [76, 44, 107], where a
+feature-feature covariance matrix Σ
+0∈Rd×destimated from some aux-
+iliary data is taken as an additional regularization term,
+λwTΣ−1
+0w (7.9)
+In this equation, the feature-feature correlation information is encoded
+in the covariance matrix Σ 0, which can be estimated from labeled or
+unlabeled data in auxiliary domains. Σ 0will constrain the model pa-
+rameters wiandwjof two high-correlated features iandjto be similar,238 MINING TEXT DATA
+and constrain the low-correlated features to be dissimilar. Such a reg-
+ularization term is quite general and can be considered in various regu-larization based learning frameworks to incorporate the feature-feature
+correlation knowledge. Feature correlation is quite intuitive, and thus
+it has attracted several practical applications. For example, Raina etal. [76] transfer the feature-feature correlation knowledge from a news-groups domain to a webpage domain for text classiﬁcation, and Zhanget al. [107] study text classiﬁcation with diﬀerent time periods.
+Feature Subsetting Feature selection via feature subsetting has been
+proposed for named entity recognition in CRF [81], which makes use of
+labeled data in auxiliary domains and the unlabeled data in the targetdomain. To illustrate the idea more clearly, we consider a simpliﬁedcase of binary classiﬁcation, where y∈{ ±1}, instead of sequence label-
+ing [81]. We re-write the optimization problem as follows,
+min
+˜w,˜ξ1
+2||˜w||2
+2+λ˜/lscript/summationdisplay
+i=1˜ξi (7.10)
+s.t.˜wTφ(˜xi,˜yi)≥1−˜ξi,˜ξi≥0,i=1,...,˜/lscript
+d/summationdisplay
+k=1|˜wk|γdist(˜Ek,Ek)≤/epsilon1
+H e r ew eh a v e :
+Ek=1
+n−/lscriptn/summationdisplay
+i=/lscript+1(φk(xi,+1)Pr(+1|xi,˜w)+φk(xi,−1)Pr(−1|xi,˜w))
+Furthermore, ˜Ek=1
+˜/lscript/summationtext˜/lscript
+i=1φk(˜xi,˜yi) are expected values of the kth fea-
+ture of the joint feature mapping function φ(X,Y) in the target and
+auxiliary data, respectively, and Pr(+1|xi,˜w)) andPr(−1|xi,˜w)) are
+the posterior probabilities of instance xibelonging to classes +1 and
+−1, respectively. The parameter γis used to control the sparsity of the
+model parameter ˜w, which produces a subset of non-zeros; this is why
+it is called feature subsetting. The distance dist(˜Ek,Ek) can be square
+distance( ˜Ek−Ek)2foroptimizationsimplicity[81], whichisusedtopun-
+ishhighly distorted features in order to bring two domains closer. The
+trained model ˜wwill have better prediction performance in the target
+domain, especially when some features distort seriously in two domains.
+Feature Weighting Arnold et al. [2] propose a feature weighting
+(or rescaling) approach to bridge two domains with labeled data in theTransfer Learning for Text Mining 239
+auxiliary domain and test data in the target domain. Speciﬁcally, the
+kth feature of instance ˜xjin the auxiliary domain is weighted as follows,
+˜xj,k→˜xj,kEk(˜yj|XU,˜w)
+˜Ek(˜yj|˜DL)(7.11)
+whereEk(˜yj|XU,˜w)=1
+n−/lscript/summationtextn
+i=/lscript+1xi,kPr(˜yj|xi,˜w)istheexpectedvalue
+ofkth feature (belonging to class ˜ yj) in the target domain using the
+trainedMaxEntmodel ˜wfromauxiliarydomain. Thevalue ˜Ek(˜yj|˜DL)=
+1
+˜/lscript/summationtext˜/lscript
+i=1˜xi,kδ(˜yj,˜yi) represents the expected value of kth feature (belong-
+ing to class ˜ yj) in the auxiliary domain. The weighted data (feature) in
+the auxiliary domain then have the same expected values of joint distri-
+butionabout kthfeatureandclasslabel y,˜Ek(y|˜DL)=Ek(y|XU,˜w),y∈
+Y. As a result, the two domains are brought closer together. Note
+that the learning procedure can be iterated with (a) learning ˜wand (b)
+weighting the feature, and that is the reason the model is called IFT(iterative feature transformation) [2]. Since E
+k(˜yj|XU,˜w) is only an es-
+timatedvalue, [2] adoptsacommon tricktopreservetheoriginal feature,which works quite well in NER problems. In particular,
+˜x
+j,k→λ˜xj,k+(1−λ)˜xj,kEk(˜yj|XU,˜w)
+˜Ek(˜yj|˜DL)(7.12)
+where 0≤λ≤1 is a tradeoﬀ parameter.
+Inthesamespirit,otherfeature-basedtransfermethodshavealsobeen
+proposed, such as distance minimization [4], feature clustering [22, 57],kernel mapping [109], etc.
+3. Heterogeneous Transfer Learning
+Above we have surveyed transfer learning tasks where both the source
+and target domains are text documents in English. Recently, researchersin transfer learning area have started to consider transfer learning acrossheterogeneous feature and/or label space, namely heterogeneous trans-fer learning (HTL) [101]. HTL can be roughly categorized into twobranches, (1) heterogeneous feature space, e.g. text and image space [20,
+101, 87, 112, 72], English and Chinese vocabulary space [56, 105], and
+(2) heterogeneous label space, e.g. label space of Open Directory Project(ODP)
+2and query categories in KDDCUP 20053[84, 83], label space
+2http://dmoz.org/
+3http://www.sigkdd.org/kdd2005/kddcup.html240 MINING TEXT DATA
+Figure 7.4. An intuitive illustration of heterogeneous transfer learning via classiﬁca-
+tion of the images of appleand banana(quoted from [101]).
+in Yahoo! Directory4and ODP [62], “head” (frequent) categories and
+“tail” (infrequent) categories in label-frequency distribution, and docu-
+ment categories in Newsgroup and categories in Wikipedia [98].
+InFigure 7.4, we show diﬀerent kinds of transfer learning and their
+relations to heterogeneous transfer learning. When features (or labels)
+are diﬀerent between diﬀerent domains, as shown on the left side of theﬁgure, we have heterogeneous transfer learning when the instances indiﬀerent domains lack a direct correspondence.
+In general, recent works of heterogeneous transfer learning (HTL) can
+be classiﬁed into the following categories:
+HTL for Image Classiﬁcation An example is heterogeneous transfer
+learning for image classiﬁcation [112]). In this work Zhu et al.
+consider how to use unlabeled text documents that we ﬁnd onthe Web to help boost the performance of image classiﬁcation, byexploiting their semantic level similarity when the labeled images
+are in short supply.
+HTL for Image Clustering An example of this direction is heteroge-
+neous transfer learning for image clustering, where Yang et al. pro-
+posed a heterogenous transfer learning algorithm for image clus-tering by levering auxiliary annotated images ([101]).
+HTL Across Diﬀerent label Space Anexampleisthecross-category
+learning in [73]. In this work, it adapts Adaboost with learninga feature correlation matrix to transfer knowledge from frequentcategories to infrequent categories.
+4http://dir.yahoo.com/Transfer Learning for Text Mining 241
+3.1 Heterogeneous Feature Space
+Dai et al. [20] propose a novel approach named translated learning via
+risk minimization (TLRisk) to achieve knowledge transfer from text toimage for image classiﬁcation. The key idea is to bridge heterogeneousfeaturespaceintwodomainsviatheco-occurrenceinformationofimage-
+feature and text-feature (or feature-level translator [20]) contained in
+the annotated auxiliary images, e.g. annotated images in Flickr. Theknowledge in an auxiliary domain is then transferred along the path,
+auxiliary-label →auxiliary-feature →target-feature →target-label
+The TLRisk model is formulated in the risk minimization framework
+combining the feature translator and nearest neighbor learning, and isempirically studied for both image classiﬁcation and cross-lingual (from
+English to German) text classiﬁcation.
+Yangetal.[101]proposedaprobabilisticapproachnamedannotation-
+based probabilistic latent semantic analysis (aPLSA) to achieve knowl-edge transfer from text to image for image clustering. Some multi-viewauxiliary data of images and text is ﬁrst transformed to a new rep-resentation of correlations between image-feature and text-feature. The
+aPLSA model [101] then discovers latent topics of image features of both
+multi-view data and target image data, which are shared as a bridge tobring two domains together.
+Zhu et al. [112] propose a matrix-factorization based approach named
+heterogeneous transfer learning for image classiﬁcation (HTLIC), in or-der to achieve knowledge transfer from text to image for image classiﬁ-
+cation. To enable classiﬁcation for out-of-sample images, HTLIC adopts
+collective matrix factorization [90] to learn an image-feature projectionmatrix from the auxiliary data of documents and the multi-view data,which is then used to obtain a new representation of the target images.Finally, a classiﬁer (e.g. support vector machine) is trained using thenewly projected target images.
+Given a set of images to classify, we often need to have high-quality
+labeled imagestotrain aclassiﬁcation model. However, obtainingthela-
+beled image data is diﬃcult and costly. In ([112]), the following question
+is addressed: is it possible for us to make use of some auxiliary labeled
+imagesandlargequantitiesofunlabeledtexttohelpusbuildaclassiﬁer?Suppose that we are given a few labeled image instances X={x
+i,yi}n
+i=1
+wherexi∈Rdis an input vector of image features and yiis the corre-
+sponding label of image i. We assume that the labeled images are not
+suﬃcient to build a high quality image classiﬁer. In addition, we are242 MINING TEXT DATA
+also given a set of auxiliary annotated images I={zi,ti}l
+i=1and a set
+of text documents D={di}k
+i=1, wherezi∈Rdis an image represented
+by a feature vector as xi,ti∈Rhis its corresponding vector of tags, and
+his the number of tags. di∈Rmis a document represented by a vector
+of bag-of-words, and landkare the numbers of auxiliary images and
+documents respectively. The goal is to learn an accurate image classiﬁer
+f(·) fromX,IandDto make predictions on X∗,f(X∗).
+We can make use of a set of auxiliary images Z∈Rl×dwith their
+corresponding tags T∈Rl×hfrom Web resources such as Flickr. We
+can also easily obtain a set of unlabeled text documents D∈Rk×m
+via a search engine. To help build an image classiﬁer, we need to ﬁrst
+build some connection between image features and text features. To
+do this, we construct a two-layer bipartite graph based on images, tags
+and text documents. The top layer of the bipartite graph is used torepresent the relationship between images and tags. Each image can beannotated by some tags, and some images may share one or multipletags. If two images are annotated by some common tags, they tend tobe related to each other semantically. Similarly, if two tags co-occur inannotationsofsharedimages, theytendtoberelatedtoeachother. This
+image-tag bipartite graph is represented by a tag matrix T. The bottom
+layer bipartite graph is used to represent the relationship between tagsand documents. If a tag occurs in a text document, there is an edgeconnecting the tag and the document.
+Based on the bipartite graph, we can then learn semantic features for
+images by exploiting the relationship between images and text from theauxiliary sources. We ﬁrst deﬁne a new matrix G=Z
+/latticetopT∈Rd×hto
+denote the correlation between low-level image features and annotations
+which can be referred to as high-level concepts. We then apply theLatent Semantic Analysis (LSA) as described in ([25]). Finally, we applymatrix factorization to decompose Ginto latent factor matrices as G=
+UV
+/latticetop
+1, where U∈Rd×g,V1∈Rh×g,a n dgis the number of latent
+factors. Then uican be treated as a latent semantic representation
+of theithimage low-level feature, and v1jcan be treated as a latent
+semantic representation of jthtag.
+Zhu et al. [112] describe a method to learn the best decomposition
+via collective matrix factorization, as follows.
+min
+U,V,Wλ/vextenddouble/vextenddouble/vextenddoubleG−UV/latticetop/vextenddouble/vextenddouble/vextenddouble2
+F+(1−λ)/vextenddouble/vextenddouble/vextenddoubleF−WV/latticetop/vextenddouble/vextenddouble/vextenddouble2
+F+R(U,V,W),(7.13)
+where 0≤λ≤1 is a tradeoﬀ parameter to control the decomposition
+error between the two matrix factorizations, || · ||Fdenotes the Frobe-
+nius norm of matrix, and R(U,V,W) is the regularization function to
+control the complexity of the latent matrices U,VandW. The opti-Transfer Learning for Text Mining 243
+mization problem is an unconstrained non-convex optimization problem
+with three matrix variables U,VandW, thus it only has local optimal
+solutions. However, (7.13) is convex with respect to any one of the three
+matrices while ﬁxing the other two. Thus a common technique to solve
+this kind of optimization problem is to ﬁx two matrices and optimizethe left one iteratively until the results converge.
+Qietal.[72]adoptSingularvaluethresholding(SVT)[14]andsupport
+vector machine to learn a low-rank feature-level correlation matrix (ortranslator) using multi-view data (text and images), and then the labels
+of text can be propagated (or transferred) to images through the feature-
+level translator. Note that both text and images are from the multi-view data, e.g. annotated images in Flickr. The problem setting of[72] is diﬀerent from that of [112], where in [112] the multi-view data isconsidered as a bridge to transfer knowledge from auxiliary documentsto target images, while in [72] the multi-view data is considered as atwo-domain data sources in which knowledge is transferred from text to
+image.
+3.2 Heterogeneous Label Space
+Heterogeneous transfer learning may be needed when there is label
+mismatch between the auxiliary and target learning domains. The prob-lem has attracted increasing attention in transfer learning, both in textmining and image understanding. One of the earliest works in matchinglabels across diﬀerent classiﬁcation domains is on the KDDCUP 2005dataset, which task is to classify short, ambiguous and unlabeled search
+queries from a search engine log into a set of predeﬁned categories. In
+[84, 83], Shen et al. considered the problem of quickly adapting a querycategorization classiﬁer when the target domain label taxonomy changesin the target learning domain. Their approach was to make the use ofa large intermediate taxonomy to compile a collection of classiﬁers, andthen adapt these classiﬁers to the new target label taxonomy in realtime.
+Shi et al. presented an approach to solving the label mismatch prob-
+lem by a risk-sensitive spectral partition (RSP) algorithm [86]. A multi-task learning with mutual information (MTL-MI) is developed in [74]for learning the label correspondence.
+Qi et al. [73] use quadratic programming (QP) to learn a diago-
+nal feature-level correlation matrix on single-view data (e.g. image orvideo), and then use the AdaBoost framework to transfer knowledge
+from “head” (frequent) categories to “tail” (infrequent) categories, e.g.244 MINING TEXT DATA
+from mountain images to castle images. In both [72] and [73], the deci-
+sion function for a target instance is deﬁned as a weighted linear com-bination of labels of auxiliary instances, where the weightis represented
+as thesimilarity of the target instance and any auxiliary instance es-
+timated via learning a feature-level correlation matrix. The diﬀerencebetween [72] and [73] is that the former works on heterogeneous feature
+space (e.g. text and images) but same label space, while the latter focus
+on same feature space (e.g. images) but heterogeneous label space (e.g.semantically related categories of mountain and castle).
+Rohrbach et al. [79] propose to automatically mine semantic relation-
+ships between class labels (or equivalently class attributes) from linguis-tic data (e.g. wikepedia, WordNet, Yahoo image, Flickr), which can beconsidered as a label-level translator. The trained classiﬁers of auxiliary
+classes can then be reused by target domain (diﬀerent) classes through
+the label-level translator and Bayesian rules. The proposed approachallows diﬀerent label space but assuming same feature space, and is em-pirically veriﬁed for image classiﬁcation. A follow-up work [78] conductsextensive and in-depth study of transfer learning for image classiﬁcation.
+Xiang et al. [98] propose a novel approach named source-selection-
+free transfer learning (SSFTL) to achieve knowledge transfer from some
+large-scale auxiliary data set, e.g. Wikipedia, which does not require
+practitioners to manually select some particular part of auxiliary datato transfer from. The main idea is to bridge large-scale auxiliary labelspace and target label space via social tagging data, e.g. Flick. Specif-ically, each label ( scalar) is represented as a vectorin a latent space,
+wheretwovectorsaresimilarifthecorrespondinglabelsaresemanticallycorrelated. An additional advantage of SSFTL is that the training pro-
+cedure of auxiliary classiﬁers can be implemented oﬄine, which makes
+the whole learning approach very eﬃcient.
+There are also some other heterogeneous transfer learning settings
+in diﬀerent data domains and scenarios e.g. target domains with fewinstances [50], transfer from text to video [51], etc.
+3.3 Summary
+Heterogeneoustransferlearningismainlybasedonfeature-leveltrans-
+lator and label-level translator, which bridges heterogeneous feature
+space and heterogeneous label space of two domains. The techniques
+of heterogeneous transfer learning and transfer learning methods in pre-vious sections are complementary, which enables knowledge transfer ina much wider application scope with very little limitation.Transfer Learning for Text Mining 245
+Table 7.4. Learning paradigms and techniques. The notation “req.” means that the
+test data are required during model training, and “√” means the corresponding data
+are available to the learner. ˜DLand˜DUare labeled and unlabeled data in an auxiliary
+domain. DL,DUandDTare labeled, unlabeled and test data in the target domain.
+Unsupervised and supervised transfer learning are categorized by the availability oflabeled data in the target domain.
+Learning ParadigmAuxiliary TargetLearning Technique˜DL˜DUDLDUDT
+MLUnsupervised
+N/Areq.Spectral clustering [58], etc.
+Transductive√req.TSVM [41], etc.
+Supervised√AdaBoost [31], etc.
+Semi-supervised√√SSL [111], etc.
+TLUnsupervised√req.STC [24], etc.√req.LWE [32], etc.√ √SCL [8], etc.
+Supervised√ √MTL [30], etc.√ √√TrAdaBoost [23], etc.√√√√req.EigenTransfer [21], etc.√√STL [75], etc.
+Heterogeneousacross diﬀerent feature spaceTranslated learning [20]
+aPLSA [101]
+TTI [72]
+HTLIC [112], etc.
+across diﬀerent label spaceRSP [86]
+CCTL [73]
+Semantic relatedness [79]
+SSFTL [98], etc.
+4. Discussion
+Above we have seen that there are several important applications of
+transfer learning. What insights can be gained from these applicationsand extensions on transfer learning? Below, we consider a few such is-
+sues.
+What, How and When to Transfer As pointed out by Pan and
+Yang [67], there are three fundamental questions in transfer learning,namely “what to transfer”, “how to transfer” and “when to transfer”.We have answered the “what to transfer” question from two perspec-tives, (1) instance-based transfer and (2) feature-based transfer, where
+the corresponding knowledge are selected and weighted instances and246 MINING TEXT DATA
+Table 7.5. Applications in text mining.
+Application Transfer learning work
+Text classiﬁcation [29, 76, 22, 107, 63, 65, 66, 89, 21, 97, 70, 71, 57], etc.
+Sentiment analysis [46, 7, 71, 97, 64], etc.
+Named entity recognition [39, 2, 37, 81], etc.
+Part-of-speech tagging [8, 39, 4, 37], etc.
+Relation extraction [38], etc.
+learned or transformed features. The “how to transfer” question [67]
+is quite related to “what to transfer”, and we have surveyed instance
+weighting ,feature projection and other various techniques adopted in
+diﬀerent works to achieve knowledge transfer. The “when to transfer”
+question [67] is related to negative transfer, cross-domain validation andtransfer bounds, where some works focus on empirical study to avoidnegative transfer [28, 102, 16]. Some research works also focus on theo-retical developments of transfer learning, such as [4, 53, 23, 60, 109, 46].
+Inaddition, researchershavealsoproposedcross-domaincross-validation
+strategies [110, 12] for text mining and other learning tasks.
+Learning Paradigms and Techniques Transfer learning can be
+considered as a new learning paradigm . One perspective is to consider
+transfer learning as an over-arching framework that includes the tradi-
+tional learning as a special case, as shown in Table 7.4. Here we can
+see that traditional machine learning (ML) methods do not considerdata from auxiliary domains; instead and they study the learning prob-lems under the same data distribution P
+r(X,Y). In contrast, transfer
+learning goes beyond the learning paradigm via transferring knowledgefrom auxiliary domains with diﬀerent distribution ˜P
+r(X,Y)/negationslash=Pr(X,Y).
+Text Mining Applications As we surveyed so far, transfer learning
+havebeenwildlyadoptedinvarioustextminingapplications; asummarycan be found in Table 7.5. Note that many transfer learning methods
+surveyed in previous sections have been applied to non-text mining ap-plicationsaswell; e.g. inspeechrecognition, inimageandvideoanalysis,etc.
+5. Conclusions
+In this chapter, we have focused on transfer learning approaches for
+text mining. Speciﬁcally, we have reviewed transfer learning techniquesTransfer Learning for Text Mining 247
+in text related classiﬁcation tasks, including discriminative learning and
+ensemblelearning,andheterogeneoustransfer. Wehaveconsideredtheselearning approaches from two perspectives, namely, (1) instance-based
+transfer and (2) feature-based transfer. Most of the surveyed transfer
+learning methods are proposed or can be applied in text mining applica-tions, e.g. text classiﬁcation, sentiment analysis, POS tagging, NER andrelation extraction. In addition, the introduced heterogeneous transfertechniques can explore the knowledge in text to help the learning taskin other domain, such as image classiﬁcation.
+A current research issue is how to apply transfer learning to the
+learning-to-rank framework [43, 13, 99], where the ranking model in the
+target domain may beneﬁt from knowledge transferred from auxiliarydomains. In this area, works include model-based transfer [34], instance-based transfer [19, 33, 15] and feature-based transfer [92, 19, 3], whichextend the pairwise ranking algorithms of RankSVM [43], RankNet [13],or list-wise ranking model of AdaRank [99]. We expect to see much re-search progress in this new direction, e.g. generalizations of learning to
+rank to heterogeneous settings [101].
+In the future, we expect to see more extensive applications of transfer
+learningintextmining, wheretheconceptof“text”canbemoregeneral.For example, we expect to see transfer learning methods to be appliedto analyzing microblogging contents and structure, in association withsocial network mining. We also expect to see more cross-domain trans-fer learning approaches, for knowledge transfer between very diﬀerent
+domains, e.g., text and videos, etc.
+References
+[1] Rie Kubota Ando and Tong Zhang. A framework for learning
+predictive structures from multiple tasks and unlabeled data. J.
+Mach. Learn. Res. , 6:1817–1853, December 2005.
+[2] Andrew Arnold, Ramesh Nallapati, and William W. Cohen. A
+comparative study of methods for transductive transfer learning.InProceedings of the Seventh IEEE International Conference on
+Data Mining Workshops , ICDMW ’07, pages 77–82, Washington,
+DC, USA, 2007. IEEE Computer Society.
+[3] Jing Bai, Ke Zhou, Guirong Xue, Hongyuan Zha, Gordon Sun,
+Belle Tseng, Zhaohui Zheng, and Yi Chang. Multi-task learningfor learning to rank in web search. In Proceeding of the 18th ACM
+conference on Information and knowledge management ,CIKM’09,
+pages 1549–1552, New York, NY, USA, 2009. ACM.248 MINING TEXT DATA
+[4] Shai Ben-David, John Blitzer, Koby Crammer, Fernando Pereira,
+and Artur Dubrawski. Analysis of representations for domainadaptation. In NIPS, 2006.
+[5] Adam L. Berger, Vincent J. Della Pietra, and Stephen A. Della
+Pietra. A maximum entropy approach to natural language pro-cessing.Comput. Linguist. , 22:39–71, March 1996.
+[6] Steﬀen Bickel, Michael Br¨ uckner, and Tobias Scheﬀer. Discrimina-
+tive learning for diﬀering training and test distributions. In Pro-
+ceedings of the 24th international conference on Machine learning ,
+ICML ’07, pages 81–88, New York, NY, USA, 2007. ACM.
+[7] John Blitzer, Mark Dredze, and Fernando Pereira. Biographies,
+bollywood, boom-boxes and blenders: Domain adaptation for sen-timent classiﬁcation. In Association for Computational Linguis-
+tics, Prague, Czech Republic.
+[8] John Blitzer, Ryan McDonald, and Fernando Pereira. Domain
+adaptationwithstructuralcorrespondencelearning. In Proceedings
+of the 2006 Conference on Empirical Methods in Natural LanguageProcessing , EMNLP ’06, pages 120–128, Stroudsburg, PA, USA,
+2006. Association for Computational Linguistics.
+[9] Avrim Blum and Tom Mitchell. Combining labeled and unlabeled
+datawithco-training. In Proceedings of the eleventh annual confer-
+ence on Computational learning theory , COLT’ 98, pages 92–100,
+New York, NY, USA, 1998. ACM.
+[10] Karsten M. Borgwardt, Arthur Gretton, Malte J. Rasch, Hans-
+Peter Kriegel, Bernhard Sch¨ olkopf, and Alexander J. Smola. Inte-
+grating structured biological data by kernel maximum mean dis-crepancy. In Proceedings of the 14th International Conference on
+Intelligent Systems for Molecular Biology , pages 49–57, Fortaleza,
+Brazil, August 2006.
+[11] Leo Breiman. Bagging predictors. Mach. Learn. , 24:123–140, Au-
+gust 1996.
+[12] Lorenzo Bruzzone and Mattia Marconcini. Domain adaptation
+problems: A dasvm classiﬁcation technique and a circular valida-tion strategy. IEEE Trans. Pattern Anal. Mach. Intell. , 32(5):770–
+787, 2010.
+[13] Chris Burges, Tal Shaked, Erin Renshaw, Ari Lazier, Matt Deeds,
+Nicole Hamilton, and Greg Hullender. Learning to rank using gra-dient descent. In Proceedings of the 22nd international conference
+on Machine learning ,ICML’05,pages89–96,NewYork,NY,USA,
+2005. ACM.Transfer Learning for Text Mining 249
+[14] Jian-Feng Cai, Emmanuel J. Cand` es, and Zuowei Shen. A singular
+value thresholding algorithm for matrix completion. SIAM J. on
+Optimization , 20:1956–1982, March 2010.
+[15] Peng Cai and Aoying Zhou. A novel framework for ranking model
+adaptation. Web Information Systems and Applications Confer-
+ence, 0:149–154, 2010.
+[16] Bin Cao, Sinno Jialin Pan, Yu Zhang, Dit-Yan Yeung, and Qiang
+Yang. Adaptive transfer learning. In AAAI, 2010.
+[17] Rich Caruana. Multitask learning: A knowledge-based source of
+inductive bias. In ICML, pages 41–48, 1993.
+[18] Olivier Chapelle, Bernhard Sch¨ olkopf, and Alexander Zien. Semi-
+Supervised Learning (Adaptive Computation and Machine Learn-
+ing). The MIT Press, 2006.
+[19] Depin Chen, Yan Xiong, Jun Yan, Gui-Rong Xue, Gang Wang,
+and Zheng Chen. Knowledge transfer for cross domain learning to
+rank.Inf. Retr. , 13:236–253, June 2010.
+[20] Wenyuan Dai, Yuqiang Chen, Gui-Rong Xue, Qiang Yang, and
+Yong Yu. Translated learning: Transfer learning across diﬀerent
+feature spaces. In NIPS, pages 353–360, 2008.
+[21] Wenyuan Dai, Ou Jin, Gui-Rong Xue, Qiang Yang, and Yong Yu.
+Eigentransfer: a uniﬁed framework for transfer learning. In Pro-
+ceedings of the 26th Annual International Conference on Machine
+Learning , ICML ’09, pages 193–200, New York, NY, USA, 2009.
+ACM.
+[22] Wenyuan Dai, Gui-Rong Xue, Qiang Yang, and Yong Yu. Co-
+clustering based classiﬁcation for out-of-domain documents. InProceedings of the 13th ACM SIGKDD international conference
+on Knowledge discovery and data mining , KDD ’07, pages 210–
+219, New York, NY, USA, 2007. ACM.
+[23] Wenyuan Dai, Qiang Yang, Gui-Rong Xue, and Yong Yu. Boost-
+ing for transfer learning. In Proceedings of the 24th international
+conference on Machine learning , ICML ’07, pages 193–200, New
+York, NY, USA, 2007. ACM.
+[24] Wenyuan Dai, Qiang Yang, Gui-Rong Xue, and Yong Yu. Self-
+taught clustering. In Machine Learning, Pr oceedings of the
+Twenty-Fifth International Conference (ICML 2008), Helsinki,
+Finland, June 5-9, 2008 , volume 307, pages 200–207. ACM, 2008.
+[25] Scott Deerwester, Susan T. Dumais, George W. Furnas,
+Thomas K. Landauer, and Richard Harshman. Indexing by latent250 MINING TEXT DATA
+semantic analysis. Journal of the American Society for Informa-
+tion Science , 41:391–407, 1990.
+[26] Chuong B. Do and Andrew Y. Ng. Transfer learning for text
+classiﬁcation. In NIPS, 2005.
+[27] Harris Drucker. Improving regressors using boosting techniques.
+InProceedings of the Fourte enth International Conference on Ma-
+chine Learning , ICML ’97, pages 107–115, San Francisco, CA,
+USA, 1997. Morgan Kaufmann Publishers Inc.
+[28] Eric Eaton and Marie desJardins. Set-based boosting for instance-
+level transfer. In Proceedings of the 2009 IEEE International Con-
+ference on Data Mining Workshops , ICDMW ’09, pages 422–428,
+Washington, DC, USA, 2009. IEEE Computer Society.
+[29] Eric Eaton, Marie Desjardins, and Terran Lane. Modeling transfer
+relationships between learning tasks for improved inductive trans-fer. InProceedings of the 2008 European Conference on Machine
+Learning and Knowledge Discovery in Databases - Part I , ECML
+PKDD ’08, pages 317–332, Berlin, Heidelberg, 2008. Springer-Verlag.
+[30] Theodoros Evgeniou and Massimiliano Pontil. Regularized multi–
+task learning. In Proceedings of the tenth ACM SIGKDD interna-
+tional conference on Knowledge discovery and data mining , KDD
+’04, pages 109–117, New York, NY, USA, 2004. ACM.
+[31] Yoav Freund and Robert E. Schapire. A decision-theoretic gen-
+eralization of on-line learning and an application to boosting. J.
+Comput. Syst. Sci. , 55(1):119–139, 1997.
+[32] Jing Gao, Wei Fan, Jing Jiang, and Jiawei Han. Knowledge trans-
+fer via multiple model local structure mapping. In Proceeding of
+the 14th ACM SIGKDD international conference on Knowledgediscovery and data mining , KDD ’08, pages 283–291, New York,
+NY, USA, 2008. ACM.
+[33] WeiGao,PengCai,Kam-FaiWong,andAoyingZhou. Learningto
+rank only using training data from related domain. In Proceeding
+of the 33rd international ACM SIGIR conference on Research anddevelopment in information retrieval , SIGIR ’10, pages 162–169,
+New York, NY, USA, 2010. ACM.
+[34] Bo Geng, Linjun Yang, Chao Xu, and Xian-Sheng Hua. Ranking
+model adaptation for domain-speciﬁc search. In Proceeding of the
+18th ACM conference on Information and knowledge management ,
+CIKM ’09, pages 197–206, New York, NY, USA, 2009. ACM.Transfer Learning for Text Mining 251
+[35] James J Heckman. Sample selection bias as a speciﬁcation error.
+Econometrica , 47(1):153–61, January 1979.
+[36] David W. Hosmer and Stanley Lemeshow. Applied logistic regres-
+sion. Wiley-Interscience, 2 edition, 2000.
+[37] Hal Daum´ e III. Frustratingly easy domain adaptation. In ACL,
+2007.
+[38] Jing Jiang. Multi-task transfer learning for weakly-supervised re-
+lation extraction. In Proceedings of the Joint Conference of the
+47th Annual Meeting of the ACL and the 4th International Joint
+Conference on Natural Language Processing of the AFNLP: Vol-ume 2 - Volume 2 , ACL ’09, pages 1012–1020, Stroudsburg, PA,
+USA, 2009. Association for Computational Linguistics.
+[39] Jing Jiang and ChengXiang Zhai. Instance weighting for domain
+adaptation in nlp. In ACL, 2007.
+[40] Wei Jiang, Eric Zavesky, Shih-Fu Chang, and Alexander C. Loui.
+Cross-domain learning methods for high-level visual concept clas-siﬁcation. In ICIP, pages 161–164, 2008.
+[41] Thorsten Joachims. Transductive inference for text classiﬁcation
+using support vector machines. In Proceedings of the Sixte enth
+International Conference on Machine Learning , ICML ’99, pages
+200–209, San Francisco, CA, USA, 1999. Morgan Kaufmann Pub-lishers Inc.
+[42] Thorsten Joachims. Learning to Classify Text Using Support Vec-
+tor Machines: Methods, Theory and Algorithms . Kluwer Academic
+Publishers, Norwell, MA, USA, 2002.
+[43] Thorsten Joachims. Optimizing search engines using clickthrough
+data. In Proceedings of the eighth ACM SIGKDD international
+conference on Knowledge discovery and data mining , KDD ’02,
+pages 133–142, New York, NY, USA, 2002. ACM.
+[44] Eyal Krupka and Naftali Tishby. Incorporating prior knowledge
+on features into learning. In Proceedings of the 11th Interna-
+tional Conference on Artiﬁcial Intelligence and Statistics ,S a n
+Juan, Puerto Rico, 2007.
+[45] S. Kullback and R. A. Leibler. On information and suﬃciency.
+Annals of Mathematical Statistics , 22(1):79–86, 1951.
+[46] Abhishek Kumar, Avishek Saha, and Hal Daum´ e III. A co-
+regularization based semi-supervised domain adaptation. In Pro-
+ceedings of the Conference on Neural Information Proce ssing Sys-
+tems (NIPS) , Vancouver, Canada, 2010.252 MINING TEXT DATA
+[47] John D. Laﬀerty, Andrew McCallum, and Fernando C. N. Pereira.
+Conditional random ﬁelds: Probabilistic models for segmenting
+and labeling sequence data. In Proceedings of the Ei ghteenth Inter-
+national Conference on Machine Learning, ICML ’01, pages 282–289, San Francisco, CA, USA, 2001. Morgan Kaufmann PublishersInc.
+[48] Ken Lang. Newsweeder: Learning to ﬁlter netnews. In Proceed-
+ings of the Twelfth International Conference on Machine Learning,1995.
+[49] David Dolan Lewis. Reuters-21578 test collection.
+http://www.daviddlewis.com/.
+[50] Fei-FeiLi,FergusRob,andPeronaPietro. One-shotlearningofob-
+ject categories. IEEE Trans. Pattern Anal. Mach. Intell., 28:594–,
+April 2006.
+[51] Liangda Li, Ke Zhou, Gui-Rong Xue, Hongyuan Zha, and Yong
+Yu. Video summarization via transferrable structured learning.InProceedings of the 20th international conference on World wide
+web, WWW ’11, pages 287–296, New York, NY, USA, 2011. ACM.
+[52] Xiao Li and Jeﬀ Bilmes. Regularized adaptation of discriminative
+classiﬁers. In Proc. IEEE Intl. Conf. on Acoustics, Speech, and
+Signal Processing, Toulouse, France, May 2006.
+[53] Xiao Li and Jeﬀ Bilmes. A bayesian divergence prior for classi-
+ﬁer adaptation. In Eleventh International Conference on Artiﬁcial
+Intelligence and Statistics (AISTATS-2007), March 2007.
+[54] Xiao Li, Jeﬀ Bilmes, and Joh Malkin. Maximum margin learning
+and adaptation of MLP classifers. September 2005.
+[55] XuejunLiao,YaXue,andLawrenceCarin. Logisticregressionwith
+an auxiliary data source. In Proceedings of the 22nd international
+conference on Machine learning , ICML ’05, pages 505–512, New
+York, NY, USA, 2005. ACM.
+[56] Xiao Ling, Gui-Rong Xue, Wenyuan Dai, Yun Jiang, Qiang Yang,
+and Yong Yu. Can chinese web pages be classiﬁed with englishdata source? In WWW, pages 969–978, 2008.
+[57] Mingsheng Long, Wei Cheng, Xiaoming Jin, Jianmin Wang, and
+Dou Shen. Transfer learning via cluster correspondence inference.InICDM, pages 917–922, 2010.
+[58] Ulrike Luxburg. A tutorial on spectral clustering. Statistics and
+Computing , 17:395–416, December 2007.Transfer Learning for Text Mining 253
+[59] Olvi L. Mangasarian. Generalized support vector machines. Tech-
+nical report, Computer Sciences Department, University of Wis-
+consin, 1998.
+[60] Yishay Mansour, Mehryar Mohri, and Afshin Rostamizadeh. Do-
+main adaptation with multiple sources. In NIPS, 2008.
+[61] AndrewKachitesMcCallum. Simulated/real/aviation/autousenet
+data. http://www.cs.umass.edu/~mccallum/code-data.html.
+[62] Tiberio Caetano S. V. N. Vishwanathan Novi Quadrianto,
+Alex Smola and James Petterson. Multitask learning without labelcorrespondences. In NIPS, 2010.
+[63] SinnoJialinPan,JamesT.Kwok,andQiangYang. Transferlearn-
+ing via dimensionality reduction. In AAAI, pages 677–682, 2008.
+[64] Sinno Jialin Pan, Xiaochuan Ni, Jian-Tao Sun, Qiang Yang, and
+Zheng Chen. Cross-domain sentiment classiﬁcation via spectralfeature alignment. In WWW, pages 751–760, 2010.
+[65] SinnoJialinPan,IvorW.Tsang,JamesT.Kwok,andQiangYang.
+Domain adaptation via transfer component analysis. In IJCAI,
+pages 1187–1192, 2009.
+[66] SinnoJialinPan,IvorW.Tsang,JamesT.Kwok,andQiangYang.
+Domain adaptation via transfer component analysis. IEEE Trans-
+actions on Neural Networks, 22(2):199–210, 2011.
+[67] Sinno Jialin Pan and Qiang Yang. A survey on transfer learn-
+ing.IEEE Transactions on Knowledge and Data Engineering,
+22(10):1345–1359, October 2010.
+[68] Bo Pang and Lillian Lee. Opinion mining and sentiment analysis.
+Found. Trends Inf. Retr. , 2:1–135, January 2008.
+[69] David Pardoe and Peter Stone. Boosting for regression transfer.
+InICML, pages 863–870, 2010.
+[70] Peter Prettenhofer and Benno Stein. Cross-language text classi-
+ﬁcation using structural correspondence learning. In ACL, pages
+1118–1127, 2010.
+[71] Peter Prettenhofer and Benno Stein. Cross-lingual adaptation us-
+ing structural correspondence learning. ACM TIST, 3(1), 2012.
+[72] Guo-Jun Qi, Charu Aggarwal, and Thomas Huang. Towards se-
+mantic knowledge propagation from text corpus to web images.InProceedings of the 20th international conference on World wide
+web, WWW ’11, pages 297–306, New York, NY, USA, 2011. ACM.
+[73] Guo-Jun Qi, Charu Aggarwal, Yong Rui, Qi Tian, Shiyu Chang,
+and Thomas Huang. Towards cross-category knowledge propaga-
+tion for learning visual concepts. In CVPR, 2011.254 MINING TEXT DATA
+[74] Novi Quadrianto, Alex J. Smola, Tiberio S. Caetano, S.V.N. Vish-
+wanathan, and James Petterson. Multitask learning without labelcorrespondences. In NIPS 23 , 2010.
+[75] Rajat Raina, Alexis Battle, Honglak Lee, Benjamin Packer, and
+Andrew Y. Ng. Self-taught learning: transfer learning from unla-beled data. In Proceedings of the 24th international conference on
+Machine learning , ICML ’07, pages 759–766, New York, NY, USA,
+2007. ACM.
+[76] Rajat Raina, Andrew Y. Ng, and Daphne Koller. Constructing in-
+formative priors using transfer learning. In Proceedings of the 23rd
+international conference on Machine learning , ICML ’06, pages
+713–720, New York, NY, USA, 2006. ACM.
+[77] Adwait Ratnaparkhi. A maximum entropy model for part-of-
+speech tagging. In Proceedings of the Conference on Emp irical
+Methods in Natural Language Processing , April 1996.
+[78] Marcus Rohrbach, Michael Stark, and Bernt Schiele. Evaluating
+knowledge transfer and zero-shot learning in a large-scale setting.InCVPR, 2011.
+[79] Marcus Rohrbach, Michael Stark, Gy¨ orgy Szarvas, Iryna
+Gurevych,andBerntSchiele. Whathelpswhere-andwhy?seman-tic relatedness for knowledge transfer. In CVPR, pages 910–917,
+2010.
+[80] Stefan R¨ uping. Incremental learning with support vector ma-
+chines. In Proceedings of the 2001 IEEE International Conference
+on Data Mining ,ICDM’01,pages641–642,Washington,DC,USA,
+2001. IEEE Computer Society.
+[81] Sandeepkumar Satpal and Sunita Sarawagi. Domain adaptation of
+conditional probability models via feature subsetting. In Proceed-
+ings of the 11th European conference on Principles and Practice ofKnowledge Discovery in Databases , PKDD 2007, pages 224–235,
+Berlin, Heidelberg, 2007. Springer-Verlag.
+[82] Bernhard Scholkopf and Alexander J. Smola. Learning with Ker-
+nels: Support Vector Machines, Regularization, Optimization, andBeyond. MIT Press, Cambridge, MA, USA, 2001.
+[83] Dou Shen, Rong Pan, Jian-Tao Sun, Jeﬀrey Junfeng Pan,
+Kangheng Wu, Jie Yin, and Qiang Yang. Query enrichment forweb-query classiﬁcation. ACM Trans. Inf. Syst. , 24:320–352, July
+2006.
+[84] Dou Shen, Jian-Tao Sun, Qiang Yang, and Zheng Chen. Building
+bridges for web query classiﬁcation. In Proceedings of the 29thTransfer Learning for Text Mining 255
+annual international ACM SIGIR conference on Research and de-
+velopment in information retrieval ,SIGIR’06,pages131–138,New
+York, NY, USA, 2006. ACM.
+[85] Jianbo Shi and Jitendra Malik. Normalized cuts and image seg-
+mentation. IEEE Trans. Pattern Anal. Mach. Intell. , 22:888–905,
+August 2000.
+[86] Xiaoxiao Shi, Wei Fan, Qiang Yang, and Jiangtao Ren. Re-
+laxed transfer of diﬀerent classes via spectral partition. InECML/PKDD , 2009.
+[87] Xiaoxiao Shi, Qi Liu, Wei Fan, Philip S. Yu, and Ruixin Zhu.
+Transfer learning on heterogenous feature spaces via spectraltransformation. In ICDM, pages 1049–1054, 2010.
+[88] Hidetoshi Shimodaira. Improving predictive inference under co-
+variate shift by weighting the log-likelihood function. Journal of
+Statistical Planning and Inference , 90(2):227–244, 2000.
+[89] Si Si, Dacheng Tao, and Bo Geng. Bregman divergence-based
+regularization for transfer subspace learning. IEEE Trans. Knowl.
+Data Eng. , 22(7):929–942, 2010.
+[90] Ajit P. Singh and Geoﬀrey J. Gordon. Relational learning via
+collective matrix factorization. In KDD, pages 650–658, 2008.
+[91] Simon Tong and Daphne Koller. Support vector machine active
+learning with applications to text classiﬁcation. J. Mach. Learn.
+Res., 2:45–66, March 2002.
+[92] Bo Wang, Jie Tang, Wei Fan, Songcan Chen, Zi Yang, and Yanzhu
+Liu. Heterogeneous cross domain ranking in latent space. In Pro-
+ceeding of the 18th ACM conference on Information and knowl-
+edge management ,CIKM’09,pages987–996,NewYork,NY,USA,
+2009. ACM.
+[93] Hua-Yan Wang, Vincent Wenchen Zheng, Junhui Zhao, and Qiang
+Yang. Indoorlocalizationinmulti-ﬂoorenvironmentswithreducedeﬀort. In PerCom, pages 244–252, 2010.
+[94] Yang Mu Lourenco Bandeira Ricardo Ricardo Youxi Wu Zhenyu
+Lu Tianyu Cao Xindong Wu Wei Ding, Tomasz F. Stepinski. Sub-
+kilometer crater discovery with boosting and transfer learning.ACM TIST , x(x), 201x.
+[95] Philip C. Woodland. Speaker adaptation for continuous den-
+sity hmms: a review. In ISCA Tutorial and Research Workshop
+(ITRW) on Adaptation Methods for Speech R ecognition , ITRW’
+01, pages 29–30, August 2001.256 MINING TEXT DATA
+[96] Pengcheng Wu and Thomas G. Dietterich. Improving svm accu-
+racy by training on auxiliary data sources. In Proceedings of the
+twenty-ﬁrst international conference on Machine learning , ICML
+’04, pages 110–, New York, NY, USA, 2004. ACM.
+[97] Evan Wei Xiang, Bin Cao, Derek Hao Hu, and Qiang Yang. Bridg-
+ing domains using world wide knowledge for transfer learning.IEEE Trans. Knowl. Data Eng. , 22(6):770–783, 2010.
+[98] Evan Wei Xiang, Sinno Jialin Pan, Weik Pan, Qiang Yang, and
+Jian Su. Source-free transfer learning. In IJCAI, 2011.
+[99] Jun Xu and Hang Li. Adarank: a boosting algorithm for infor-
+mation retrieval. In Proceedings of the 30th annual international
+ACM SIGIR conference on Research and development in informa-tion retrieval , SIGIR ’07, pages 391–398, New York, NY, USA,
+2007. ACM.
+[100] Jun Yang, Rong Yan, and Alexander G. Hauptmann. Cross-
+domain video concept detection using adaptive svms. In Proceed-
+ings of the 15th international conference on Multimedia , MULTI-
+MEDIA ’07, pages 188–197, New York, NY, USA, 2007. ACM.
+[101] Qiang Yang, Yuqiang Chen, Gui-Rong Xue, Wenyuan Dai, and
+Yong Yu. Heterogeneous transfer learning for image clustering via
+the social web. In Proceedings of the Joint Conference of the 47th
+Annual Meeting of the ACL and the 4th International Joint Con-ference on Natural Language Processing of the AFNLP: Volume1 - Volume 1 , ACL ’09, pages 1–9, Stroudsburg, PA, USA, 2009.
+Association for Computational Linguistics.
+[102] Yi Yao and Gianfranco Doretto. Boosting for transfer learning
+with multiple sources. In CVPR, pages 1855–1862, 2010.
+[103] Bianca Zadrozny. Learning and evaluating classiﬁers under sam-
+ple selection bias. In Proceedings of the twenty-ﬁrst international
+conference on Machine learning , ICML ’04, pages 114–, New York,
+NY, USA, 2004. ACM.
+[104] Dmitry Zelenko, Chinatsu Aone, and Anthony Richardella. Kernel
+methods for relation extraction. J. Mach. Learn. Res. , 3:1083–
+1106, March 2003.
+[105] Duo Zhang, Qiaozhu Mei, and ChengXiang Zhai. Cross-lingual
+latent topic extraction. In ACL, pages 1128–1137, 2010.
+[106] Tong Zhang and David Johnson. A robust risk minimization based
+named entity recognition system. In Proceedings of the s eventh
+conference on Natural language learning at HLT-NAACL 2003 -Transfer Learning for Text Mining 257
+Volume 4 , CONLL ’03, pages 204–207, Stroudsburg, PA, USA,
+2003. Association for Computational Linguistics.
+[107] Yi Zhang, Jeﬀ Schneider, and Artur Dubrawski. Learning the
+semantic correlation: An alternative way to gain from unlabeled
+text. InNIPS, pages 1945–1952, 2008.
+[108] Vincent Wenchen Zheng, Derek Hao Hu, and Qiang Yang. Cross-
+domain activity recognition. In Proceedings of the 11th interna-
+tional conference on Ubiquitous computing , Ubicomp ’09, pages
+61–70, New York, NY, USA, 2009. ACM.
+[109] Erheng Zhong, Wei Fan, Jing Peng, Kun Zhang, Jiangtao Ren,
+Deepak Turaga, and Olivier Verscheure. Cross domain distribu-tion adaptation via kernel mapping. In Proceedings of the 15th
+ACM SIGKDD international conference on Knowledge discovery
+and data mining ,KDD’09,pages1027–1036,NewYork,NY,USA,
+2009. ACM.
+[110] Erheng Zhong, Wei Fan, Qiang Yang, Olivier Verscheure, and
+JiangtaoRen. Crossvalidationframeworktochooseamongstmod-els and datasets for transfer learning. In ECML/PKDD (3) , pages
+547–562, 2010.
+[111] XiaojinZhu,AndrewB.Goldberg,RonaldBrachman,andThomas
+Dietterich. Introduction to Semi-Supervised Learning . Morgan and
+Claypool Publishers, 2009.
+[112] Yin Zhu, Yuqiang Chen, Zhongqi Lu, Sinno Jialin Pan, Gui-Rong
+Xue, Yong Yu, and Qiang Yang. Heterogeneous transfer learningfor image classiﬁcation. In AAAI, 2011.Chapter 8
+PROBABILISTIC MODELS FOR
+TEXT MINING
+Yizhou Sun
+Department of Computer Science
+University of Illinois at Urbana-Champaign
+sun22@illinois.edu
+Hongbo Deng
+Department of Computer Science
+University of Illinois at Urbana-Champaign
+hbdeng@illinois.edu
+Jiawei Han
+Department of Computer Science
+University of Illinois at Urbana-Champaign
+hanj@illinois.edu
+Abstract A number of probabilistic methods such as LDA, hidden Markov mod-
+els, Markov random ﬁelds have arisen in recent years for probabilistic
+analysis of text data. This chapter provides an overview of a variety
+of probabilistic models for text mining. The chapter focuses more on
+the fundamental probabilistic techniques, and also covers their various
+applications to diﬀerent text mining problems. Some examples of such
+applications include topic modeling, language modeling, document clas-
+siﬁcation, document clustering, and information extraction.
+Keywords: Probabilisticmodels, mixturemodel, stochasticprocess, graphicalmodel
+ 
+© Springer Science+Business Media, LLC 2012  259  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_8,

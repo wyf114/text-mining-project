@@ -1,0 +1,910 @@
+Chapter 2
+INFORMATION EXTRACTION FROM
+TEXT
+Jing Jiang
+Singapore Management University
+jingjiang@smu.edu.sg
+Abstract Informationextractionisthetaskofﬁndingstructuredinformationfrom
+unstructured or semi-structured text. It is an important task in text
+mining and has been extensively studied in various research commu-
+nities including natural language processing, information retrieval and
+Web mining. It has a wide range of applications in domains such as
+biomedical literature mining and business intelligence. Two fundamen-
+tal tasks of information extraction are named entity recognition and
+relation extraction. The former refers to ﬁnding names of entities such
+as people, organizations and locations. The latter refers to ﬁnding the
+semanticrelationssuchas FounderOf andHeadquarteredIn betweenen-
+tities. In this chapter we provide a survey of the major work on named
+entity recognition and relation extraction in the past few decades, with
+a focus on work from the natural language processing community.
+Keywords: Information extraction, named entity recognition, relation extraction
+1. Introduction
+Information extraction from text is an important task in text min-
+ing. The general goal of information extraction is to discover structured
+information from unstructured or semi-structured text. For example,
+given the following English sentence,
+In 1998, Larry Page and Sergey Brin founded Google Inc.
+we can extract the following information,
+FounderOf( Larry Page ,Google Inc. ),
+FounderOf( Sergey Brin ,Google Inc. ),
+FoundedIn( Google Inc. ,1998 ).
+© Springer Science+Business Media, LLC 2012 11  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_2,12 MINING TEXT DATA
+Such information can be directly presented to an end user, or more
+commonly, it can be used by other computer systems such as searchengines and database management systems to provide better services to
+end users.
+Information extraction has applications in a wide range of domains.
+The speciﬁc type and structure of the information to be extracted de-pend on the need of the particular application. We give some exampleapplications of information extraction below:
+Biomedical researchers often need to sift through a large amountof scientiﬁc publications to look for discoveries related to partic-ular genes, proteins or other biomedical entities. To assist thiseﬀort, simple search based on keyword matching may not suﬃcebecause biomedical entities often have synonyms and ambiguousnames, making it hard to accurately retrieve relevant documents.
+A critical task in biomedical literature mining is therefore to au-
+tomatically identify mentions of biomedical entities from text andto link them to their corresponding entries in existing knowledgebases such as the FlyBase.
+Financialprofessionalsoftenneedtoseekspeciﬁcpiecesofinforma-tion from news articles to help their day-to-day decision making.
+Forexample, aﬁnancecompanymayneedtoknowallthecompany
+takeoversthattakeplaceduringacertaintimespanandthedetailsof each acquisition. Automatically ﬁnding such information fromtext requires standard information extraction technologies such asnamed entity recognition and relation extraction.
+Intelligence analysts review large amounts of text to search for in-
+formation such as people involved in terrorism events, the weapons
+used and the targets of the attacks. While information retrievaltechnologies can be used to quickly locate documents that describeterrorismevents, informationextractiontechnologiesareneededtofurther pinpoint the speciﬁc information units within these docu-ments.
+With the fast growth of the Web, search engines have become anintegral part of people’s daily lives, and users’ search behaviors aremuch better understood now. Search based on bag-of-word repre-sentation of documents can no longer provide satisfactory results.
+More advanced search problems such as entity search, structured
+search and question answering can provide users with better search
+experience. To facilitate these search capabilities, information ex-Information Extraction from Text 13
+Terrorism Template
+Slot Fill Value
+Incident: Date 07 Jan 90
+Incident: Location Chile: Molina
+Incident: Type robbery
+Incident: Stage of execution accomplished
+Incident: Instrument type gun
+Human Target: Name “Enrique Ormazabal Ormazabal”
+Human Target: Description “Businessman”: “Enrique Ormazabal Ormazabal”
+Human Target: Type civilian: “Enrique Ormazabal Ormazabal”
+Human Target: Number 1: “Enrique Ormazabal Ormazabal”
+... ...
+A Sample Document
+Santiago, 10 Jan 90 – Police are carrying out intensive operations in the
+town of Molina in the seventh region in search of a gang of alleged extremistswho could be linked to a recently discovered arsenal. It has been reportedthat Carabineros in Molina raided the house of of 25-year-old worker MarioMunoz Pardo, where they found a fal riﬂe, ammunition clips for variousweapons, detonators, and material for making explosives.It should be recalled that a group of armed individuals wearing ski masks
+robbed a businessman on a rural road near Molina on 7 January. The
+businessman, Enrique Ormazabal Ormazabal, tried to resist; The men shothim and left him seriously wounded. He was later hospitalized in Curico.Carabineros carried out several operations, including the raid on Munoz’home. The police are continuing to patrol the area in search of the allegedterrorist command.
+Figure 2.1. Part of the terrorism template used in MUC-4 and a sample document
+that contains a terrorism event.
+traction is often needed as a preprocessing step to enrich document
+representation or to populate an underlying database.
+While extraction of structured information from text dates back to
+the ’70s (e.g. DeJong’s FRUMP program [28]), it only started gainingmuch attention when DARPA initiated and funded the Message Un-derstanding Conferences (MUC) in the ’90s [33]. Since then, researcheﬀorts on this topic have not declined. Early MUCs deﬁned information
+extraction as ﬁlling a predeﬁned template that contains a set of prede-
+ﬁned slots. For example, Figure 2.1 shows a subset of the slots in the
+terrorism template used in MUC-4 and a sample document from whichtemplate slot ﬁll values were extracted. Some of the slot ﬁll values suchas“Enrique Ormazabal Ormazabal” and“Businessman” were extracted
+directly from the text while others such as robbery, accomplished and
+gunwere selected from a predeﬁned value set for the corresponding slot
+based on the document.14 MINING TEXT DATA
+Template ﬁlling is a complex task and systems developed to ﬁll one
+template cannot directly work for a diﬀerent template. In MUC-6, anumberoftemplate-independentsubtasksofinformationextractionwere
+deﬁned [33]. These include named entity recognition, coreference reso-
+lution and relation extraction. These tasks serve as building blocks tosupport full-ﬂedged, domain-speciﬁc information extraction systems.
+Early information extraction systems such as the ones that partici-
+pated in the MUCs are often rule-based systems (e.g. [32, 42]). Theyuse linguistic extraction patterns developed by humans to match textandlocateinformation units. They canachievegood performanceon the
+speciﬁc target domain, but it is labor intensive to design good extraction
+rules, and the developed rules are highly domain dependent. Realizingthe limitations of these manually developed systems, researchers turnedto statistical machine learning approaches. And with the decompositionof information extraction systems into components such as named entityrecognition, many information extraction subtasks can be transformedinto classiﬁcation problems, which can be solved by standard supervised
+learning algorithms such as support vector machines and maximum en-
+tropy models. Because information extraction involves identifying seg-ments of text that play diﬀerent roles, sequence labeling methods suchas hidden Markov models and conditional random ﬁelds have also beenwidely used.
+Traditionally information extraction tasks assume that the structures
+tobeextracted, e.g. thetypesofnamedentities, thetypesofrelations, or
+the template slots, are well deﬁned. In some scenarios, we do not know
+in advance the structures of the information we would like to extractand would like to mine such structures from large corpora. For example,from a set of earthquake news articles we may want to automaticallydiscover that the date, time, epicenter, magnitude and casualty of anearthquake are the most important pieces of information reported innews articles. There have been some recent studies on this kind of
+unsupervised information extraction problems but overall work along
+this line remains limited.
+Another new direction is open information extraction, where the sys-
+tem is expected to extract alluseful entity relations from a large, diverse
+corpus such as the Web. The output of such systems includes not onlythe arguments involved in a relation but also a description of the rela-tion extracted from the text. Recent advances in this direction include
+systems like TextRunner [6],Woe[66] and ReVerb [29].
+Information extraction from semi-structured Web pages has also been
+an important research topic in Web mining (e.g. [40, 45, 25]). A ma-jor diﬀerence of Web information extraction from information extractionInformation Extraction from Text 15
+studied in natural language processing is that Web pages often contain
+structured or semi-structured text such as tables and lists, whose extrac-tionreliesmoreonHTMLtagsthanlinguisticfeatures. Webinformation
+extraction systems are also called wrappers and learning such systems is
+calledwrapper induction . In this survey we only cover information ex-
+traction from purely unstructured natural language text. Readers whoare interested in wrapper induction may refer to [31, 20] for in-depthsurveys.
+In this chapter we focus on the two most fundamental tasks in in-
+formation extraction, namely, named entity recognition and relation ex-
+traction. The state-of-the-art solutions to both tasks rely on statistical
+machine learning methods. We also discuss unsupervised informationextraction, which has not attracted much attention traditionally. Therest of this chapter is organized as follows. Section 2 discusses currentapproaches to named entity recognition, including rule-based methodsand statistical learning methods. Section 3 discusses relation extractionunder both a fully supervised setting and a weakly supervised setting.
+We then discuss unsupervised relation discovery and open information
+extraction in Section 4. In Section 5 we discuss evaluation of informationextraction systems. We ﬁnally conclude in Section 6.
+2. Named Entity Recognition
+A named entity is a sequence of words that designates some real-
+world entity, e.g. “California,” “Steve Jobs” and “Apple Inc.” The taskof named entity recognition, often abbreviated as NER, is to identifynamed entities from free-form text and to classify them into a set of
+predeﬁned types such as person,organization andlocation. Oftentimes
+this task cannot be simply accomplished by string matching againstpre-compiled gazetteers because named entities of a given entity typeusually do not form a closed set and therefore any gazetteer would beincomplete. Another reason is that the type of a named entity can becontext-dependent. For example, “JFK” may refer to the person “JohnF. Kennedy,” the location “JFK International Airport,” or any other
+entity sharing the same abbreviation. To determine the entity type
+for “JFK” occurring in a particular document, its context has to beconsidered.
+Named entity recognition is probably the most fundamental task in
+information extraction. Extraction of more complex structures such asrelations and events depends on accurate named entity recognition as apreprocessingstep. Namedentityrecognitionalsohasmanyapplications
+apartfrombeingabuildingblockforinformationextraction. Inquestion16 MINING TEXT DATA
+answering, for example, candidate answer strings are often named enti-
+ties that need to be extracted and classiﬁed ﬁrst [44]. In entity-orientedsearch, identifying named entities in documents as well as in queries is
+the ﬁrst step towards high relevance of search results [34, 21].
+Althoughthestudyofnamedentityrecognitiondatesbacktotheearly
+’90s [56], the task was formally introduced in 1995 by the sixth MessageUnderstanding Conference (MUC-6) as a subtask of information extrac-tion [33]. Since then, NER has drawn much attention in the researchcommunity. There have been several evaluation programs on this task,including the Automatic Content Extraction (ACE) program [1], the
+shared task of the Conference on Natural Language Learning (CoNLL)
+in 2002 and 2003 [63], and the BioCreAtIvE (Critical Assessment ofInformation Extraction Systems in Biology) challenge evaluation [2].
+The most commonly studied named entity types are person,organiza-
+tionandlocation, which were ﬁrst deﬁned by MUC-6. These types are
+general enough to be useful for many application domains. Extraction ofexpressions of dates, times, monetary values and percentages, which was
+also introduced by MUC-6, is often also studied under NER, although
+strictly speaking these expressions are not named entities. Besides thesegeneral entity types, other types of entities are usually deﬁned for spe-ciﬁc domains and applications. For example, the GENIA corpus uses aﬁne-grained ontology to classify biological entities [52]. In online searchand advertising, extraction of product names is a useful task.
+Early solutions to named entity recognition rely on manually crafted
+patterns [4]. Because it requires human expertise and is labor intensive
+to create such patterns, later systems try to automatically learn suchpatterns from labeled data [62, 16, 23]. More recent work on namedentity recognition uses statistical machine learning methods. An earlyattempt is Nymble, a name ﬁnder based on hidden Markov models [10].Other learning models such as maximum entropy models [22], maximumentropy Markov models [8, 27, 39, 30], support vector machines [35] and
+conditional random ﬁelds [59] have also been applied to named entity
+recognition.
+2.1 Rule-based Approach
+Rule-based methods for named entity recognition generally work as
+follows: Asetofrulesiseithermanuallydeﬁnedorautomaticallylearned.Each token in the text is represented by a set of features. The text isthen compared against the rules and a rule is ﬁred if a match is found.
+A rule consists of a pattern and an action. A pattern is usually a
+regular expression deﬁned over features of tokens. When this patternInformation Extraction from Text 17
+matches a sequence of tokens, the speciﬁed action is ﬁred. An action
+can be labeling a sequence of tokens as an entity, inserting the start orendlabelofanentity, oridentifyingmultipleentitiessimultaneously. For
+example, to label any sequence of tokens of the form “Mr. X” whereX
+is a capitalized word as a person entity, the following rule can be deﬁned:
+(token = “Mr.” orthography type = FirstCap )→person name .
+The left hand side is a regular expression that matches any sequence
+of two tokens where the ﬁrst token is “Mr.” and the second token hasthe orthography type FirstCap . The right hand side indicates that the
+matched token sequence should be labeled as a person name.
+This kind of rule-based methods has been widely used [4, 62, 16, 61,
+23]. Commonlyusedfeaturestorepresenttokensincludethetokenitself,
+the part-of-speech tag of the token, the orthography type of the token(e.g. ﬁrst letter capitalized, all letters capitalized, number, etc.), andwhether the token is inside some predeﬁned gazetteer.
+It is possible for a sequence of tokens to match multiple rules. To
+handle such conﬂicts, a set of policies has to be deﬁned to control how
+rules should be ﬁred. One approach is to order the rules in advance so
+that they are sequentially checked and ﬁred.
+Manually creating the rules for named entity recognition requires hu-
+man expertise and is labor intensive. To automatically learn the rules,diﬀerent methods have been proposed. They can be roughly categorizedinto two groups: top-down (e.g. [61]) and bottom-up (e.g. [16, 23]).With either approach, a set of training documents with manually la-
+beled named entities is required. In the top-down approach, general
+rules are ﬁrst deﬁned that can cover the extraction of many traininginstances. However, these rules tend to have low precision. The systemthen iteratively deﬁnes more speciﬁc rules by taking the intersectionsof the more general rules. In the bottom-up approach, speciﬁc rulesare deﬁned based on training instances that are not yet covered by theexisting rule set. These speciﬁc rules are then generalized.
+2.2 Statistical Learning Approach
+More recent work on named entity recognition is usually based on sta-
+tistical machine learning. Many statistical learning-based named entityrecognition algorithms treat the task as a sequence labeling problem.Sequence labeling is a general machine learning problem and has beenused to model many natural language processing tasks including part-of-speech tagging, chunking and named entity recognition. It can beformulated as follows. We are given a sequence of observations, denoted
+asx=(x
+1,x2,...,x n). Usually each observation is represented as a18 MINING TEXT DATA
+Steve Jobs was a co-founder of Apple Inc.
+B-PER I-PER O O O O B-ORG I-ORG
+Figure 2.2. An example sentence with NER labels in the BIO notation. PERstands
+for person and ORGstands for organization.
+feature vector. We would like to assign a label yito each observation xi.
+While one may apply standard classiﬁcation to predict the label yibased
+solely on xi, in sequence labeling, it is assumed that the label yidepends
+not only on its corresponding observation xibut also possibly on other
+observationsandotherlabelsinthesequence. Typicallythisdependency
+is limited to observations and labels within a close neighborhood of thecurrent position i.
+To map named entity recognition to a sequence labeling problem, we
+treat each word in a sentence as an observation. The class labels haveto clearly indicate both the boundaries and the types of named entitieswithin the sequence. Usually the BIO notation, initially introduced fortext chunking [55], is used. With this notation, for each entity type T,
+two labels are created, namely, B-TandI-T. A token labeled with B-Tis
+the beginning of a named entity of type Twhile a token labeled with I-T
+isinside(butnotthebeginningof)anamedentityoftype T. Inaddition,
+thereisalabel Ofortokensoutsideofanynamedentity. Figure2.2 shows
+an example sentence and its correct NER label sequence.
+2.2.1 Hidden Markov Models. In a probabilistic framework,
+the best label sequence y=(y1,y2,...,yn) for an observation sequence
+x=(x1,x2,...,x n) is the one that maximizes the conditional probabil-
+ityp(y|x), or equivalently, the one that maximizes the joint probability
+p(x,y). One way to model the joint probability is to assume a Markov
+process where the generation of a label or an observation is dependentonly on one or a few previous labels and/or observations. If we treat y
+as hidden states, then we essentially have a hidden Markov model [54].
+An example is the Nymble system developed by BBN, one of the
+earliest statistical learning-based NER systems [10]. Nymble assumesthe following generative process:
+(1) Each y
+iis generated conditioning on the previous label yi−1and the
+previous word xi−1.
+(2) Ifxiis the ﬁrst word of a named entity, it is generated conditioning
+on the current and the previous labels, i.e. yiandyi−1.
+(3) Ifxiis inside a named entity, it is generated conditioning on the
+previous observation xi−1.Information Extraction from Text 19
+For subsequences of words outside of any named entity, Nymble treats
+themasa Not-A-Name class. Nymblealsoassumesthatthereisamagical
++end+word at the end of each named entity and models the probability
+of a word being the ﬁnal word of a named entity. With the generative
+process described above, the probability p(x,y) can be expressed in
+terms of various conditional probabilities.
+Initiallyxiis simply the word at position i. Nymble further augments
+it intoxi=/angbracketleftw,f/angbracketrighti, wherewis the word at position iandfis a word
+feature characterizing w. For example, the feature FourDigitNum indi-
+cates that the word is a number with four digits. The rationale behind
+introducing word features is that these features may carry strong corre-
+lations with entity types. For example, a four-digit number is likely tobe a year.
+The model parameters of Nymble are essentially the various multino-
+mial distributions that govern the generation of x
+iandyi. Nymble uses
+supervised learning to learn these parameters. Given sentences labeledwith named entities, Nymble performs maximum likelihood estimation
+to ﬁnd the model parameters that maximize p(X,Y) whereXdenotes
+all the sentences in the training data and Ydenotes their true label
+sequences. Parameter estimation essentially becomes counting. For ex-ample,
+p(y
+i=c1|yi−1=c2,xi−1=w)=c(c1,c2,w)
+c(c2,w),(2.1)
+where c1and c2are two class labels and wis a word. p(yi=c1|yi−1=
+c2,xi−1=w) is the probability of observing the class label c1given that
+the previous class label is c2and the previous word is w.c(c1,c2,w)i s
+the number of times we observe class label c1when the previous class
+label is c2and the previous word is w,a n dc(c2,w) is the number of times
+we observe the previous class label to be c2and the previous word to be
+wregardless of the current class label.
+During prediction, Nymble uses the learned model parameters to ﬁnd
+the label sequence ythat maximizes p(x,y)f o rag i v e n x. With the
+Markovian assumption, dynamic programming can be used to eﬃcientlyﬁnd the best label sequence.
+2.2.2 Maximum Entropy Markov Models. The hidden
+Markov models described above are generative models. In general, re-searchershavefoundthatwhentrainingdataissuﬃcient, comparedwithgenerative models that model p(x|y), discriminative models that directly
+modelp(y|x) tend to give a lower prediction error rate and thus are
+preferable [65]. For named entity recognition, there has also been such20 MINING TEXT DATA
+a shift from generative models to discriminative models. A commonly
+used discriminative model for named entity recognition is the maximumentropy model [9] coupled with a Markovian assumption. Existing work
+using such a model includes [8, 27, 39, 30].
+Speciﬁcally, with a Markovian assumption, the label y
+iat position i
+is dependent on the observations within a neighborhood of position ias
+well as a number of previous labels:
+p(y|x)=/productdisplay
+ip(yi|yi−1
+i−k,xi+l
+i−l). (2.2)
+In the equation above, yi−1
+i−krefers to ( yi−k,yi−k+1,...,yi−1)a n dxi+l
+i−l
+refers to ( xi−l,xi−l+1,...,x i+l). And with maximum entropy models,
+the functional form of p(yi|yi−1
+i−k,xi+l
+i−l) follows an exponential model:
+p(yi|yi−1
+i−k,xi+l
+i−l)=exp/parenleftBig/summationtext
+jλjfj(yi,yi−1
+i−k,xi+l
+i−l)/parenrightBig
+/summationtext
+y/primeexp/parenleftBig/summationtext
+jλjfj(y/prime,yi−1
+i−k,xi+l
+i−l)/parenrightBig.(2.3)
+In the equation above, fj(·) is a feature function deﬁned over the current
+label, the previous klabels as well as 2 l+ 1 observations surrounding
+the current observation, and λjis the weight for feature fj. An example
+feature is below:
+f(yi,yi−1,xi)=/braceleftbigg
+1i fyi−1=Oandyi=B-PERandword(xi) = “Mr.” ,
+0 otherwise .
+The model described above can be seen as a variant of the maximum
+entropy Markov models (MEMMs), which were formally introduced byMcCallum et al. for information extraction [48].
+To train a maximum entropy Markov model, we look for the fea-
+ture weights Λ = {λ
+j}that can maximize the conditional probability
+p(Y|X) where Xdenotes all the sentences in the training data and
+Ydenotes their true label sequences. Just like for standard maximum
+entropy models, a number of optimization algorithms can be used totrain maximum entropy Markov models, including Generalized Itera-tive Scaling (GIS), Improved Iterative Scaling (IIS) and limited memoryquasi-Newton methods such as L-BFGS [15]. A comparative study ofthese optimization methods for maximum entropy models can be foundin [46]. L-BFGS is a commonly used method currently.
+2.2.3 Conditional Random Fields. Conditional random
+ﬁelds (CRFs) are yet another popular discriminative model for sequencelabeling. They were introduced by Laﬀerty et al. to also address infor-
+mation extraction problems [41]. The major diﬀerence between CRFsInformation Extraction from Text 21
+Figure 2.3. Graphical representations of linear-chain HMM, MEMM and CRF.
+and MEMMs is that in CRFs the label of the current observation can
+depend not only on previous labels but also on future labels. Also, CRFsare undirected graphical models while both HMMs and MEMMs are di-
+rected graphical models. Figure 2.3 graphically depicts the diﬀerences
+between linear-chain (i.e. ﬁrst-order) HMM, MEMM and CRF. Eversince they were ﬁrst introduced, CRFs have been widely used in naturallanguage processing and some other research areas.
+Usually linear-chain CRFs are used for sequence labeling problems
+in natural language processing, where the current label depends on theprevious one and the next one labels as well as the observations. There
+have been many studies applying conditional random ﬁelds to named
+entityrecognition(e.g.[49,59]). Speciﬁcally, followingthesamenotationused earlier, the functional form of p(y|x)i sa sf o l l o w s :
+p(y|x)=1
+Z(x)exp⎛
+⎝/summationdisplay
+i/summationdisplay
+jλjfj(yi,yi−1,x,i)⎞⎠,(2.4)
+whereZ(x) is a normalization factor of all possible label sequences:
+Z(x)=/summationdisplay
+y/primeexp⎛
+⎝/summationdisplay
+i/summationdisplay
+jλjfj(y/prime
+i,y/prime
+i−1,x,i)⎞⎠.(2.5)
+To train CRFs, again maximum likelihood estimation is used to ﬁnd
+the best model parameters that maximize p(Y|X). Similar to MEMMs,
+CRFs can be trained using L-BFGS. Because the normalization factor
+Z(x) is a sum over all possible label sequences for x, training CRFs is
+more expensive than training MEMMs.
+In linear-chain CRFs we cannot deﬁne long-range features. General
+CRFs allow long-range features but are too expensive to perform ex-act inference. Sarawagi and Cohen proposed semi-Markov conditionalrandom ﬁelds as a compromise [58]. In semi-Markov CRFs, labels areassignedtosegmentsoftheobservationsequence xandfeaturescanmea-
+sure properties of these segments. Exact learning and inference on semi-
+Markov CRFs is thus computationally feasible. Sarawagi and Cohen22 MINING TEXT DATA
+applied Semi-Markov CRFs to named entity recognition and achieved
+better performance than standard CRFs.
+3. Relation Extraction
+Another important task in information extraction is relation extrac-
+tion. Relation extraction is the task of detecting and characterizing
+the semantic relations between entities in text. For example, from thefollowing sentence fragment,
+Facebook co-founder Mark Zuckerberg
+we can extract the following relation,
+FounderOf( Mark Zuckerberg ,Facebook ).
+Much of the work on relation extraction is based on the task deﬁni-
+tion from the Automatic Content Extraction (ACE) program [1]. ACEfocuses on binary relations, i.e. relations between two entities. The twoentitiesinvolvedarealsoreferredtoas arguments . Asetofmajorrelation
+types and their subtypes are deﬁned by ACE. Examples of ACE majorrelationtypesinclude physical (e.g. anentityisphysicallynearanother
+entity), personal/social (e.g. a person is a family member of another
+person), and employment/affiliation (e.g. a person is employed by
+an organization). ACE makes a distinction between relation extractionand relation mention extraction. The former refers to identifying thesemantic relation between a pair of entities based on allthe evidence
+we can gather from the corpus, whereas the latter refers to identifyingindividual mentions of entity relations. Because corpus-level relation ex-traction to a large extent still relies on accurate mention-level relation
+extraction, in the rest of this chapter we do not make any distinction
+between these two problems unless necessary.
+Various techniques have been proposed for relation extraction. The
+most common and straightforward approach is to treat the task as aclassiﬁcation problem: Given a pair of entities co-occurring in the samesentence, can we classify the relation between the two entities into oneof the predeﬁned relation types? Although it is also possible for rela-
+tion mentions to cross sentence boundaries, such cases are less frequent
+and hard to detect. Existing work therefore mostly focuses on relationextraction within sentence boundaries.
+There have been a number of studies following the classiﬁcation ap-
+proach [38, 71, 37, 18, 19]. Feature engineering is the most criticalstep of this approach. An extension of the feature-based classiﬁcationapproach is to deﬁne kernels rather than features and to apply kernel
+machinessuchassupportvectormachinestoperformclassiﬁcation. Ker-Information Extraction from Text 23
+nels deﬁned over word sequences [14], dependency trees [26], dependency
+paths [13] and parse trees [67, 68] have been proposed.
+Both feature-based and kernel-based classiﬁcation methods require a
+large amount of training data. Another major line of work on relationextraction is weakly supervised relation extraction from large corporathat does not rely on the availability of manually labeled training data.
+One approach is the bootstrapping idea to start with a small set of seed
+examples and iteratively ﬁnd new relation instances as well as new ex-traction patterns. Representative work includes the Snowball system [3].Another approach is distant supervision that makes use of known rela-tion instances from existing knowledge bases such as Freebase [50].
+3.1 Feature-based Classiﬁcation
+A typical approach to relation extraction is to treat the task as a clas-
+siﬁcation problem [38, 71, 37, 18, 19]. Speciﬁcally, any pair of entities
+co-occurring in the same sentence is considered a candidate relation in-
+stance. The goal is to assign a class label to this instance where the classlabel is either one of the predeﬁned relation types or nilfor unrelated
+entity pairs. Alternatively, a two-stage classiﬁcation can be performedwhere at the ﬁrst stage whether two entities are related is determinedand at the second stage the relation type for each related entity pair isdetermined.
+Classiﬁcation approach assumes that a training corpus exists in which
+all relation mentions for each predeﬁned relation type have been man-ually annotated. These relation mentions are used as positive trainingexamples. Entitypairsco-occurringin thesamesentencebutnot labeledare used as negative training examples. Each candidate relation instanceis represented by a set of features that are carefully chosen. Standardlearning algorithms such as support vector machines and logistic regres-
+sion can then be used to train relation classiﬁers.
+Feature engineering is a critical step for this classiﬁcation approach.
+Researchers have examined a wide range of lexical, syntactic and seman-tic features. We summarize some of the most commonly used featuresas follows:
+Entity features: Oftentimes the two argument entities, including
+the entity words themselves and the entity types, are correlatedwith certain relation types. In the ACE data sets, for example,entity words such as father,mother,brotherandsisterand the
+personentity type are all strong indicators of the familyrelation
+subtype.24 MINING TEXT DATA
+Lexical contextual features: Intuitively the contexts surround-
+ing the two argument entities are important. The simplest way toincorporate evidence from contexts is to use lexical features. For
+example, if the word founded occurs between the two arguments,
+they are more likely to have the FounderOf relation.
+Syntactic contextual features: Syntactic relations between the
+twoargumentsorbetweenanargumentandanotherwordcanoften
+be useful. For example, if the ﬁrst argument is the subject of the
+verbfounded and the second argument is the object of the verb
+founded, then one can almost immediately tell that the FounderOf
+relation exists between the two arguments. Syntactic features canbe derived from parse trees of the sentence containing the relationinstance.
+Background knowledge: Chan and Roth studied the use of
+background knowledge for relation extraction [18]. An example isto make use of Wikipedia. If two arguments co-occur in the sameWikipedia article, the content of the article can be used to check
+whether the two entities are related. Another example is word
+clusters. For example, if we can group all names of companies suchasIBMandAppleinto the same word cluster, we achieve a level
+of abstraction higher than words and lower than the general entitytype organization . This level of abstraction may help extraction
+of certain relation types such as Acquire between two companies.
+Jiang and Zhai proposed a framework to organize the features used
+for relation extraction such that a systematic exploration of the feature
+space can be conducted [37]. Speciﬁcally, a relation instance is repre-
+sented as a labeled, directed graph G=(V,E,A,B ), where Vis the set
+of nodes in the graph, Eis the set of directed edges in the graph, and
+AandBare functions that assign labels to the nodes.
+First, for each node v∈V,A(v)={a
+1,a2,...,a |A(v)|}is a set of at-
+tributes associated with node v, whereai∈Σ, and Σ is an alphabet that
+contains all possible attribute values. For example, if node vrepresents
+a token, then A(v) can include the token itself, its morphological base
+form, its part-of-speech tag, etc. If valso happens to be the head word
+ofarg1orarg2, thenA(v) can also include the entity type. Next, func-
+tionB:V→{0,1,2,3}is introduced to distinguish argument nodes
+from non-argument nodes. For each node v∈V,B(v) indicates how
+nodevis related to arg1andarg2. 0 indicates that vdoes not cover any
+argument, 1 or 2 indicates that vcoversarg1orarg2, respectively, and 3
+indicates that vcovers both arguments. In a constituency parse tree, aInformation Extraction from Text 25
+NNS
+hundredsIN
+ofNNP
+Palestinians
+PersonVBD
+convergedIN
+onDT
+theNN
+square
+Bounded-Area0 0 1 0 0 0 2Person VBD1 0
+Bounded-Area2
+Figure 2.4. Anexamplesequencerepresentation. Thesubgraphontheleftrepresents
+a bigram feature. The subgraph on the right represents a unigram feature that states
+the entity type of arg2.
+NNS
+hundredsIN
+ofNNP
+Palestinians
+PersonVBD
+convergedIN
+onDT
+theNN
+square
+Bounded-Area0 0 1 0 0 0 2NPB NPBPPNP
+11
+01S
+VP
+PP
+NPB3
+2
+2
+2on DT Bounded-Area0 0 2PP
+NPB2
+2
+Figure 2.5. An example constituency parse tree representation. The subgraph rep-
+resents a subtree feature (grammar production feature).
+nodevmay represent a phrase and it can possibly cover both arguments.
+Figures 2.4, 2.5 and2.6show three relation instance graphs based on the
+token sequence, the constituency parse tree and the dependency parse
+tree, respectively.
+Given the above deﬁnition of relation instance graphs, a feature of
+a relation instance captures part of the attributive and/or structuralproperties of the relation instance graph. Therefore, it is natural todeﬁne a feature as a subgraph of the relation instance graph. For-mally, given a graph G=(V,E,A,B ), which represents a single relation
+instance, a feature that exists in this relation instance is a subgraphG
+/prime=(V/prime,E/prime,A/prime,B/prime) that satisﬁes the following conditions: V/prime⊆V,
+E/prime⊆E,a n d∀v∈V/prime,A/prime(v)⊆A(v),B/prime(v)=B(v).26 MINING TEXT DATA
+NNS
+hundredsIN
+ofNNP
+Palestinians
+PersonVBD
+convergedIN
+onDT
+theNN
+square
+Bounded-Area0 0 1 0 0 0 2of Palestinians1 0
+Figure 2.6. An example dependency parse tree representation. The subgraph repre-
+sents a dependency relation feature between arg1Palestinians and of.
+It can be shown that many features that have been explored in pre-
+vious work on relation extraction can be transformed into this graphic
+representation. Figures 2.4, 2.5 and 2.6 show some examples.
+This framework allows a systematic exploration of the feature space
+for relation extraction. Toexplore the feature space, Jiang and Zhai con-sideredthreelevelsofsmallunitfeaturesinincreasingorderoftheircom-plexity: unigram features, bigram features and trigram features. Theyfound that a combination of features at diﬀerent levels of complexityand from diﬀerent sentence representations, coupled with task-orientedfeature pruning, gave the best performance.
+3.2 Kernel Methods
+An important line of work for relation extraction is kernel-based clas-
+siﬁcation. In machine learning, a kernel or kernel function deﬁnes theinner product of two observed instances represented in some underlyingvector space. It can also be seen as a similarity measure for the observa-tions. The major advantage of using kernels is that observed instancesdo not need to be explicitly mapped to the underlying vector space inorder for their inner products deﬁned by the kernel to be computed. We
+will use the convolution tree kernel to illustrate this idea below.
+There are generally three types of kernels for relation extraction:
+sequence-based kernels, tree-based kernels and composite kernels.
+3.2.1 Sequence-based Kernels. Bunescu and Mooney de-
+ﬁned a simple kernel based on the shortest dependency paths between
+two arguments [13]. Two dependency paths are similar if they have thesame length and they share many common nodes. Here a node can berepresented by the word itself, its part-of-speech tag, or its entity type.Thus the two dependency paths “protestors →seized←stations” and
+“troops→raided←churches” have a non-zero similarity value because
+they can both be represented as “Person →VBD←Facility,” althoughInformation Extraction from Text 27
+they do not share any common word. A limitation of this kernel is that
+any two dependency paths with diﬀerent lengths have a zero similarity.
+In [14], Bunescu and Mooney introduced a subsequence kernel where
+the similarity between two sequences is deﬁned over their similar subse-quences. Speciﬁcally, each node in a sequence is represented by a featurevector and the similarity between two nodes is the inner product of theirfeature vectors. The similarity between two subsequences of the samelength is deﬁned as the product of the similarities of each pair of theirnodes in the same position. The similarity of two sequences is thendeﬁned as a weighted sum of the similarities of all the subsequences of
+the same length from the two sequences. The weights are introduced to
+penalize long common subsequences. Bunescu and Mooney tested theirsubsequence kernel for protein-protein interaction detection.
+3.2.2 Tree-based Kernels. Tree-based kernels use the same
+idea of using common substructures to measure similarities. Zelenkoet al. deﬁned a kernel on the constituency parse trees of relation in-stances [67]. The main motivation is that if two parse trees share manycommon subtree structures then the two relation instances are similarto each other. Culotta and Sorensen extended the idea to dependencyparse trees [26]. Zhang et al. [68] further applied the convolution treekernel initially proposed by Collins and Duﬀy [24] to relation extraction.
+This convolution tree kernel-based method was later further improved
+by Qian et al. [53] and achieved a state-of-the-art performance of around77% of F-1 measure on the benchmark ACE 2004 data set.
+We now brieﬂy discuss the convolution tree kernels. As we explained
+earlier, a kernel function corresponds to an underlying vector space inwhich the observed instances can be represented. For convolution treekernels, each dimension of this underlying vector space corresponds to
+a subtree. To map a constituency parse tree to a vector in this vector
+space, we simply enumerate all the subtrees contained in the parse tree.If a subtree ioccursktimes in the parse tree, the value for the dimen-
+sion corresponding to iis set to k. Only subtrees containing complete
+grammar production rules are considered. Figure 2.7 shows an example
+parse tree and all the subtrees under the NP “the company.”
+Formally, given two constituency parse trees T
+1andT2, the convolu-
+tion tree kernel Kis deﬁned as follows:
+K(T1,T2)=/summationdisplay
+n1∈N 1/summationdisplay
+n2∈N 2/summationdisplay
+iIi(n1)Ii(n2). (2.6)28 MINING TEXT DATA
+Figure 2.7. Left: The constituency parse tree of a simple sentence. Right: All the
+subtrees of the NP “the company” considered in convolution tree kernels.
+HereN1andN2are the sets of all nodes in T1andT2respectively. i
+denotes a subtree in the feature space. Ii(n) is 1 if subtree iis seen
+rooted at node nand 0 otherwise.
+It is not eﬃcient to directly compute Kas deﬁned in Equation 2.6. In-
+stead, we can deﬁne C(n1,n2)=/summationtext
+iIi(n1)Ii(n2).C(n1,n2) can then be
+computed in polynomial time based on the following recursive property:
+If the grammar productions at n1andn2are diﬀerent, then the
+value ofC(n1,n2)i s0 .
+If the grammar productions at n1andn2are the same and n1and
+n2are pre-terminals, then C(n1,n2) is 1. Here pre-terminals are
+nodes directly above words in a parse tree, e.g. the N,VandDin
+Figure 2.7.
+If the grammar productions at n1andn2are the same and n1and
+n2are not pre-terminals,
+C(n1,n2)=nc(n1)/productdisplay
+j=1(1+C(ch(n1,j),ch(n2,j))),(2.7)
+wherenc(n) is the number of child-nodes of n,a n dch (n,j) is the
+j-th child-node of n. Note that here nc(n1)=nc(n2).
+Withthisrecursiveproperty,convolutiontreekernelscanbeeﬃciently
+computed in O(|N1||N2|) time.
+3.2.3 Composite Kernels. It is possible to combine diﬀerent
+kernels into a composite kernel. This is when we ﬁnd it hard to include
+all the useful features into a single kernel. Zhao and Grishman deﬁnedseveral syntactic kernels such as argument kernel and dependency pathkernel before combing them into a composite kernel [70]. Zhang et al.combined an entity kernel with the convolution tree kernel to form a
+composite kernel [69].Information Extraction from Text 29
+3.3 Weakly Supervised Learning Methods
+Both feature-based and kernel-based classiﬁcation methods for rela-
+tion extraction rely on a large amount of training data, which is expen-sive to obtain. A solution to this problem is weakly supervised learn-ing methods that work with much less training data. The most notableweaklysupervisedmethodforrelationextractionisbootstrapping,which
+starts from a small set of seed relation instances and iteratively learns
+more relation instances and extraction patterns. It has been widely ex-plored [12, 3]. More recently, another learning paradigm called distantsupervision has been proposed to make use of a large number of knownrelation instances in existing large knowledge bases to create trainingdata[50]. Forbothbootstrappinganddistantsupervision, noisytrainingdata is automatically generated. To achieve good performance, careful
+feature selection and pattern ﬁltering need to be carried out.
+3.3.1 Bootstrapping. Arepresentativeworkonbootstrapping
+for relation extraction is the Snowball system developed by Agichtein
+and Gravano [3], which improved over an earlier system called DIPRE
+developed by Brin [12]. The idea behind Snowball is simple. We startwith a set of seed entity pairs that are related through the target rela-tion. For example, if the target relation is HeadquarteredIn ,w em a y
+use seed pairs such as /angbracketleftMicrosoft ,Redmond /angbracketright,/angbracketleftGoogle,Mountain View /angbracketright
+and/angbracketleftFacebook ,Palo Alto /angbracketright. Given a large corpus, we then look for co-
+occurrences of these entity pairs within close proximity. The assumption
+is that if two entities related through the target relation co-occur closely,
+the context in which they co-occur is likely to be a pattern for the target
+relation. For example, we may ﬁnd sentence fragments such as “Google’sheadquarters in Mountain View” and “Redmond-based Microsoft” andextract patterns like “ ORG’s headquarters in LOC”a n d“ LOC-based ORG.”
+With these patterns, we can search the corpus and ﬁnd more /angbracketleftORG,LOC/angbracketright
+entity pairs that have the HeadquarteredIn relation. We add these en-
+tity pairs to the set of seed relation instances and repeat the process.
+More patterns and entity pairs are added to the results until a certaincondition is satisﬁed.
+An important step in bootstrapping methods is to evaluate the qual-
+ity of extraction patterns so as not to include many noisy patternsduring the extraction process. For example, from the seed entity pair/angbracketleftGoogle,Mountain View /angbracketrightwe may also ﬁnd “Google, Mountain View”
+in the corpus. However, the pattern “ ORG,LOC” is not a reliable one
+and thus should not be used. Heuristic methods have been proposed tojudge the quality of an extraction pattern. Usually two factors are con-30 MINING TEXT DATA
+sidered, coverage and precision. Coverage is related to the percentage of
+true relation instances that can be discovered by the pattern. Precisionis related to the percentage of correct relation instances among all the
+relation instances discovered by the pattern.
+3.3.2 Distant Supervision. In bootstrapping only a small
+set of seed entity pairs is used. With the growth of the social Web,much human knowledge has been contributed by a large crowd of users
+and stored in knowledge bases. A well-known example is Wikipedia.
+Another example is Freebase, a knowledge base that stores structuredhumanknowledgesuchasentityrelations[11]. Withsuchfreelyavailableknowledge, it becomes possible to use a large set of entity pairs known tohave a target relation to generate training data. Mintz et al. proposeddistant supervision for relation extraction based on this idea [50]. Theyassume that if two entities participate in a relation, any sentence that
+contain these two entities express that relation. Because this assumption
+does not always hold, Mintz et al. use features extracted from diﬀer-ent sentences containing the entity pair to create a richer feature vectorthat is supposed to be more reliable. They deﬁne lexical, syntactic andnamed entity tag features. They use standard multi-class logistic regres-sion as the classiﬁcation algorithm. Their experiments show that thismethod can reach almost 70% of precision based on human judgment.
+Nguyen and Moschitti further used knowledge from both YAGO and
+Wikipedia documents for distant supervision and achieved around 74%F-1 measure [51].
+4. Unsupervised Information Extraction
+In Section 2 and Section 3, we discussed named entity recognition and
+relation extraction where the entity types and relation types are well de-ﬁned in advance based on the application. A large amount of labeled
+training data is also required in order to learn a good named entity rec-
+ognizer or relation extractor. However, both deﬁning the structures forthe information to be extracted and annotating documents according tothe deﬁned structures require human expertise and are time consuming.To alleviate this problem, recently there has been an increasing amountof interest in unsupervised information extraction from large corpora.
+In this section we review some recent studies along this line. We ﬁrst
+discuss relation discovery and template induction where the goal is to
+discover salient relation types or templates for a given domain. The keyidea is to cluster entities or entity pairs based on their lexico-syntacticcontextual features. We then discuss open information extraction whereInformation Extraction from Text 31
+the goal is to extract anytype of relation from a large, diverse corpus
+such as the Web.
+4.1 Relation Discovery and Template Induction
+In Section 3 we discussed relation extraction when the types of rela-
+tions to be extracted are known in advance. There are also cases where
+we do not have any speciﬁc relation types in mind but would like todiscover salient relation types from a given corpus. For example, given aset of articles reporting hurricane events, it would be useful if we couldautomatically discover that one of the most important relations for thisdomain is the hitrelation between a hurricane and the place being hit.
+Shinyama and Sekine ﬁrst proposed to study this problem, which they
+referred to as Unrestricted Relation Discovery [60]. They started by col-
+lecting a large number of news articles from diﬀerent news sources onthe Web. They then used simple clustering based on lexical similarity toﬁnd articles talking about the same event. In this way they could enrichthe feature representation of an entity using its multiple occurrences indiﬀerent articles. Next they performed syntactic parsing and extractednamed entities from these articles. Each named entity could then be
+represented by a set of syntactic patterns as its features. For example,
+a pattern may indicate that the entity is the subject of the verb hit.
+Finally, they clustered pairs of entities co-occurring in the same arti-cle using their feature representations. The end results were tables inwhich rows corresponded to diﬀerent articles and columns correspondedto diﬀerent roles in a relation. They were able to achieve around 75% ofaccuracy for the discovered tables.
+Rosenfeld and Feldman formulated unsupervised relation discovery in
+a more general way [57]. It is assumed that the input of the problemconsists of entity pairs together with their contexts. An unsupervised re-lation discovery algorithm clusters these entity pairs into disjoint groupswhere each group represents a single semantic relation. There is also agarbage cluster to capture unrelated entity pairs or unimportant rela-tions. The contexts for each entity pair consist of the contexts of each
+entity and the contexts of the two entities’ co-occurrences. An entity
+pair can be represented by a set of features derived from the contexts.Rosenfeld and Feldman considered only surface pattern features. Forexample, “ arg
+1, based in arg2” is a pattern to capture a co-occurrence
+context between the two entities. For clustering, Rosenfeld and Feldmanconsidered hierarchical agglomerative clustering and K-means cluster-
+ing. Their method was able to discover relations such as CityOfState
+andEmployedIn .32 MINING TEXT DATA
+While relation discovery considers binary relations only, a more com-
+plex task is to automatically induce an information extraction template,which may contain multiple slots playing diﬀerent semantic roles. The
+most straightforward solution is to identify candidates of role ﬁllers ﬁrst
+and then cluster these candidates into clusters. However, this simpliﬁedclustering approach does not consider an important observation, whichis that a single document tends to cover diﬀerent slots. To remedy thisproblem, Marx et al. proposed a cross-component clustering algorithmfor unsupervised information extraction [47]. The algorithm assigns acandidate from a document to a cluster based on the candidate’s feature
+similarity with candidates from other documents only. In other words,
+the algorithm prefers to separate candidates from the same documentinto diﬀerent clusters. Leung et al. proposed a generative model tocapture the same intuition [43]. Speciﬁcally, they assume a prior distri-bution over the cluster labels of candidates in the same document wherethe prior prefers a diversiﬁed label assignment. Their experiments showthat clustering results are better with this prior than without using the
+prior.
+The aforementioned two studies assume a single template and do not
+automatically label the discovered slots. Chambers and Jurafsky pre-sented a complete method that is able to discover multiple templatesfrom a corpus and give meaningful labels to discovered slots [17]. Specif-ically, their method performs two steps of clustering where the ﬁrst clus-tering step groups lexical patterns that are likely to describe the same
+type of events and the second clustering step groups candidate role ﬁllers
+into slots for each type of events. A slot can be labeled using the syn-tactic patterns of the corresponding slot ﬁllers. For example, one of theslots discovered by their method for the bombing template is automat-ically labeled as “Person/Organization who raids, questions, discovers,investigates, diﬀuses, arrests.” A human can probably infer from thedescription that this refers to the policeslot.
+4.2 Open Information Extraction
+Relation discovery and template induction usually work on a corpus
+from a single domain, e.g. articles describing terrorism events, becausethe goal is to discover the most salient relations from such a domain-speciﬁc corpus. In some cases, however, our goal is to ﬁnd all the poten-tially useful facts from a large and diverse corpus such as the Web. Thisis the focus of open information extraction, ﬁrst introduced by Banko etal. [6].Information Extraction from Text 33
+Open information extraction does not assume any speciﬁc target re-
+lation type. It makes a single pass over the corpus and tries to extractas many relations as possible. Because no relation type is speciﬁed in
+advance, part of the extraction results is a phrase that describes the re-
+lation extracted. In other words, open information extraction generates/angbracketleftarg
+1,rel,arg2/angbracketrighttuples.
+In [7], Banko and Etzioni introduced an unlexicalized CRF-based
+method for open information extraction. The method is based on theobservation that although diﬀerent relation types have very diﬀerent se-mantic meanings, there exists a small set of syntactic patterns that cover
+the majority of semantic relation mentions. It is therefore possible to
+train a relation extraction model that extracts arbitrary relations. Thekey is not to include lexical features in the model.
+Later work on open information extraction introduced more heuristics
+to improve the quality of the extracted relations. In [29], for example,Fader et al. proposed the following two heuristics: (1) A multi-wordrelation phrase must begin with a verb, end with a preposition, and be
+a contiguous sequence of words in the sentence. (2) A binary relation
+phrase ought to appear with at least a minimal number of distinct ar-gument pairs in a large corpus. It is found that the two heuristics caneﬀectively lead to better extraction results.
+5. Evaluation
+To evaluate information extraction systems, manually annotated doc-
+uments have to be created. For domain-speciﬁc information extractionsystems, theannotated documentshavetocomefromthetarget domain.
+For example, to evaluate gene and protein name extraction, biomedical
+documents such as PubMed abstracts are used. But if the purpose is toevaluate general information extraction techniques, standard benchmarkdata sets can be used. Commonly used evaluation data sets for namedentity recognition include the ones from MUC [33], CoNLL-2003 [63]and ACE [1]. For relation extraction, ACE data sets are usually used.
+The typical evaluation metrics for information extraction are preci-
+sion, recall and F-1 scores. Precision measures the percentage of correct
+instances among the identiﬁed positive instances. Recall measures thepercentage of correct instances that can be identiﬁed among all the pos-itive instances. F-1 is the geometric mean of precision and recall.
+For named entity recognition, strictly speaking a correctly identiﬁed
+named entity must satisfy two criteria, namely, correct entity boundaryand correct entity type. Most evaluation is based on the exact match
+of entity boundaries. However, it is worth nothing that in some cases34 MINING TEXT DATA
+credit should also be given to partial matches, e.g. when the goal is only
+to tell whether an entity is mentioned in a document or a sentence [64].
+For relation extraction, as we have mentioned, there are two levels of
+extraction, corpus-level and mention-level. While evaluation at mention
+level requires annotated relation mention instances, evaluation at corpuslevel requires only truly related entity pairs, which may be easier toobtain or annotate than relation mentions.
+Currently, the state-of-the-art named entity recognition methods can
+achieve around 90% of F-1 scores when trained and tested on the samedomain [63]. It is generally observed that person entities are easier to
+extract, followed by locations and then organizations. It is important
+to note that when there is domain change, named entity recognitionperformance can drop substantially. There have been several studiesaddressing the domain adaptation problem for named entity recognition(e.g. [36, 5]).
+For relation extraction, the state-of-the-art performance is lower than
+that of named entity recognition. On the ACE 2004 benchmark data
+set, for example, the best F-1 score is around 77% for the seven major
+relation types [53].
+6. Conclusions and Summary
+Information extraction is an important text mining problem and has
+beenextensivelystudiedinareassuchasnaturallanguageprocessing, in-formation retrieval and Web mining. In this chapter we reviewed somerepresentative work on information extraction, in particular work onnamed entity recognition and relation extraction. Named entity recog-
+nition aims at ﬁnding names of entities such as people, organizations
+and locations. State-of-the-art solutions to named entity recognitionrely on statistical sequence labeling algorithms such as maximum en-tropy Markov models and conditional random ﬁelds. Relation extrac-tion is the task of ﬁnding the semantic relations between entities fromtext. Current state-of-the-art methods use carefully designed featuresor kernels and standard classiﬁcation to solve this problem.
+Althoughsupervisedlearninghasbeenthedominatingapproachtoin-
+formation extraction, weakly supervised methods have also drawn muchattention. Bootstrapping is a major technique for semi-supervised rela-tion extraction. More recently, with large amounts of knowledge madeavailable in online knowledge bases, distant supervision provides a newparadigm of learning without training data.
+Unsupervisedinformationextractionaimstoautomaticallyinducethe
+structure of the information to be extracted such as the relation typesInformation Extraction from Text 35
+and the templates. Clustering is the main technique used for unsuper-
+vised information extraction.
+WiththefastgrowthoftextualdataontheWeb,itisexpectedthatfu-
+ture work on information extraction will need to deal with even more di-verse and noisy text. Weakly supervised and unsupervised methods willplay a larger role in information extraction. The various user-generatedcontent on the Web such as Wikipedia articles will also become impor-tant resources to provide some kind of supervision.
+References
+[1] Automatic content extraction (ACE) evaluation. http://www.itl.
+nist.gov/iad/mig/tests/ace/.
+[2] BioCreAtIvE. http://www.biocreative.org/ .
+[3] Eugene Agichtein and Luis Gravano. Snowball: Extracting relations
+from large plain-text collections. In Proceedings of the 5th ACM
+Conference on Digital Libraries, pages 85–94, 2000.
+[4] Douglas E. Appelt, Jerry R. Hobbs, John Bear, David Israel, and
+Mabry Tyson. FASTUS: A ﬁnite-state processor for informationextraction from real-world text. In Proceedings of the 13th Interna-
+tional Joint Conference on Artiﬁcial Intelligence , 1993.
+[5] Andrew Arnold, Ramesh Nallapati, and William W. Cohen. Ex-
+ploiting feature hierarchy for transfer learning in named entityrecognition. In Proceedings of the 46th Annual Meeting of the As-
+sociation for Computational Linguistics, pages 245–253, 2008.
+[6] Michele Banko, Michael J. Cafarella, Stephen Soderland, Matthew
+Broadhead, and Oren Etzioni. Open information extraction from
+the Web. In Proceedings of the 20th International Joint Conference
+on Artiﬁcial Intelligence , pages 2670–2676, 2007.
+[7] Michele Banko and Oren Etzioni. The tradeoﬀs between open and
+traditional relation extraction. In Proceedings of the 46th Annual
+Meeting of the Association for Computational Linguistics ,pages28–
+36, 2008.
+[8] Oliver Bender, Franz Josef Och, and Hermann Ney. Maximum en-
+tropy models for named entity recognition. In Proceedings of the
+7th Conference on Natural Language Learning , 2003.
+[9] Adam L. Bergert, Vincent J. Della Pietra, and Stephen A.
+Della Pietra. A maximum entropy approach to natural language
+processing. Computational Linguistics, 22(1):39–71, March 1996.
+[10] Daniel M. Bikel, Scott Miller, Richard Schwartz, and Ralph
+Weischedel. Nymble: a high-performance learning name-ﬁnder. In36 MINING TEXT DATA
+Proceedings of the 5th Conference on Applied Natural Language Pro-
+cessing, pages 194–201, 1997.
+[11] Kurt Bollacker, Colin Evans, Praveen Paritosh, Tim Sturge, and
+Jamie Taylor. Freebase: a collaboratively created graph databasefor structuring human knowledge. In Proceedings of the 2008 ACM
+SIGMOD International Conference on Management of Data , pages
+1247–1250, 2008.
+[12] Sergey Brin. Extracting patterns and relations from the World
+Wide Web. In Proceedings of the 1998 International Workshop on
+the Web and Databases , 1998.
+[13] Razvan Bunescu and Raymond Mooney. A shortest path depen-
+dency kernel for relation extraction. In Proceedings of the Human
+Language Technology Conference and the Conference on EmpiricalMethods in Natural Language Processing , pages 724–731, 2005.
+[14] Razvan Bunescu and Raymond Mooney. Subsequence kernels for
+relation extraction. In Advances in Neural Information Processing
+Systems 18 , pages 171–178. 2006.
+[15] Richard H. Byrd, Jorge Nocedal, and Robert B. Schnabel. Repre-
+sentationsofquasi-newtonmatricesandtheiruseinlimitedmemorymethods. Journal of Mathematical Programming , 63(2):129–156,
+January 1994.
+[16] Mary Elaine Caliﬀ and Raymond J. Mooney. Relational learning of
+pattern-match rules for information extraction. In Proceedings of
+the 16th National Conference on Artiﬁcial Intelligence and the 11thInnovative Applications of Artiﬁcial Intelligence Conference , pages
+328–334, 1999.
+[17] Nathanael Chambers and Dan Jurafsky. Template-based informa-
+tion extraction without the templates. In Proceedings of the 49th
+Annual Meeting of the Association for Computational Linguistics:Human Language Technologies , pages 976–986, 2011.
+[18] Yee Seng Chan and Dan Roth. Exploiting background knowledge
+for relation extraction. In Proceedings of the 23rd I nternational
+Conference on Computational Linguistics , pages 152–160, 2010.
+[19] Yee Seng Chan and Dan Roth. Exploiting syntactico-semantic
+structures for relation extraction. In Proceedings of the 49th Annual
+Meeting of the Association for Computational Linguistics , pages
+551–560, 2011.
+[20] Chia-Hui Chang, Mohammed Kayed, Moheb Ramzy Girgis, and
+Khaled F. Shaalan. A survey of Web information extraction sys-Information Extraction from Text 37
+tems.IEEE Transactions on Knowledge and Data Engineering ,
+18(10):1411–1428, October 2006.
+[21] TaoCheng,XifengYan,andKevinChen-ChuanChang. Supporting
+entity search: a large-scale prototype search engine. In Proceedings
+of the 2007 ACM SIGMOD International Conference on Manage-ment of Data , pages 1144–1146, 2007.
+[22] Hai Leong Chieu and Hwee Tou Ng. Named entity recognition
+with a maximum entropy approach. In Proceedings of the Seventh
+Conference on Natural Language Learning , pages 160–163, 2003.
+[23] Fabio Ciravegna. Adaptive information extraction from text by
+rule induction and generalisation. In Proceedings of the 17th In-
+ternational Joint Conference on Artiﬁcial Intelligence - Volume 2 ,
+pages 1251–1256, 2001.
+[24] Michael Collins and Nigel Duﬀy. Convolution kernels for natural
+language. In Advances in Neural Information Processing Systems
+13. 2001.
+[25] Valter Crescenzi, Giansalvatore Mecca, and Paolo Merialdo. Road-
+Runner: Towards automatic data extraction from large Web sites.InProceedings of the 27th International Conference on Very Large
+Data Bases , pages 109–118, 2001.
+[26] Aron Culotta and Jeﬀrey Sorensen. Dependency tree kernels for
+relation extraction. In Proceedings of the 42nd Annual Meeting of
+the Association for Computational Linguistics ,pages423–429,2004.
+[27] James R. Curran and Stephen Clark. Language independent NER
+using a maximum entropy tagger. In Proceedings of the 7th Con-
+ference on Natural Language Learning , 2003.
+[28] Gerald DeJong. Prediction and substantiation: A new approach to
+natural language processing. Cognitive Science , 3:251–173, 1979.
+[29] Anthony Fader, Stephen Soderland, and Oren Etzioni. Identifying
+relationsforopeninformationextraction. In Proceedings of the 2011
+Conference on Empirical Methods in Natural Language Processing ,
+pages 1535–1545, 2011.
+[30] Jenny Finkel, Shipra Dingare, Christopher D. Manning, Malvina
+Nissim,BeatriceAlex,andClaireGrover. Exploringtheboundaries:gene and protein identiﬁcation in biomedical text. BMC Bioinfor-
+matics, 6(Suppl 1)(S5), 2005.
+[31] Sergio Flesca, Giuseppe Manco, Elio Masciari, Eugenio Rende, and
+Andrea Tagarelli. Web wrapper induction: a brief survey. AI Com-
+munications , 17(2):57–61, April 2004.38 MINING TEXT DATA
+[32] Ralph Grishman, John Sterling, and Catherine Macleod. New York
+University: Description of the PROTEUS system as used for MUC-3. InProceedings of the 3rd Message Understadning Conference ,
+pages 183–190, 1991.
+[33] Ralph Grishman and Beth Sundheim. Message understanding
+conference-6: A brief history. In Proceedings of the 16th Inter-
+national Conference on Computational Linguistics , pages 466–471,
+1996.
+[34] Guoping Hu, Jingjing Liu, Hang Li, Yunbo Cao, Jian-Yun Nie, and
+Jianfeng Gao. A supervised learning approach to entity search.
+InProceedings of the 3rd Asia Information Retri eval Symposium ,
+pages 54–66, 2006.
+[35] Hideki Isozaki and Hideto Kazawa. Eﬃcient support vector classi-
+ﬁers for named entity recognition. In Proceedings of the 19th Inter-
+national Conference on Computational Linguistics , 2002.
+[36] Jing Jiang and ChengXiang Zhai. Exploiting domain structure for
+named entity recognition. In Proceedings of the Human Language
+Technology Conference of the North American Chapter of the As-sociation for Computational Linguistics , pages 74–81, 2006.
+[37] Jing Jiang and ChengXiang Zhai. A systematic exploration of the
+feature space for relation extraction. In Proceedings of the Human
+Language Technology Conference of the North American Chapterof the Association for Computational Linguistics , pages 113–120,
+2007.
+[38] Nanda Kambhatla. Combining lexical, syntactic, and semantic fea-
+tures with maximum entropy models for extracting relations. In
+The Companion Volume to the Pro ceedings of 42st Annual Meeting
+of the Association for Computational Linguistics , pages 178–181,
+2004.
+[39] Dan Klein, Joseph Smarr, Huy Nguyen, and Christopher D. Man-
+ning. Named entity recognition with character-level models. InProceedings of the 7th Conference on Natural Language Learning ,
+2003.
+[40] Nicholas Kushmerick, Daniel S. Weld, and Robert Doorenbos.
+Wrapper induction for information extraction. In Proceedings of
+the 15th International Joint Conference on Artiﬁcial Intelligence ,
+1997.
+[41] John D. Laﬀerty, Andrew McCallum, and Fernando C. N. Pereira.
+Conditional random ﬁelds: Probabilistic models for segmenting andInformation Extraction from Text 39
+labeling sequence data. In Proceedings of the 18th International
+Conference on Machine Learning , pages 282–289, 2001.
+[42] Wendy Lehnert, Claire Cardie, Divid Fisher, Ellen Riloﬀ, and
+Robert Williams. University of Massachusetts: Description of theCIRCUS system as used for MUC-3. In Proceedings of the 3rd Mes-
+sage Understadning Conference , pages 223–233, 1991.
+[43] Cane Wing-ki Leung, Jing Jiang, Kian Ming A. Chai, Hai Leong
+Chieu, and Loo-Nin Teow. Unsupervised information extractionwith distributional prior knowledge. In Proceedings of the 2011
+Conference on Empirical Methods in Natural Language Processing ,
+pages 814–824, 2011.
+[44] Xin Li and Dan Roth. Learning question classiﬁers. In Proceedings
+of the 19th International Conference on Computational Linguistics ,
+pages 1–7, 2002.
+[45] Liu Ling, Calton Pu, and Wei Han. XWRAP: An XML-enabled
+wrapper construction system for Web information sources. In Pro-
+ceedings of the 16th International Conference on Data Engineering ,
+pages 611–621, 2000.
+[46] Robert Malouf. A comparison of algorithms for maximum entropy
+parameter estimation. In Proceedings of the 6th Conference on Nat-
+ural Language Learning , 2002.
+[47] Zvika Marx, Ido Dagan, and Eli Shamir. Cross-component cluster-
+ing for template learning. In Proceedings of the 2002 ICML Work-
+shop on Text Learning , 2002.
+[48] Andrew McCallum, Dayne Freitag, and Fernando C. N. Pereira.
+Maximum entropy Markov models for information extraction andsegmentation. In Proceedings of the 17th International Conference
+on Machine Learning , pages 591–598, 2000.
+[49] Andrew McCallum and Wei Li. Early results for named entity
+recognition with conditional random ﬁelds, feature induction and
+web-enhanced lexicons. In Proceedings of the 7th Conference on
+Natural Language Learning , 2003.
+[50] Mike Mintz, Steven Bills, Rion Snow, and Daniel Jurafsky. Dis-
+tant supervision for relation extraction without labeled data. InProceedings of the Joint Conference of the 47th Annual Meeting of
+the Association for Computational Linguistics and the 4th Inter-national Joint Conference on Natural Language Processing of theAFNLP, pages 1003–1011, 2009.
+[51] Truc Vien T. Nguyen and Alessandro Moschitti. End-to-end re-
+lation extraction using distant supervision from external semantic40 MINING TEXT DATA
+repositories. In Proceedings of the 49th Annual Meeting of the As-
+sociation for Computational Linguistics , pages 277–282, 2011.
+[52] Tomoko Ohta, Yuka Tateisi, and Jin-Dong Kim. The GENIA cor-
+pus: an annotated research abstract corpus in molecular biologydomain. In Proceedings of the 2nd International Conference on Hu-
+man Language Technology Research , pages 82–86, 2002.
+[53] Longhua Qian, Guodong Zhou, Fang Kong, Qiaoming Zhu, and
+Peide Qian. Exploiting constituent dependencies for tree kernel-basedsemanticrelationextraction. In Proceedings of the 22nd Inter-
+national Conference on Computational Linguistics , pages 697–704,
+2008.
+[54] Lawrence R. Rabiner. A tutorial on hidden Markov models and
+selected applications in speech recognition. 77, 77(2):257–286, 1989.
+[55] Lance A. Ramshaw and Mitch P. Marcus. Text chunking using
+transformation-based learning. In Proceedings of the 3rd Workship
+on Very Large Corpora , pages 82–94, 1995.
+[56] Lisa F. Rau. Extracting company names from text. In Proceedings
+of the 7th IEEE Conference on Artiﬁcial Intelligence Applications ,
+pages 29–32, 1991.
+[57] Benjamin Rosenfeld and Ronen Feldman. Clustering for unsuper-
+visedrelationidentiﬁcation. In Proceedings of the 16th ACM confer-
+ence on Conference on Information and Knowledge Management ,
+pages 411–418, 2007.
+[58] Sunita Sarawagi and William W. Cohen. Semi-markov conditional
+random ﬁelds for information extraction. In Advances in Neural
+Information Processing Systems 17 , pages 1185–1192. 2005.
+[59] Burr Settles. Biomedical named entity recognition using condi-
+tional random ﬁelds and rich feature sets. In Proceedings of the
+International Joint Workshop on Natural Language Processing inBiomedicine and Its Applications , pages 104–107, 2004.
+[60] Yusuke Shinyama and Satoshi Sekine. Preemptive information ex-
+traction using unrestricted relation discovery. In Proceedings of the
+Human Language Technology Conference of the North AmericanChapter of the Association for Computational Linguistics , pages
+304–311, 2006.
+[61] Stephen Soderland. Learning information extraction rules for semi-
+structuredandfreetext. Machine Learning ,34(1-3):233–272,Febru-
+ary 1999.
+[62] Stephen Soderland, David Fisher, Jonathan Aseltine, and Wendy
+Lehnert. CRYSTAL inducing a conceptual dictionary. In Proceed-Information Extraction from Text 41
+ings of the 14th International Joint Conference on Artiﬁcial Intel-
+ligence, pages 1314–1319, 1995.
+[63] Erik F. Tjong Kim Sang and Fien De Meulder. Introduction to
+the CoNLL-2003 shared task: Language-independent named entity
+recognition. In Proceedings of the 7th Conference on Natural Lan-
+guage Learning , pages 142–147, 2003.
+[64] Richard Tzong-Han Tsai, Shih-Hung Wu, Wen-Chi Chou, Yu-Chun
+Lin, Ding He, Jieh Hsiang, Ting-Yi Sung, and Wen-Lian Hsu. Var-ious criteria in the evaluation of biomedical named entity recogni-tion.BMC Bioinformatics , 7(92), 2006.
+[65] Vladimir Vapnik. Statistical Learning Theory . John Wiley & Sons,
+2008.
+[66] Fei Wu and Daniel S. Weld. Open information extraction using
+Wikipedia. In Proceedings of the 48th Annual Meeting of the Asso-
+ciation for Computational Linguistics , pages 118–127, 2010.
+[67] Dmitry Zelenko, Chinatsu Aone, and Anthony Richardella. Ker-
+nel methods for relation extraction. Journal of Machine Learning
+Research , 3:1083–1106, February 2003.
+[68] MinZhang, JieZhang, and Jian Su. Exploringsyntacticfeaturesfor
+relationextractionusingaconvolutiontreekernel. In Proceedings of
+the Human Language Technology Conference of the North AmericanChapter of the Association for Computational Linguistics , pages
+288–295, 2006.
+[69] Min Zhang, Jie Zhang, Jian Su, and GuoDong Zhou. A composite
+kernel to extract relations between entities with both ﬂat and struc-tured features. In Proceedings of the 21st International Conference
+on Computational Linguistics and the 44th Annual Meeting of theAssociation for Computational Linguistics , pages 825–832, 2006.
+[70] Shubin Zhao and Ralph Grishman. Extracting relations with inte-
+grated information using kernel methods. In Proceedings of the 43rd
+Annual Meeting of the Association for Computational Linguistics ,
+pages 419–426, 2005.
+[71] GuoDong Zhou, Jian Su, Jie Zhang, and Min Zhang. Exploring
+various knowledge in relation extraction. In Proceedings of the 43rd
+Annual Meeting of the Association for Computational Linguistics ,
+pages 427–434, 2005.Chapter 3
+A SURVEY OF TEXT SUMMARIZATION
+TECHNIQUES
+Ani Nenkova
+University of Pennsylvania
+nenkova@seas.upenn.edu
+Kathleen McKeown
+Columbia University
+kathy@cs.columbia.edu
+Abstract Numerous approaches for identifying important content for automatic
+text summarization have been developed to date. Topic representation
+approaches ﬁrst derive an intermediate representation of the text that
+captures the topics discussed in the input. Based on these representa-
+tions of topics, sentences in the input document are scored for impor-
+tance. In contrast, in indicator representation approaches, the text is
+represented by a diverse set of possible indicators of importance which
+do not aim at discovering topicality. These indicators are combined,
+very often using machine learning techniques, to score the importance
+of each sentence. Finally, a summary is produced by selecting sentences
+inagreedyapproach, choosingthesentencesthatwillgointhesummary
+one by one, or globally optimizing the selection, choosing the best set of
+sentences to form a summary. In this chapter we give a broad overview
+of existing approaches based on these distinctions, with particular at-
+tention on how representation, sentence scoring or summary selection
+strategies alter the overall performance of the summarizer. We also
+point out some of the peculiarities of the task of summarization which
+have posed challenges to machine learning approaches for the problem,
+and some of the suggested solutions1.
+1Portions of this chapter have already appeared in our more detailed overview of summa-
+rization research [67]. The larger manuscript includes sections on generation techniques for
+© Springer Science+Business Media, LLC 2012 43  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_3,

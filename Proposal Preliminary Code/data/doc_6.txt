@@ -1,0 +1,1677 @@
+Chapter 6
+A SURVEY OF TEXT CLASSIFICATION
+ALGORITHMS
+Charu C. Aggarwal
+IBM T. J. Watson Research Center
+Yorktown Heights, NY
+charu@us.ibm.com
+ChengXiang Zhai
+University of Illinois at Urbana-Champaign
+Urbana, IL
+czhai@cs.uiuc.edu
+Abstract Theproblemofclassiﬁcationhasbeenwidelystudiedinthedatamining,
+machine learning, database, and information retrieval communities with
+applications in a number of diverse domains, such as target marketing,
+medical diagnosis, news group ﬁltering, and document organization. In
+this paper we will provide a survey of a wide variety of text classiﬁcation
+algorithms.
+Keywords: Text Classiﬁcation
+1. Introduction
+The problem of classiﬁcation has been widely studied in the database,
+data mining, and information retrieval communities. The problem of
+classiﬁcation is deﬁned as follows. We have a set of training records
+D={X1,...,X N}, such that each record is labeled with a class value
+drawn from a set of kdiﬀerent discrete values indexed by {1...k}.T h e
+training data is used in order to construct a classiﬁcation model , which
+relatesthefeaturesintheunderlyingrecordtooneoftheclasslabels. For
+ag i v e ntest instance for which the class is unknown, the training model
+© Springer Science+Business Media, LLC 2012 163  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_6,164 MINING TEXT DATA
+is used to predict a class label for this instance. In the hard version
+of the classiﬁcation problem, a particular label is explicitly assigned to
+the instance, whereas in the soft version of the classiﬁcation problem,
+a probability value is assigned to the test instance. Other variations ofthe classiﬁcation problem allow ranking of diﬀerent class choices for atest instance, or allow the assignment of multiple labels [52] to a testinstance.
+The classiﬁcation problem assumes categorical values for the labels,
+though it is also possible to use continuous values as labels. The latteris referred to as the regression modeling problem. The problem of text
+classiﬁcation is closely related to that of classiﬁcation of records with
+set-valued features [28]; however, this model assumes that only informa-tion about the presence or absence of words is used in a document. Inreality, the frequency of words also plays a helpful role in the classiﬁca-tion process, and the typical domain-size of text data (the entire lexiconsize) is much greater than a typical set-valued classiﬁcation problem. Abroad survey of a wide variety of classiﬁcation methods may be found in
+[42, 62], and a survey which is speciﬁc to the text domain may be found
+in [111]. A relative evaluation of diﬀerent kinds of text classiﬁcationmethods may be found in [132]. A number of the techniques discussedin this chapter have also been converted into software and are publiclyavailable through multiple toolkits such as the BOWtoolkit [93], Mallot
+[96], WEKA
+1, and LingPipe2.
+The problem of text classiﬁcation ﬁnds applications in a wide variety
+of domains in text mining. Some examples of domains in which textclassiﬁcation is commonly used are as follows:
+News ﬁltering and Organization: Most of the news services
+today are electronic in nature in which a large volume of news arti-cles are created very single day by the organizations. In such cases,it is diﬃcult to organize the news articles manually. Therefore, au-tomated methods can be very useful for news categorization in a
+variety of web portals [78]. This application is also referred to as
+text ﬁltering.
+Document Organization and Retrieval: The above applica-
+tion is generally useful for many applications beyond news ﬁlteringand organization. A variety of supervised methods may be usedfor document organization in many domains. These include largedigital libraries of documents, web collections, scientiﬁc literature,
+1http://www.cs.waikato.ac.nz/ml/weka/
+2http://alias-i.com/lingpipe/A Survey of Text Classiﬁcation Algorithms 165
+or even social feeds. Hierarchically organized document collections
+can be particularly useful for browsing and retrieval [19].
+Opinion Mining: Customer reviews or opinions are often short
+text documents which can be mined to determine useful informa-tion from the review. Details on how classiﬁcation can be used inorder to perform opinion mining are discussed in [89] and Chapter13 in this book.
+Email Classiﬁcation and Spam Filtering: It is often de-
+sirable to classify email [23, 27, 85] in order to determine either
+the subject or to determine junk email [113] in an automated way.This is also referred to as spam ﬁltering oremail ﬁltering .
+A wide variety of techniques have been designed for text classiﬁcation.
+In this chapter, we will discuss the broad classes of techniques, and theiruses for classiﬁcation tasks. We note that these classes of techniques also
+generally exist for other data domains such as quantitative or categorical
+data. Since text may be modeled as quantitative data with frequencieson the word attributes, it is possible to use most of the methods forquantitative data directly on text. However, text is a particular kind ofdata in which the word attributes are sparse, and high dimensional, withlow frequencies on most of the words. Therefore, it is critical to designclassiﬁcation methods which eﬀectively account for these characteristics
+of text. In this chapter, we will focus on the speciﬁc changes which are
+applicable to the text domain. Some key methods, which are commonlyused for text classiﬁcation are as follows:
+Decision Trees: Decision trees are designed with the use of a hi-
+erarchical division of the underlying data space with the use of dif-
+ferent text features. The hierarchical division of the data space is
+designed in order to create class partitions which are more skewedin terms of their class distribution. For a given text instance, wedetermine the partition that it is most likely to belong to, and useit for the purposes of classiﬁcation.
+Pattern (Rule)-based Classiﬁers: In rule-based classiﬁers we
+determine the word patterns which are most likely to be related to
+the diﬀerent classes. We construct a set of rules, in which the left-hand side corresponds to a word pattern, and the right-hand sidecorresponds to a class label. These rules are used for the purposesof classiﬁcation.
+SVM Classiﬁers: SVM Classiﬁers attempt to partition the data
+space with the use of linear or non-linear delineations between the166 MINING TEXT DATA
+diﬀerent classes. The key in such classiﬁers is to determine the
+optimal boundaries between the diﬀerent classes and use them forthe purposes of classiﬁcation.
+Neural Network Classiﬁers: Neuralnetworksareusedinawide
+variety of domains for the purposes of classiﬁcation. In the context
+of text data, the main diﬀerence for neural network classiﬁers is toadapt these classiﬁers with the use of word features. We note thatneural network classiﬁers are related to SVM classiﬁers; indeed,they both are in the category of discriminative classiﬁers, whichare in contrast with the generative classiﬁers [102].
+Bayesian (Generative) Classiﬁers: InBayesianclassiﬁers(also
+called generative classiﬁers), we attempt to build a probabilistic
+classiﬁer based on modeling the underlying word features in diﬀer-
+ent classes. The idea is then to classify text based on the posteriorprobability of the documents belonging to the diﬀerent classes onthe basis of the word presence in the documents.
+Other Classiﬁers: Almost all classiﬁers can be adapted to the
+case of text data. Some of the other classiﬁers include nearestneighbor classiﬁers, and genetic algorithm-based classiﬁers. Wewill discuss some of these diﬀerent classiﬁers in some detail and
+their use for the case of text data.
+The area of text categorization is so vast that it is impossible to cover
+all the diﬀerent algorithms in detail in a single chapter. Therefore, ourgoal is to provide the reader with an overview of the most important
+techniques, and also the pointers to the diﬀerent variations of these
+techniques.
+Feature selection is an important problem for text classiﬁcation. In
+feature selection, we attempt to determine the features which are mostrelevant to the classiﬁcation process. This is because some of the wordsare much more likely to be correlated to the class distribution thanothers. Therefore, a wide variety of methods have been proposed in
+the literature in order to determine the most important features for the
+purpose of classiﬁcation. These include measures such as the gini-indexor the entropy, which determine the level of which the presence of aparticular feature skews the class distribution in the underlying data.We will also discuss the diﬀerent feature selection methods which arecommonly used for text classiﬁcation.
+The rest of this chapter is organized as follows. In the next section, we
+will discuss methods for feature selection in text classiﬁcation. In sectionA Survey of Text Classiﬁcation Algorithms 167
+3, we will describe decision tree methods for text classiﬁcation. Rule-
+based classiﬁers are described in detail in section 4. We discuss naiveBayes classiﬁers in section 5. The nearest neighbor classiﬁer is discussed
+in section 7. In section 7, we will discuss a number of linear classiﬁers,
+such as the SVM classiﬁer, direct regression modeling and the neuralnetwork classiﬁer. A discussion of how the classiﬁcation methods can beadapted to text and web data containing hyperlinks is discussed in sec-tion 8. In section 9, we discuss a number of diﬀerent meta-algorithms forclassiﬁcation such as boosting, bagging and ensemble learning. Section10 contains the conclusions and summary.
+2. Feature Selection for Text Classiﬁcation
+Before any classiﬁcation task, one of the most fundamental tasks that
+needs to be accomplished is that of document representation and featureselection. While feature selection is also desirable in other classiﬁcationtasks, it is especially important in text classiﬁcation due to the highdimensionality of text features and the existence of irrelevant (noisy)features. In general, text can be represented in two separate ways. Theﬁrst is as a bag of words, in which a document is represented as a set of
+words, together with their associated frequency in the document. Such a
+representation is essentially independent of the sequence of words in thecollection. The second method is to represent text directly as strings,
+in which each document is a sequence of words. Most text classiﬁcationmethods use the bag-of-words representation because of its simplicityfor classiﬁcation purposes. In this section, we will discuss some of themethods which are used for feature selection in text classiﬁcation.
+The most common feature selection which is used in both supervised
+and unsupervised applications is that of stop-word removal and stem-ming. Instop-wordremoval, wedeterminethecommonwordsinthedoc-uments which are not speciﬁc or discriminatory to the diﬀerent classes.In stemming, diﬀerent forms of the same word are consolidated into asingle word. For example, singular, plural and diﬀerent tenses are con-solidated into a single word. We note that these methods are not speciﬁc
+to the case of the classiﬁcation problem, and are often used in a vari-
+ety of unsupervised applications such as clustering and indexing. In thecase of the classiﬁcation problem, it makes sense to supervise the featureselection process with the use of the class labels. This kind of selectionprocess ensures that those features which are highly skewed towards thepresence of a particular class label are picked for the learning process.A wide variety of feature selection methods are discussed in [133, 135].
+Many of these feature selection methods have been compared with one168 MINING TEXT DATA
+another, and the experimental results are presented in [133]. We will
+discuss each of these feature selection methods in this section.
+2.1 Gini Index
+One of the most common methods for quantifying the discrimination
+level of a feature is the use of a measure known as the gini-index . Let
+p1(w)...pk(w) be the fraction of class-label presence of the kdiﬀerent
+classes for the word w. In other words, pi(w) is the conditional proba-
+bility that a document belongs to class i, given the fact that it contains
+the word w. Therefore, we have:
+k/summationdisplay
+i=1pi(w) = 1 (6.1)
+Then, the gini-index for the word w, denoted by G(w) is deﬁned3as
+follows:
+G(w)=k/summationdisplay
+i=1pi(w)2(6.2)
+Thevalueofthegini-index G(w)alwaysliesintherange(1 /k,1). Higher
+values of the gini-index G(w) represent indicate a greater discriminative
+power of the word w. For example, when all documents which contain
+wordwbelong to a particular class, the value of G(w) is 1. On the other
+hand, when documents containing word ware evenly distributed among
+thekdiﬀerent classes, the value of G(w)i s1/k.
+One criticism with this approach is that the global class distribution
+may be skewed to begin with, and therefore the above measure maysometimes not accurately reﬂect the discriminative power of the un-derlying attributes. Therefore, it is possible to construct a normalizedgini-index in order to reﬂect the discriminative power of the attributesmore accurately. Let P
+1...Pkrepresent the global distributions of the
+documents in the diﬀerent classes. Then, we determine the normalized
+probability value p/prime
+i(w) as follows:
+p/prime
+i(w)=pi(w)/Pi/summationtextk
+j=1pj(w)/Pj(6.3)
+3The gini-index is also sometimes deﬁned as 1 −/summationtextk
+i=1pi(w)2, with lower values indicating
+greater discriminative power of the feature w.A Survey of Text Classiﬁcation Algorithms 169
+Then, the gini-index is computed in terms of these normalized probabil-
+ity values.
+G(w)=k/summationdisplay
+i=1p/prime
+i(w)2(6.4)
+The use of the global probabilities Piensures that the gini-index more
+accurately reﬂects class-discrimination in the case of biased class dis-tributions in the whole document collection. For a document corpuscontaining ndocuments, dwords, and kclasses, the complexity of the
+information gain computation is O(n·d·k). This is because the com-
+putation of the term p
+i(w) for all the diﬀerent words and the classes
+requires O(n·d·k) time.
+2.2 Information Gain
+Another related measure which is commonly used for text feature
+selection is that of information gain or entropy. Let Pibe the global
+probability of class i,a n dpi(w) be the probability of class i, given that
+the document contains the word w. LetF(w) be the fraction of the
+documents containing the word w. The information gain measure I(w)
+for a given word wis deﬁned as follows:
+I(w)=−k/summationdisplay
+i=1Pi·log(Pi)+F(w)·k/summationdisplay
+i=1pi(w)·log(pi(w))+
++(1−F(w))·k/summationdisplay
+i=1(1−pi(w))·log(1−pi(w))
+The greater the value of the information gain I(w), the greater the dis-
+criminatory power of the word w. For a document corpus containing n
+documents and dwords, the complexity of the information gain compu-
+tation is O(n·d·k).
+2.3 Mutual Information
+Thismutual information measure is derived from information theory
+[31], andprovidesaformalwaytomodelthemutualinformationbetweenthe features and the classes. The pointwise mutual information M
+i(w)
+between the word wand the class iis deﬁned on the basis of the level
+of co-occurrence between the class iand word w. We note that the
+expected co-occurrence of class iand word won the basis of mutual
+independence is given by Pi·F(w). The true co-occurrence is of course
+given by F(w)·pi(w). In practice, the value of F(w)·pi(w)m a ybem u c h170 MINING TEXT DATA
+larger or smaller than Pi·F(w), depending upon the level of correlation
+between the class iand word w. The mutual information is deﬁned in
+terms of the ratio between these two values. Speciﬁcally, we have:
+Mi(w)=l o g/parenleftbiggF(w)·pi(w)
+F(w)·Pi/parenrightbigg
+=l o g/parenleftbiggpi(w)
+Pi/parenrightbigg
+(6.5)
+Clearly, the word wis positively correlated to the class i,w h e nMi(w)>
+0, and the word wis negatively correlated to class i,w h e nMi(w)<0.
+We note that Mi(w) is speciﬁc to a particular class i. We need to
+compute the overall mutual information as a function of the mutualinformation of the word wwith the diﬀerent classes. These are deﬁned
+with the use of the average and maximum values of M
+i(w) over the
+diﬀerent classes.
+Mavg(w)=k/summationdisplay
+i=1Pi·Mi(w)
+Mmax(w) = max i{Mi(w)}
+Eitherofthesemeasuresmaybeusedinordertodeterminetherelevance
+oftheword w. Thesecondmeasureisparticularlyuseful, whenitismore
+important to determine high levels of positive correlation of the word w
+with any of the classes.
+2.4 χ2-Statistic
+Theχ2statistic is a diﬀerent way to compute the lack of independence
+betweentheword wandaparticularclass i. Letnbethetotalnumberof
+documents in the collection, pi(w) be the conditional probability of class
+ifor documents which contain w,Pibe the global fraction of documents
+containing the class i,a n dF(w) be the global fraction of documents
+which contain the word w.T h eχ2-statistic of the word between word
+wand class iis deﬁned as follows:
+χ2
+i(w)=n·F(w)2·(pi(w)−Pi)2
+F(w)·(1−F(w))·Pi·(1−Pi))(6.6)
+As in the case of the mutual information, we can compute a global χ2
+statistic from the class-speciﬁc values. We can use either the average of
+maximum values in order to create the composite value:
+χ2
+avg(w)=k/summationdisplay
+i=1Pi·χ2
+i(w)
+χ2
+max(w) = max iχ2
+i(w)A Survey of Text Classiﬁcation Algorithms 171
+We note that the χ2-statistic and mutual information are diﬀerent
+ways of measuring the the correlation between terms and categories.One major advantage of the χ
+2-statistic over the mutual information
+measure is that it is a normalized value, and therefore these values are
+more comparable across terms in the same category.
+2.5 Feature Transformation Methods:
+Supervised LSI
+While feature selection attempts to reduce the dimensionality of the
+data by picking from the original set of attributes, feature transforma-tion methods create a new (and smaller) set of features as a function ofthe original set of features. A typical example of such a feature trans-formation method is Latent Semantic Indexing (LSI) [38], and its prob-abilistic variant PLSA [57]. The LSI method transforms the text spaceof a few hundred thousand word features to a new axis system (of size
+aboutafewhundred)whicharealinearcombinationoftheoriginalword
+features. In order to achieve this goal, Principal Component Analysistechniques [69] are used to determine the axis-system which retains thegreatest level of information about the variations in the underlying at-tribute values. The main disadvantage of using techniques such as LSI isthat these are unsupervised techniques which are blind to the underlyingclass-distribution. Thus, the features found by LSI are not necessarily
+the directions along which the class-distribution of the underlying doc-
+uments can be best separated. A modest level of success has been ob-tained in improving classiﬁcation accuracy by using boosting techniquesin conjunction with the conceptual features obtained from unsupervisedpLSA method [17]. A more recent study has systematically comparedpLSA and LDA (which is a Bayesian version of pLSA) in terms of theireﬀectiveness in transforming features for text categorization and drawn
+a similar conclusion and found that pLSA and LDA tend to perform
+similarly.
+A number of techniques have also been proposed to perform the fea-
+ture transformation methods by using the class labels for eﬀective super-vision. ThemostnaturalmethodistoadaptLSIinordertomakeitworkmore eﬀectively for the supervised case. A number of diﬀerent methodshave been proposed in this direction. One common approach is to per-
+form local LSI on the subsets of data representing the individual classes,
+and identify the discriminativeeigenvectorsfrom the diﬀerent reductionswith the use of an iterative approach [123]. This method is known asSLSI (Supervised Latent Semantic Indexing), and the advantages of themethod seem to be relatively limited, because the experiments in [123]172 MINING TEXT DATA
+show that the improvements over a standard SVM classiﬁer, which did
+not use a dimensionality reduction process, are relatively limited. Thework in [129] uses a combination of class-speciﬁc LSI and global analy-
+sis. As in the case of [123], class-speciﬁc LSI representations are created.
+Test documents are compared against each LSI representation in orderto create the most discriminative reduced space. One problem with thisapproach is that the diﬀerent local LSI representations use a diﬀerentsubspace, and therefore it is diﬃcult to compare the similarities of thediﬀerent documents across the diﬀerent subspaces. Furthermore, boththe methods in [123, 129] tend to be computationally expensive.
+Amethodcalled sprinkling isproposedin[21], inwhichartiﬁcialterms
+are added to (or “sprinkled” into) the documents, which correspond tothe class labels. In other words, we create a term corresponding tothe class label, and add it to the document. LSI is then performed onthe document collection with these added terms. The sprinkled termscan then be removed from the representation, once the eigenvectors havebeen determined. The sprinkled terms help in making the LSI more sen-
+sitive to the class distribution during the reduction process. It has also
+been proposed in [21] that it can be generally useful to make the sprin-kling process adaptive, in which all classes are not necessarily treated
+equally, but the relationships between the classes are used in order toregulate the sprinkling process. Furthermore, methods have also beenproposed in [21] to make the sprinkling process adaptive to the use of aparticular kind of classiﬁer.
+2.6 Supervised Clustering for Dimensionality
+Reduction
+One technique which is commonly used for feature transformation is
+that of text clustering [7, 71, 83, 121]. In these techniques, the clus-
+ters are constructed from the underlying text collection, with the use ofsupervision from the class distribution. The exception is [83] in whichsupervision is not used. In the simplest case, each class can be treated asa separate cluster, though better results may be obtained by using theclasses for supervision of the clustering process. The frequently occur-ring words in these supervised clusters can be used in order to create the
+new set of dimensions. The classiﬁcation can be performed with respect
+to this new feature representation. One advantage of such an approachis that it retains interpretability with respect to the original words of thedocument collection. The disadvantage is that the optimum directionsof separation may not necessarily be represented in the form of clustersofwords. Furthermore, theunderlyingaxesarenotnecessarilyorthonor-A Survey of Text Classiﬁcation Algorithms 173
+mal to one another. The use of supervised methods [1, 7, 71, 121] has
+generally led to good results either in terms of improved classiﬁcationaccuracy, or signiﬁcant performance gains at the expense of a small re-duction in accuracy. The results with the use of unsupervised clustering[83, 87] are mixed. For example, the work in [83] suggests that the useof unsupervised term-clusters and phrases is generally not helpful [83]
+for the classiﬁcation process. The key observation in [83] is that the
+loss of granularity associated with the use of phrases and term clustersis not necessarily advantageous for the classiﬁcation process. The workin [8] has shown that the use of the information bottleneck method forfeature distributional clustering can create clustered pseudo-word repre-sentations which are quite eﬀective for text classiﬁcation.
+2.7 Linear Discriminant Analysis
+Anothermethodforfeaturetransformationistheuseoflineardiscrim-
+inants, which explicitly try to construct directions in the feature space,
+along which there is best separation of the diﬀerent classes. A commonmethod is the Fisher’s linear discriminant [46]. The main idea in the
+Fisher’s discriminant method is to determine the directions in the dataalong which the points are as well separated as possible. The subspaceof lower dimensionality is constructed by iteratively ﬁnding such unitvectorsα
+iin the data, where αiis determined in the ith iteration. We
+would also like to ensure that the diﬀerent values of αiare orthonormal
+tooneanother. Ineachstep, wedeterminethisvector αibydiscriminant
+analysis, and project the data onto the remaining orthonormal subspace.The next vector α
+i+1is found in this orthonormal subspace. The quality
+of vector αiis measured by an objective function which measures the
+separation of the diﬀerent classes. This objective function reduces ineach iteration, since the value of α
+iin a given iteration is the optimum
+discriminant in that subspace, and the vector found in the next iteration
+is the optimal one from a smaller search space. The process of ﬁndinglinear discriminants is continued until the class separation, as measuredby an objective function, reduces below a given threshold for the vectordetermined in the current iteration. The power of such a dimensionalityreduction approach has been illustrated in [18], in which it has beenshown that a simple decision tree classiﬁer can perform much more ef-
+fectively on this transformed data, as compared to more sophisticated
+classiﬁers.
+Next, wediscusshowtheFisher’sdiscriminantisactuallyconstructed.
+First, we will set up the objective function J(
+α) which determines the
+level of separation of the diﬀerent classes along a given direction (unit-174 MINING TEXT DATA
+vector)α. Thissetsupthecrispoptimizationproblemofdeterminingthe
+value ofαwhich maximizes J(α). For simplicity, let us assume the case
+of binary classes. Let D1andD2be the two sets of documents belonging
+tothetwoclasses. Then,theprojectionofadocument X∈D1∪D2along
+αis given by X·α. Therefore, the squared class separation S(D1,D2,α)
+along the direction αis given by:
+S(D1,D2,α)=/parenleftBigg/summationtext
+X∈D1α·X
+|D1|−/summationtext
+X∈D2α·X
+|D2|/parenrightBigg2
+(6.7)
+In addition, we need to normalize this absolute class separation with the
+use of the underlying class variances. Let Var(D1,α)a n dVar(D2,α)
+be the individual class variances along the direction α. In other words,
+we have:
+Var(D1,α)=/summationtext
+X∈D1(X·α)2
+|D1|−/parenleftBigg/summationtext
+X∈D1X·α
+|D1|/parenrightBigg2
+(6.8)
+The value of Var(D2,α) can be deﬁned in a similar way. Then, the
+normalized class-separation J(α) is deﬁned as follows:
+J(α)=S(D1,D2,α)
+Var(D1,α)+Var(D2,α)(6.9)
+The optimal value of αneeds to be determined subject to the constraint
+thatαis a unit vector. Let μ1andμ2be the means of the two data sets
+D1andD2,a n dC1andC2be the corresponding covariance matrices.
+It can be shown that the optimal (unscaled) direction α=α∗can be
+expressed in closed form, and is given by the following:
+α∗=/parenleftbiggC1+C2
+2/parenrightbigg−1
+(μ1−μ2) (6.10)
+The main diﬃculty in computing the above equation is that this compu-
+tationrequirestheinversionofthecovariancematrix, whichissparseandcomputationally diﬃcult in the high-dimensional text domain. There-
+fore, a gradient descent approach can be used in order to determine
+the value of
+αin a more computationally eﬀective way. Details of the
+approach are presented in [18].
+Another related method which attempts to determine projection di-
+rections that maximize the topical diﬀerences between diﬀerent classes
+is theTopical Diﬀerence Factor Analysis method proposed in [72]. The
+problem has been shown to be solvable as a generalized eigenvalue prob-
+lem. The method was used in conjunction with a k-nearest neighborA Survey of Text Classiﬁcation Algorithms 175
+classiﬁer, and it was shown that the use of this approach signiﬁcantly
+improves the accuracy over a classiﬁer which uses the original set offeatures.
+2.8 Generalized Singular Value Decomposition
+While the method discussed above ﬁnds one vector αiat a time in or-
+der to determine the relevant dimension transformation, it is possible tobe much more direct in ﬁnding the optimal subspaces simultaneously byusing a generalized version of dimensionality reduction [58, 59]. It is im-portant to note that this method has really been proposed in [58, 59] asanunsupervised method which preserves the underlying clustering struc-
+ture, assuming the data has already been clustered in a pre-processing
+phase. Thus, the generalized dimensionality reduction method has been
+proposed as a much more aggressive dimensionality reduction technique,which preserves the underlying clustering structure rather than the in-dividual points. This method can however also be used as a supervised
+technique in which the diﬀerent classes are used as input to the di-mensionality reduction algorithm, instead of the clusters constructed inthe pre-processing phase [131]. This method is known as the Optimal
+O
+rthogonal C entroid F eature Selection Algorithm (OCFS) , and it di-
+rectly targets at the maximization of inter-class scatter. The algorithmis shown to have promising results for supervised feature selection in[131].
+2.9 Interaction of Feature Selection with
+Classiﬁcation
+Since the classiﬁcation and feature selection processes are dependent
+upon one another, it is interesting to test how the feature selection pro-cess interacts with the underlying classiﬁcation algorithms. In this con-text, two questions are relevant:
+Can the feature-speciﬁc insights obtained from the intermediateresults of some of the classiﬁcation algorithms be used for creating
+feature selection methods that can be used more generally by other
+classiﬁcation algorithms?
+Do the diﬀerent feature selection methods work better or worsewith diﬀerent kinds of classiﬁers?
+Both these issues were explored in some detail in [99]. In regard to
+the ﬁrst question, it was shown in [99] that feature selection which wasderived from linearclassiﬁers, provided very eﬀective results. In regard
+to the second question, it was shown in [99] that the sophistication of176 MINING TEXT DATA
+the feature selection process itself was more important than the speciﬁc
+pairing between the feature selection process and the classiﬁer.
+Linear Classiﬁers are those for which the output of the linear predic-
+tor is deﬁned to be p=A·X+b, whereX=(x1...xn) is the normalized
+document word frequency vector, A=(a1...an) is a vector of linear co-
+eﬃcients with the same dimensionality as the feature space, and bis
+a scalar. Both the basic neural network and basic SVM classiﬁers [65](which will be discussed later in this chapter) belong to this category.The idea here is that if the coeﬃcient a
+iis close to zero, then the corre-
+sponding feature does not have a signiﬁcant eﬀect on the classiﬁcation
+process. On the other hand, since large absolute values of ajmay sig-
+niﬁcantly inﬂuence the classiﬁcation process, such features should beselected for classiﬁcation. In the context of the SVM method, whichattempts to determine linear planes of separation between the diﬀerentclasses, the vector
+Ais essentially the normal vector to the correspond-
+ing plane of separation between the diﬀerent classes. This intuitivelyexplains the choice of selecting features with large values of |a
+j|.I tw a s
+shown in [99] that this class of feature selection methods was quite ro-
+bust, and performed well even for classiﬁers such as the Naive Bayesmethod, which were unrelated to the linear classiﬁers from which thesefeatures were derived. Further discussions on how SVM and maximummargin techniques can be used for feature selection may be found in[51, 56].
+3. Decision Tree Classiﬁers
+A decision tree [106] is essentially a hierarchical decomposition of the
+(training) data space, in which a predicate or a condition on the at-
+tribute value is used in order to divide the data space hierarchically. Inthe context of text data, such predicates are typically conditions on thepresence or absence of one or more words in the document. The divisionof the data space is performed recursively in the decision tree, until theleaf nodes contain a certain minimum number of records, or some condi-tions on class purity. The majority class label (or cost-weighted majority
+label) in the leaf node is used for the purposes of classiﬁcation. For a
+given test instance, we apply the sequence of predicates at the nodes, inorder to traverse a path of the tree in top-down fashion and determinethe relevant leaf node. In order to further reduce the overﬁtting, some of
+the nodes may be be pruned by holding out a part of the data, which arenot used to construct the tree. The portion of the data which is held outis used in order to determine whether or not the constructed leaf node
+should be pruned or not. In particular, if the class distribution in theA Survey of Text Classiﬁcation Algorithms 177
+training data (for decision tree construction) is very diﬀerent from the
+class distribution in the training data which is used for pruning, then itis assumed that the node overﬁts the training data. Such a node can bepruned. A detailed discussion of decision tree methods may be found in[15, 42, 62, 106].
+In the particular case of text data, the predicates for the decision tree
+nodes are typically deﬁned in terms of the terms in the underlying text
+collection. For example, a node may be partitioned into its childrennodes depending upon the presence or absence of a particular term inthe document. We note that diﬀerent nodes at the same level of the treemay use diﬀerent terms for the partitioning process.
+Many other kinds of predicates are possible. It may not be necessary
+to use individual terms for partitioning, but one may measure the simi-
+larity of documents to correlated sets of terms. These correlated sets of
+terms may be used to further partition the document collection, basedon the similarity of the document to them. The diﬀerent kinds of splitsare as follows:
+Single Attribute Splits: In this case, we use the presence or
+absence of particular words (or even phrases) at a particular node
+in the tree in order to perform the split. At any given level, we pickthe word which provides the maximum discrimination between thediﬀerent classes. Measures such as the gini-index or informationgain can be used in order to determine the level of entropy. Forexample, the DT-min10 algorithm [81] is based on this approach.
+Similarity-based multi-attribute split: In this case, we use
+documents (or meta-documents such as frequent word clusters),and use the similarity of the documents to these words clusters inorder to perform the split. For the selected word cluster, the docu-mentsarefurtherpartitionedintogroupsbyrankorderingthedoc-
+uments by similarity value, and splitting at a particular threshold.
+We select the word-cluster for which rank-ordering by similarityprovides the best separation between the diﬀerent classes.
+Discriminant-based multi-attribute split: For the
+multi-attribute case, a natural choice for performing the split isto use discriminants such as the Fisher discriminant for perform-ing the split. Such discriminants provide the directions in the dataalongwhichtheclassesarebestseparated. Thedocumentsarepro-jected on this discriminant vector for rank ordering, and then splitat a particular coordinate. The choice of split point is picked in or-
+der to maximize the discrimination between the diﬀerent classes.178 MINING TEXT DATA
+The work in [18] uses a discriminant-based split, though this is
+done indirectly because of the use of a feature transformation tothe discriminant representation, before building the classiﬁer.
+Some of the earliest implementation of classiﬁers may be found in [80,
+81, 87, 127]. The last of these is really a rule-based classiﬁer, which can
+be interpreted either as a decision tree or a rule-based classiﬁer. Most ofthe decision tree implementations in the text literature tend to be smallvariations on standard packages such as ID3 and C4.5, in order to adaptthe model to text classiﬁcation. Many of these classiﬁers are typicallydesigned as baselines for comparison with other learning models [65].
+A well known implementation of the decision tree classiﬁer is based on
+the C4.5 taxonomy of algorithms [106] is presented in [87]. More specif-
+ically, the work in [87] uses the successor to the C4.5 algorithm, whichis also known as the C5 algorithm. This algorithm uses single-attributesplits at each node, where the feature with the highest information gain[31] is used for the purpose of the split. Decision trees have also beenused in conjunction with boosting techniques. An adaptive boostingtechnique [48] is used in order to improve the accuracy of classiﬁcation.
+In this technique, we use ndiﬀerent classiﬁers. The ith classiﬁer is con-
+structed by examining the errors of the ( i−1)th classiﬁer. A voting
+scheme is applied among these classiﬁers in order to report the ﬁnal la-bel. Other boosting techniques for improving decision tree classiﬁcationaccuracy are proposed in [116].
+The work in [43] presents a decision tree algorithm based on the
+Bayesian approach developed in [22]. In this classiﬁer, the decision tree
+is grown by recursive greedy splits, where the splits are chosen usingBayesian posterior probability of model structure. The structural priorpenalizes additional model parameters at each node. The output of theprocess is a class probability rather than a deterministic class label forthe test instance.
+4. Rule-based Classiﬁers
+Decision trees are also generally related to rule-based classiﬁers .I n
+rule-based classiﬁers, the data space is modeled with a set of rules, in
+which the left hand side is a condition on the underlying feature set, andthe right hand side is the class label. The rule set is essentially the modelwhich is generated from the training data. For a given test instance,we determine the set of rules for which the test instance satisﬁes thecondition on the left hand side of the rule. We determine the predictedclass label as a function of the class labels of the rules which are satisﬁed
+by the test instance. We will discuss more on this issue slightly later.A Survey of Text Classiﬁcation Algorithms 179
+Initsmostgeneralform, thelefthandsideoftheruleisabooleancon-
+dition, which is expressed in Disjunctive Normal Form (DNF). However,in most cases, the condition on the left hand side is much simpler and
+represents a set of terms, all of which must be present in the document
+for the condition to be satisﬁed. The absenceof terms is rarely used,
+because such rules are not likely to be very informative for sparse textdata, in which most words in the lexicon will typically not be present init by default (sparseness property). Also, while the set intersection of
+conditions on term presence is used often, the union of such conditionsis rarely used in a single rule. This is because such rules can be split
+into two separate rules, each of which is more informative on its own.
+For example, the rule Honda∪Toyota⇒Carscan be replaced by two
+separate rules Honda⇒CarsandToyota⇒Carswithout any loss of
+information. In fact, since the conﬁdence of each of the two rules cannowbemeasuredseparately, thiscanbemoreuseful. Ontheotherhand,the rule Honda∩Toyota⇒Carsis certainly much more informative
+than the individual rules. Thus, in practice, for sparse data sets such as
+text, rules are much more likely to be expressed as a simple conjunction
+of conditions on term presence.
+We note that decision trees and decision rules both tend to encode
+rules on the feature space, except that the decision tree tends to achievethis goal with a hierarchical approach. In fact, the original work on de-cision tree construction in C4.5 [106] studied the decision tree problemand decision rule problem within a single framework. This is because a
+particular path in the decision tree can be considered a rule for classiﬁ-
+cation of the text instance. The main diﬀerence is that the decision treeframework is a strict hierarchical partitioning of the data space, whereasrule-based classiﬁers allow for overlaps in the decision space. The gen-eral principle is to create a rule set, such that all points in the decisionspace are covered by at leastone rule. In most cases, this is achieved
+by generating a set of targeted rules which are related to the diﬀerent
+classes, and one default catch-all rule, which can cover all the remaining
+instances.
+A number of criteria can be used in order to generate the rules from
+the training data. Two of the most common conditions which are usedfor rule generation are those of supportandconﬁdence . These conditions
+are common to all rule-based pattern classiﬁers [88] and may be deﬁnedas follows:
+Support: This quantiﬁes the absolute number of instances in
+thetrainingdatasetwhicharerelevanttotherule. Forexample, ina corpus containing 100,000 documents, a rule in which boththe
+left-hand set and right-hand side are satisﬁed by 50,000 documents180 MINING TEXT DATA
+is more important than a rule which is satisﬁed by 20 documents.
+Essentially, this quantiﬁes the statistical volumewhich is associ-
+ated with the rule. However, it does not encode the strength of
+the rule.
+Conﬁdence: This quantiﬁes the conditional probability that
+the right hand side of the rule is satisﬁed, if the left-hand sideis satisﬁed. This is a more direct measure of the strength of theunderlying rule.
+We note that the afore-mentioned measures are not the only measures
+which are possible, but are widely used in the data mining and machinelearning literature [88] for both textual and non-textual data, becauseof their intuitive nature and simplicity of interpretation. One criticism
+of the above measures is that they do not normalize for the a-priori
+presence of diﬀerent terms and features, and are therefore prone to mis-interpretation, when the feature distribution or class-distribution in theunderlying data set is skewed.
+The training phase constructs all the rules, which are based on mea-
+sures such as the above. For a given test instance, we determine all therules which are relevant to the test instance. Since we allow overlaps, it
+is possible that more than one rule may be relevant to the test instance.
+If the class labels on the right hand sides of all these rules are the same,then it is easy to pick this class as the relevant label for the test instance.On the other hand, the problem becomes more challenging when thereare conﬂicts between these diﬀerent rules. A variety of diﬀerent meth-ods are used to rank-order the diﬀerent rules [88], and report the mostrelevant rule as a function of these diﬀerent rules. For example, a com-
+mon approach is to rank-order the rules by their conﬁdence, and pick
+the top-krules as the most relevant. The class label on the right-hand
+side of the most number of these rules is reported as the relevant one.
+Am interesting rule-based classiﬁer for the case of text data has been
+proposed in [5]. This technique uses an iterative methodology, whichwas ﬁrst proposed in [128] for generating rules. Speciﬁcally, the methoddetermines the single best rule related to any particular class in the
+training data. The best rule is deﬁned in terms of the conﬁdence of the
+rule, as deﬁned above. This rule along with its corresponding instances
+are removed from the training data set. This approach is continuously
+repeated, until it is no longer possible to ﬁnd strong rules in the trainingdata, and complete predictive value is achieved.
+The transformation of decision trees to rule-based classiﬁers is dis-
+cussed generally in [106], and for the particular case of text data in [68].
+For each path in the decision tree a rule can be generated, which repre-A Survey of Text Classiﬁcation Algorithms 181
+sents the conjunction of the predicates along that path. One advantage
+of the rule-based classiﬁer over a decision tree is that it is not restrictedto a strict hierarchical partitioning of the feature space, and it allows
+for overlaps and inconsistencies among the diﬀerent rules. Therefore,
+if a new set of training examples are encountered, which are related toa new class or new part of the feature space, then it is relatively easyto modify the rule set for these new examples. Furthermore, rule-basedclassiﬁers also allow for a tremendous interpretability of the underlyingdecision space. In cases in which domain-speciﬁc expert knowledge isknown, it is possible to encode this into the classiﬁcation process by
+manual addition of rules. In many practical scenarios, rule-based tech-
+niques are more commonly used because of their ease of maintenanceand interpretability.
+One of the most common rule-based techniques is the RIPPER tech-
+nique discussed in [26–28]. The RIPPER technique essentially deter-
+mines frequent combinations of words which are related to a particularclass. The RIPPER method has been shown to be especially eﬀective in
+scenarios where the number of training examples is relatively small [25].
+Another method called sleeping experts [26, 49] generates rules which
+take the placement of the words in the documents into account. Mostof the classiﬁers such as RIPPER [26–28] treat documents as set-valued
+objects, and generate rules based on the co-presence of the words in thedocuments. The rules in sleeping experts are diﬀerent from most of the
+other classiﬁers in this respect. In this case [49, 26], the left hand side of
+theruleconsists of a sparse phrase , whichis agroup of wordsclose toone
+another in the document (though not necessarily completely sequential).Each such rule has a weight, which depends upon its classiﬁcation speci-ﬁcity in the training data. For a given test example, we determine thesparse phrases which are present in it, and perform the classiﬁcation bycombining the weights of the diﬀerent rules that are ﬁred. The sleeping
+expertsandRIPPER systems have been compared in [26], and have been
+shown to have excellent performance on a variety of text collections.
+5. Probabilistic and Naive Bayes Classiﬁers
+Probabilistic classiﬁers are designed to use an implicit mixture model
+for generation of the underlying documents. This mixture model typi-cally assumes that each class is a component of the mixture. Each mix-ture component is essentially a generative model, which provides theprobability of sampling a particular term for that component or class.This is why this kind of classiﬁers are often also called generative classi-
+ﬁer. The naive Bayes classiﬁer is perhaps the simplest and also the most182 MINING TEXT DATA
+commonly used generative classifers. It models the distribution of the
+documents in each class using a probabilistic model with independenceassumptions about the distributions of diﬀerent terms. Two classes of
+models are commonly used for naive Bayes classiﬁcation. Both models
+essentially compute the posterior probability of a class, based on thedistribution of the words in the document. These models ignore the ac-tual position of the words in the document, and work with the “bag ofwords” assumption. The major diﬀerence between these two models isthe assumption in terms of taking (or not taking) word frequencies intoaccount, and the corresponding approach for sampling the probability
+space:
+Multivariate Bernoulli Model: In this model, we use the pres-
+enceorabsenceofwordsinatextdocumentasfeaturestorepresent
+a document. Thus, the frequencies of the words are not used for
+the modeling a document, and the word features in the text areassumed to be binary, with the two values indicating presence orabsence of a word in text. Since the features to be modeled arebinary, the model for documents in each class is a multivariateBernoulli model.
+Multinomial Model: In this model, we captuer the frequencies
+of terms in a document by representing a document with a bagof words. The documents in each class can then be modeled assamples drawn from a multinomial word distribution. As a result,the conditional probability of a document given a class is simplya product of the probability of each observed word in the corre-sponding class.
+No matter how we model the documents in each class (be it a multi-
+variate Bernoulli model or a multinomial model), the component classmodels (i.e., generative models for documents in each class) can be used
+in conjunction with the Bayes rule to compute the posterior probability
+oftheclassforagivendocument, andtheclasswiththehighestposteriorprobability can then be assigned to the document.
+There has been considerable confusion in the literature on the dif-
+ferences between the multivariate Bernoulli model and the multinomialmodel. A good exposition of the diﬀerences between these two modelsmay be found in [94]. In the following, we describe these two models in
+more detail.A Survey of Text Classiﬁcation Algorithms 183
+5.1 Bernoulli Multivariate Model
+This class of techniques treats a document as a set of distinct words
+withnofrequencyinformation, inwhichanelement(term)maybeeitherpresent or absent. The seminal work on this approach may be found in[82].
+Let us assume that the lexicon from which the terms are drawn are
+denoted by V={t
+1...tn}. Let us assume that the bag-of-words (or
+text document) in question contains the terms Q={ti1...tim}, and the
+class is drawn from {1...k}. Then, our goal is to model the posterior
+probability that the document (which is assumed to be generated fromthe term distributions of one of the classes) belongs to class i, given that
+it contains the terms Q={t
+i1...tim}. The best way to understand the
+Bayes method is by understanding it as a sampling/generative process
+from the underlying mixture model of classes. The Bayes probability
+of classican be modeled by sampling a set of terms Tfrom the term
+distribution of the classes:
+If we sampled a term set Tof any size from the term distribution
+of one of the randomly chosen classes , and the ﬁnal outcome is the
+setQ, then what is the posterior probability that we had originally picked
+classifor sampling? The a-priori probability of picking class iis equal
+to its fractional presence in the collection.
+Wedenotetheclassofthesampledset TbyCTandthecorresponding
+posterior probability by P(CT=i|T=Q). This is essentially what
+we are trying to ﬁnd. It is important to note that since we do notallow replacement, we are essentially picking a subset of terms from V
+with no frequencies attached to the picked terms. Therefore, the set Q
+may not contain duplicate elements. Under the naive Bayes assumptionof independence between terms, this is essentially equivalent to eitherselectingornotselectingeachtermwithaprobabilitythatdependsuponthe underlying term distribution. Furthermore, it is also important tonote that this model has no restriction on the number of terms picked.As we will see later, these assumptions are the key diﬀerences with the
+multinomial Bayes model. The Bayes approach classiﬁes a given set Q
+based on the posterior probability that Qis a sample from the data
+distribution of class i, i.e.,P(C
+T=i|T=Q), and it requires us to
+compute the following two probabilities in order to achieve this:
+1 Whatisthepriorprobabilitythataset Tisasamplefromtheterm
+distribution of class i? This probability is denoted by P(CT=i).184 MINING TEXT DATA
+2 If we sampled a set Tof any size from the term distribution of class
+i, then what is the probability that our sample is the set Q? This
+probability is denoted by P(T=Q|CT=i).
+We will now provide a more mathematical description of Bayes mod-
+eling. In other words, we wish to model P(CT=i|Qis sampled). We
+can use the Bayes rule in order to write this conditional probability ina way that can be estimated more easily from the underlying corpus. In
+other words, we can simplify as follows:
+P(C
+T=i|T=Q)=P(CT=i)·P(T=Q|CT=i)
+P(T=Q)
+=P(CT=i)·/producttext
+tj∈QP(tj∈T|CT=i)·/producttext
+tj/negationslash∈Q(1−P(tj∈T|CT=i))
+P(T=Q)
+We note that the last condition of the above sequence uses the naive
+independence assumption ,becauseweareassumingthattheprobabilities
+of occurrence of the diﬀerent terms are independent of one another. This
+is practically necessary, in order to transform the probability equations
+to a form which can be estimated from the underlying data.
+The class assigned to Qis the one with the highest posterior proba-
+bility given Q. It is easy to see that this decision is not aﬀected by the
+denominator, which is the marginal probability of observing Q.T h a ti s ,
+we will assign the following class to Q:
+ˆi= argmax
+iP(CT=i|T=Q)
+= argmax
+iP(CT=i)·
+/productdisplay
+tj∈QP(tj∈T|CT=i)·/productdisplay
+tj/negationslash∈Q(1−P(tj∈T|CT=i)).
+It is important to note that all terms in the right hand side of the
+last equation can be estimated from the training corpus. The value ofP(C
+T=i) is estimated as the global fraction of documents belonging to
+classi, the value of P(tj∈T|CT=i) is the fraction of documents in the
+ith class which contain term tj, and the value of P(tj∈T) is the fraction
+of documents (in the whole corpus) containing the term tj.W en o t et h a t
+all of the above are maximum likelihood estimates of the correspondingprobabilities. In practice, Laplacian smoothing [124] is used, in whichsmall values are added to the frequencies of terms in order to avoid zero
+probabilities of sparsely present terms.
+In most applications of the Bayes classiﬁer, we only care about the
+identity of the class with the highest probability value, rather than theA Survey of Text Classiﬁcation Algorithms 185
+actual probability value associated with it, which is why we do not need
+to compute the normalizer P(T=Q). In fact, in the case of binary
+classes,anumberofsimpliﬁcationsarepossibleincomputingtheseBayes
+“probability” values by using the logarithm of the Bayes expression, and
+removing a number of terms which do not aﬀect the ordering of classprobabilities. We refer the reader to [108] for details.
+Although for classiﬁcation, we do not need to compute P(T=Q),
+some applications necessitate the exact computation of the posteriorprobability P(C
+T=i|T=Q). For example, in the case of supervised
+anomaly detection (or rare class detection), the exact posterior proba-
+bility value P(CT=i|T=Q) is needed in order to fairly compare the
+probability value over diﬀerent test instances, and rank them for theiranomalous nature. In such cases, we would need to compute P(T=Q).
+One way to achieve this is simply to take a sum over all the classes:
+P(T=Q)=/summationdisplay
+iP(T=Q|CT=i)P(CT=i).
+This is based on the conditional independence of features for each class.
+Since the parameter values are estimated for each class separately, wemay face the problem of data sparseness. An alternative way of com-puting it, which may alleviate the data sparseness problem, is to further
+make the assumption of (global) independence of terms, and compute it
+as:
+P(T=Q)=/productdisplay
+j∈QP(tj∈T)·/productdisplay
+tj/negationslash∈Q(1−P(tj∈T))
+where the term probabilities are based on global term distributions in
+allthe classes.
+Anaturalquestionarises, astowhetheritispossibletodesignaBayes
+classiﬁer which does not use the naive assumption, and models the de-pendencies between the terms during the classiﬁcation process. Methodswhich generalize the naive Bayes classiﬁer by not using the independenceassumption do not work well because of the higher computational costsand the inability to estimate the parameters accurately and robustly inthe presence of limited data. The most interesting line of work in relax-
+ing the independence assumption is provided in [112]. In this work, the
+tradeoﬀs in spectrum of allowing diﬀerent levels of dependence amongthe terms have been explored. On the one extreme, an assumption ofcomplete dependence results in a Bayesian network model which turnsout to be computationally very expensive. On the other hand, it hasbeen shown that allowing limited levels of dependence can provide goodtradeoﬀs between accuracy and computational costs. We note that while
+the independence assumption is a practical approximation, it has been186 MINING TEXT DATA
+shown in [29, 39] that the approach does have some theoretical merit.
+Indeed, extensive experimental tests have tended to show that the naiveclassiﬁer works quite well in practice.
+A number of papers [19, 64, 74, 79, 108, 113] have used the naive
+Bayes approach for classiﬁcation in a number of diﬀerent applicationdomains. The classiﬁer has also been extended to modeling temporally
+aware training data, in which the importance of a document may decay
+with time [114]. As in the case of other statistical classiﬁers, the naiveBayes classiﬁer [113] can easily incorporate domain-speciﬁc knowledge
+into the classiﬁcation process. The particular domain that the work in[113] addresses is that of ﬁltering junk email. Thus, for such a problem,we often have a lot of additional domain knowledge which helps us de-termine whether a particular email message is junk or not. For example,
+some common characteristics of the email which would make an email
+to be more or less likely to be junk are as follows:
+The domain of the sender such as .eduor.comcan make an email
+to be more or less likely to be junk.
+Phrases such as “Free Money” or over emphasized punctuation
+such as “!!!” can make an email more likely to be junk.
+Whether the recipient of the message was a particular user, or amailing list.
+The Bayes method provides a natural way to incorporate such additional
+information into the classiﬁcation process, by creating new features foreach of these characteristics. The standard Bayes technique is then usedinconjunctionwiththisaugmentedrepresentationforclassiﬁcation. The
+Bayes technique has also been used in conjunction with the incorpora-
+tion of other kinds of domain knowledge, such as the incorporation ofhyperlink information into the classiﬁcation process [20, 104].
+The Bayes method is also suited to hierarchical classiﬁcation, when
+the training data is arranged in a taxonomy of topics. For example,the Open Directory Project (ODP), Yahoo!Taxonomy, and a variety of
+news sites have vast collections of documents which are arranged into
+hierarchical groups. The hierarchical structure of the topics can be ex-
+ploited to perform more eﬀective classiﬁcation [19, 74], because it hasbeen observed that context-sensitive feature selection can provide moreuseful classiﬁcation results. In hierarchical classiﬁcation, a Bayes classi-ﬁer is built at each node , which then provides us with the next branch
+to follow for classiﬁcation purposes. Two such methods are proposed in[19, 74], in which node speciﬁc features are used for the classiﬁcation
+process. Clearly, much fewer features are required at a particular nodeA Survey of Text Classiﬁcation Algorithms 187
+in the hierarchy, because the features which are picked are relevant to
+that branch. An example in [74] suggests that a branch of the taxon-omy which is related to Computer may have no relationship with the
+word “cow”. These node-speciﬁc features are referred to as signatures
+in [19]. Furthermore, it has been observed in [19] that in a given node,the most discriminative features for a given class may be diﬀerent fromtheir parent nodes. For example, the word “health” may be discrimi-native for the Yahoo! category @ Health, but the word “baby” may be
+much more discriminative for the category @ Health@Nursing .T h u s ,i t
+is critical to have an appropriate feature selection process at each node
+of the classiﬁcation tree. The methods in [19, 74] use diﬀerent methods
+for this purpose.
+The work in [74] uses an information-theoretic approach [31] forfeature selection which takes into account the dependencies be-tween the attributes [112]. The algorithm greedily eliminates thefeatures one-by-one so as the least disrupt the conditional classdistribution at that node.
+The node-speciﬁc features are referred to as signatures in [19].
+These node-speciﬁc signatures are computed by calculating theratio of intra-class variance to inter-class variance for the diﬀerentwords at each node of the tree. We note that this measure is thesame as that optimized by the Fisher’s discriminant, except thatit is applied to the original set of words, rather than solved as ageneral optimization problem in which arbitrary directions in the
+data are picked.
+A Bayesian classiﬁer is constructed at each node in order to determine
+the appropriate branch. A small number of context-sensitive features
+provide One advantage of these methods is that Bayesian classiﬁers workmuch more eﬀectively with a much smaller number of features. Anothermajor diﬀerence between the two methods is that the work in [74] usesthe Bernoulli model, whereas that in [19] uses the multinomial model,which will be discussed in the next subsection. This approach in [74] isreferred to as the Pachinko Machine classiﬁer and that in [19] is known
+asTAPER (T
+axonomy a nd Path Enhanced R etrieval System) .
+Other noteworthy methods for hierarchical classiﬁcation are proposed
+in [11, 130, 95]. The work [11] addresses two common problems asso-ciated with hierarchical text classiﬁcation: (1) error propagation; (2)non-linear decision surfaces. The problem of error propagation occurswhen the classiﬁcation mistakes made at a parent node are propagatedto its children node. This problem was solved in [11] by using cross vali-
+dation to obtain a training data set for a child node that is more similar188 MINING TEXT DATA
+to the actual test data passed to the child node from its parent node
+than the training data set normally used for training a classiﬁer at thechild node. The problem of non-linear decision surfaces refers to that
+the decision boundary of a category at a higher level is often non-linear
+(since its members are the union of the members of its children nodes).This problem is addressed by using the tentative class labels obtainedat the children nodes as features for use at a parent node. These aregeneral strategies that can be applied to any base classiﬁer, and theexperimental results in [11] show that both strategies are eﬀective.
+5.2 Multinomial Distribution
+This class of techniques treats a document as a set of words with
+frequencies attached to each word. Thus, the set of words is allowed to
+have duplicate elements.
+As in the previous case, we assume that the set of words in doc-
+ument is denoted by Q, drawn from the vocabulary set V. The set
+Qcontains the distinct terms {ti1...tim}with associated frequencies
+F={Fi1...Fim}. We denote the terms and their frequencies by [ Q,F].
+The total number of terms in the document (or document length) is
+denoted by L=/summationtextm
+j=1F(ij). Then, our goal is to model the posterior
+probability that the document Tbelongs to class i, given that it contains
+the terms in Qwith the associated frequencies F. The Bayes probability
+of classican be modeled by using the following sampling process:
+If we sampled Lterms sequentially from the term distribution of
+one of the randomly chosen classes (allowing repetitions) to create
+the term set T, and the ﬁnal outcome for sampled set Tis the set Qwith
+the corresponding frequencies F, then what is the posterior probability
+that we had originally picked class ifor sampling? The a-priori proba-
+bility of picking class iis equal to its fractional presence in the collection.
+The aforementioned probability is denoted by P(CT=i|T=[Q,F]).
+An assumption which is commonly used in these models is that the
+length of the document is independent of the class label. While it is
+easily possible to generalize the method, so that the document length isused as a prior, independence is usually assumed for simplicity. As inthe previous case, we need to estimate two values in order to computethe Bayes posterior.
+1 Whatisthepriorprobabilitythataset Tisasamplefromtheterm
+distribution of class i? This probability is denoted by P(C
+T=i).A Survey of Text Classiﬁcation Algorithms 189
+2 If we sampled Ltermsfrom the term distribution of class i(with
+repetitions), then what is the probability that our sampled set T
+is the set Qwith associated frequencies F? This probability is
+denoted by P(T=[Q,F]|CT=i).
+Then, the Bayes rule can be applied to this case as follows:
+P(CT=i|T=[Q,F]) =P(CT=i)·P(T=[Q,F]|CT=i)
+P(T=[Q,F])
+∝P(CT=i)·P(T=[Q,F]|CT=i) (6.11)
+As in the previous case, it is not necessary to compute the denominator,
+P(T=[Q,F]), for the purpose of deciding the class label for Q.T h e
+value of the probability P(CT=i) can be estimated as the fraction of
+documents belonging to class i. The computation of P([Q,F]|CT=i)i s
+much more complicated. When we consider the sequential order of theLdiﬀerent samples, the number of possible ways to sample the diﬀerent
+terms so as to result in the outcome [ Q,F]i sg i v e nb y
+L!/producttextm
+i=1Fi!.T h e
+probability of eachof these sequences is given by/producttext
+tj∈QP(tj∈T)Fj,b y
+using the naive independence assumption. Therefore, we have:
+P(T=[Q,F]|CT=i)=L!/producttextm
+i=1Fi!·/productdisplay
+tj∈QP(tj∈T|CT=i)Fj(6.12)
+We can substitute Equations 6.12 in Equation 6.11 to obtain the class
+with the highest Bayes posterior probability, where the class priors arecomputedasinthepreviouscase, andtheprobabilities P(t
+j∈T|CT=i)
+can also be easily estimated as previously with Laplacian smoothing
+[124]. We note that the probabilities of class absence are not presentin the above equations because of the way in which the sampling isperformed.
+A number of diﬀerent variations of the multinomial model have been
+proposed in [53, 70, 84, 95, 97, 103]. In the work [95], it is shown thata category hierarchy can be leveraged to improve the estimate of multi-
+nomial parameters in the naive Bayes classiﬁer to signiﬁcantly improve
+classiﬁcation accuracy. The key idea is to apply shrinkage techniques tosmooth the parameters for data-sparse child categories with their com-mon parent nodes. As a result, the training data of related categoriesare essentially ”shared” with each other in a weighted manner, whichhelps improving the robustness and accuracy of parameter estimationwhen there are insuﬃcient training data for each individual child cate-
+gory. The work in [94] has performed an extensive comparison between190 MINING TEXT DATA
+the bernoulli and the multinomial models on diﬀerent corpora, and the
+following conclusions were presented:
+The multi-variate Bernoulli model can sometimes perform better
+than the multinomial model at small vocabulary sizes.
+The multinomial model outperforms the multi-variate Bernoulli
+model for large vocabulary sizes, and almost always beats themulti-variate Bernoulli when vocabulary size is chosen optimallyfor both. On the average a 27% reduction in error was reported in[94].
+The afore-mentioned results seem to suggest that the two models may
+have diﬀerent strengths, and may therefore be useful in diﬀerent scenar-ios.
+5.3 Mixture Modeling for Text Classiﬁcation
+We note that the afore-mentioned Bayes methods simply assume that
+each component of the mixture corresponds to the documents belongingto a class. A more general interpretation is one in which the compo-nents of the mixture are created by a clustering process, and the class
+membership probabilities are modeled in terms of this mixture. Mixture
+modeling is typically used for unsupervised (probabilistic) clustering ortopic modeling, though the use of clustering can also help in enhancingthe eﬀectiveness of probabilistic classiﬁers [86, 103]. These methods areparticularly useful in cases where the amount of training data is limited.In particular, clustering can help in the following ways:
+The Bayes method implicitly estimates the word probabilitiesP(t
+i∈T|CT=i) of a large number of terms in terms of their
+fractionalpresenceinthecorrespondingcomponent. Thisisclearlynoisy. By treating the clusters as separate entities from the classes,we now only need to relate (a much smaller number of) clustermembership probabilities to class probabilities. This reduces thenumber of parameters and greatly improves classiﬁcation accuracy
+[86].
+The use of clustering can help in incorporating unlabeled docu-
+ments into the training data for classiﬁcation. The premise is thatunlabeled data is much more copiously available than labeled data,and when labeled data is sparse, it should be used in order to assist
+the classiﬁcation process. While such unlabeled documents do not
+contain class-speciﬁc information, they do contain a lot of informa-
+tionabouttheclusteringbehavioroftheunderlyingdata. ThiscanA Survey of Text Classiﬁcation Algorithms 191
+be very useful for more robust modeling [103], when the amount
+of training data is low. This general approach is also referred toasco-training [9, 13, 37].
+The common characteristic of both the methods [86, 103] is that they
+both use a form of supervised clustering for the classiﬁcation process.While the goal is quite similar (limited training data), the approach used
+for this purpose is quite diﬀerent. We will discuss both of these methods
+in this section.
+In the method discussed in [86], the document corpus is modeled with
+the use of supervised word clusters. In this case, the kmixture compo-
+nents are clusters which are correlated to, but are distinct from the k
+groups of documents belonging to the diﬀerent classes. The main diﬀer-ence from the Bayes method is that the term probabilities are computed
+indirectly by using clustering as an intermediate step. For a sampled
+document T, we denote its class label by C
+T∈{1...k}, and its mix-
+ture component by MT∈{1...k}.T h ekdiﬀerent mixture components
+are essentially word-clusters whose frequencies are generated by usingthe frequencies of the terms in the kdiﬀerent classes. This ensures
+that the word clusters for the mixture components are correlated to theclasses, but they are not assumed to be drawn from the same distri-
+bution. As in the previous case, let us assume that the a document
+contains the set of words Q. Then, we would like to estimate the prob-
+abilityP(T=Q|C
+T=i) for each class i. An interesting variation of
+the work in [86] from the Bayes approach is that it does not attemptto determine the posterior probability P(C
+T=i|T=Q). Rather, it
+simply reports the class with the highest likelihood P(T=Q|CT=i).
+This is essentially equivalent to assuming in the Bayes approach, that
+the prior distribution of each class is the same.
+The other diﬀerence of the approach is in terms of how the value of
+P(T=Q|CT=i) is computed. As before, we need to estimate the
+value ofP(tj∈T|CT=i), according to the naive Bayes rule. However,
+unlike the standard Bayes classiﬁer, this is done very indirectly with theuse of mixture modeling. Since the mixture components do not directlycorrespond to the class, this term can only be estimated by summing up
+the expected value over all the mixture components:
+P(t
+j∈T|CT=i)=k/summationdisplay
+s=1P(tj∈T|MT=s)·P(MT=s|CT=i) (6.13)
+The value of P(tj∈T|MT=s) is easy to estimate by using the frac-
+tional presence of term tjin thesth mixture component. The main
+unknown here are the set of model parameters P(MT=s|CT=i).192 MINING TEXT DATA
+Since a total of kclasses and kmixture-components are used, this re-
+quires the estimation of only k2model parameters, which is typically
+quite modest for a small number of classes. An EM-approach has been
+used in [86] in order to estimate this small number of model parameters
+in a robust way. It is important to understand that the work in [86] isan interesting combination of supervised topic modeling (dimensionalityreduction) and Bayes classiﬁcation after reducing the eﬀective dimen-sionality of the feature space to a much smaller value by clustering. Thescheme works well because of the use of supervision in the topic mod-eling process, which ensures that the use of an intermediate clustering
+approach does not lose information for classiﬁcation. We also note that
+in this model, the number of mixtures can be made to vary from thenumber of classes. While the work in [86] does not explore this direc-tion, there is really no reason to assume that the number of mixturecomponents is the same as the number of classes. Such an assumptioncan be particularly useful for data sets in which the classes may not becontiguous in the feature space, and a natural clustering may contain
+far more components than the number of classes.
+Next, we will discuss the second method [103] which uses unlabeled
+data. The approach is [103] uses the unlabeled data in order to improvethe training model. Why should unlabeled data help in classiﬁcation atall? In order to understand this point, recall that the Bayes classiﬁca-tion process eﬀectively uses kmixture components, which are assumed
+to be the kdiﬀerent classes. If we had an inﬁnite amount of training
+data, it would be possible to create the mixture components, but it
+would not be possible to assign labels to these components. However,the most data-intensive part of modeling the mixture, is that of deter-mining the shape of the mixture components. The actual assignmentof mixture components to class labels can be achieved with a relativelysmall number of class labels. It has been shown in [24] that the ac-curacy of assigning components to classes increases exponentially with
+the number of labeled samples available. Therefore, the work in [103]
+designs an EM-approach [36] to simultaneously determine the relevantmixture model and its class assignment.
+It turns out that the EM-approach, as applied to this problem is
+quite simple to implement. It has been shown in [103] that the EM-approach is equivalent to the following iterative methodology. First, anaive Bayes classiﬁer is constructed by estimating the model param-
+eters from the labeled documents only. This is used in order to as-
+sign probabilistically-weighted class labels to the unlabeled documents.Then, the Bayes classiﬁer is re-constructed, except that we also usethe newly labeled documents in the estimation of the underlying modelA Survey of Text Classiﬁcation Algorithms 193
+parameters. We again use this classiﬁer to re-classify the (originally un-
+labeled) documents. The process is continually repeated till convergenceis achieved.
+The ability to signiﬁcantly improve the quality of text classiﬁcation
+with a small amount of labeled data, and the use of clustering on a largeamount of unlabeled data has been a recurring theme in the text mining
+literature. For example, the method in [122] performs purely unsuper-
+vised clustering (with no knowledge of class labels), and then as a ﬁnalstep assigns all documents in the cluster to the dominant class label of
+thatcluster(asanevaluationstepfortheunsupervisedclusteringprocessin terms of its ability in matching clusters to known topics).
+4It has been
+shown that this approach is able to achieve a comparable accuracy ofmatching clusters to topics as a supervised Naive Bayes classiﬁer trained
+over a small data set of about 1000 documents. Similar results were ob-
+tained in [47] where the quality of the unsupervised clustering processwere shown to comparable to an SVM classiﬁer which was trained overa small data set.
+6. Linear Classiﬁers
+Linear Classiﬁers arethoseforwhichtheoutputofthelinearpredictor
+is deﬁned to be p=A·X+b, whereX=(x1...xn) is the normalized
+document word frequency vector, A=(a1...an) is a vector of linear
+coeﬃcients with the same dimensionality as the feature space, and bis
+a scalar. A natural interpretation of the predictor p=A·X+bin
+thediscrete scenario (categorical class labels) would be as a separating
+hyperplane between the diﬀerent classes. Support Vector Machines [30,
+125] are a form of classiﬁers which attempt to determine “good” linearseparators between the diﬀerent classes. One characteristic of linearclassiﬁers is that they are closely related to many feature transformation
+methods (such as the Fisher discriminant), which attempt to use these
+directions in order to transform the feature space, and then use otherclassiﬁers on this transformed feature space [51, 56, 99]. Thus, linearclassiﬁersareintimatelyrelatedtolinearfeaturetransformationmethodsas well.
+Regression modeling (such as the least squares method) is a more
+direct and traditional statistical method for text classiﬁcation. However,
+it is generally used in cases where the target variable to be learned is
+numerical rather than categorical. A number of methods have been
+4In a supervised application, the last step would require only a small number of class labels
+in the cluster to be known to determine the dominant label very accurately.194 MINING TEXT DATA
+x
+x x
+xx
+xx
+xo
+o
+o
+oo
+o
+o
+oABC
+Figure 6.1. What is the Best Separating Hyperplane?
+proposed in the literature for adapting such methods to the case of
+text data classiﬁcation [134]. A comparison of diﬀerent linear regressiontechniques for classiﬁcationm including SVM, may be found in [138].
+Finally, simple neural networks are also a form of linear classiﬁers,
+since the function computed by a set of neurons is essentially linear. Thesimplest form of neural network, known as the perceptron (or single layer
+network) are essentially designed for linear separation, and work well fortext. However, by using multiple layers of neurons, it is also possibleto generalize the approach for non-linear separation. In this section, wewill discuss the diﬀerent linear methods for text classiﬁcation.
+6.1 SVM Classiﬁers
+Support-vector machines were ﬁrst proposed in [30, 124] for numeri-
+cal data. The main principle of SVMs is to determine separators in thesearch space which can best separate the diﬀerent classes. For example,consider the example illustrated in Figure 6.1, in which we have twoclasses denoted by ’x’ and ’o’ respectively. We have denoted three diﬀer-ent separating hyperplanes, which are denoted by A, B, and C respec-tively. It is evident that the hyperplane A provides the best separation
+between the diﬀerent classes, because the normal distance of any of the
+datapointsfromitisthelargest. Therefore, thehyperplaneArepresents
+the maximum margin of separation . We note that the normal vector to
+this hyperplane (represented by the arrow in the ﬁgure) is a direction inthefeaturespacealongwhichwehavethemaximumdiscrimination. Oneadvantage of the SVM method is that since it attempts to determine theoptimum direction of discrimination in the feature space by examining
+the appropriate combination of features, it is quite robust to high dimen-A Survey of Text Classiﬁcation Algorithms 195
+sionality. It has been noted in [64] that text data is ideally suited for
+SVMclassiﬁcationbecauseofthesparsehigh-dimensionalnatureoftext,in which few features are irrelevant, but they tend to be correlated withone another and generally organized into linearly separable categories.We note that it is not necessary to use a linear function for the SVMclassiﬁer. Rather, with the kernel trick [6], SVM can construct a non-
+lineardecision surface in the original feature space by mapping the data
+instances non-linearly to an inner product space where the classes can beseparated linearly with a hyperplane. However, in practice, linear SVMis used most often because of their simplicity and ease of interpretabil-ity. The ﬁrst set of SVM classiﬁers, as adapted to the text domain wereproposed in [64–66]. A deeper theoretical study of the SVM method hasbeen provided in [67]. In particular, it has been shown why the SVM
+classiﬁer is expected to work well under a wide variety of circumstances.
+This has also been demonstrated experimentally in a few diﬀerent sce-narios. For example, the work in [41] applied the method to email datafor classifying it as spam or non-spam data. It was shown that the SVMmethod provides much more robust performance as compared to manyother techniques such as boosting decision trees, the rule based RIPPERmethod, and the Rocchio method. The SVM method is ﬂexible and can
+easily be combined with interactive user-feedback methods [107].
+We note that the problem of ﬁnding the best separator is essentially
+an optimization problem, which can typically be reduced to a QuadraticProgramming problem. For example, many of these methods use New-ton’s method for iterative minimization of a convex function. This cansometimes be slow, especially for high dimensional domains such as textdata. It has been shown [43] that by breaking a large Quadratic Pro-
+gramming problem (QP problem) to a set of smaller problems, an eﬃ-
+cient solution can be derived for the task. The SVM approach has alsobeen used successfully [44] in the context of a hierarchical organizationof the classes, as often occurs in web data. In this approach, a diﬀerentclassiﬁer is built at diﬀerent positions of the hierarchy.
+The SVM classiﬁer has also been shown to be useful in large scale
+scenarios in which a large amount of unlabeled data and a small amount
+of labeled data is available [120]. This is essentially a semi-supervised
+approachbecauseofitsuseofunlabeleddataintheclassiﬁcationprocess.This techniques is also quite scalable because of its use of a number ofmodiﬁed quasi-newton techniques, which tend to be eﬃcient in practice.196 MINING TEXT DATA
+6.2 Regression-Based Classiﬁers
+Regression modeling is a method which is commonly used in order to
+learn the relationships between real-valued attributes. Typically, thesemethods are designed for real valued attributes, as opposed to binaryattributes. Thisishowevernot animpedimenttoitsuseinclassiﬁcation,because the binary value of a class may be treated as a rudimentary
+special case of a real value, and some regression methods such as logistic
+regression can also naturally model discrete response variables.
+An early application of regression to text classiﬁcation is the Linear
+LeastSquaresFit(LLSF)method[134], whichworksasfollows. Supposethe predicted class label be p
+i=A·Xi+b,a n dyiis known to be the
+true class label, then our aim is to learn the values of Aandb,s u c h
+that the Linear Least Squares Fit (LLSF)/summationtextn
+i=1(pi−yi)2is minimized.
+In practice, the value of bis set to 0 for the learning process. let Pbe
+1×nvector of binary values indicating the binary class to which the
+corresponding class belongs. Thus, if Xbe the the n×dterm-matrix,
+then we wish to determine the 1 ×dvector of regression coeﬃcients
+Afor which ||A·XT−P||is minimized, where | |·| |represents the
+Froebinus norm. The problem can be easily generalized from the binaryclass scenario to the multi-class scenario with kclasses, by using Pas a
+k×nmatrix of binary values. In this matrix, exactly one value in each
+column is 1, and the corresponding row identiﬁer represents the class towhich that instance belongs. Similarly, the set Ais ak×dvector in the
+multi-class scenario. The LLSF method has been compared to a varietyof other methods [132, 134, 138], and has been shown to be very robustin practice.
+A more natural way of modeling the classiﬁcation problem with re-
+gression is the logistic regression classiﬁer [102], which diﬀers from the
+LLSF method in that the objective function to be optimized is the like-lihood function. Speciﬁcally, instead of using p
+i=A·Xi+bdirectly to
+ﬁt the true label yi, we assume that the probability of observing label
+yiis:
+p(C=yi|Xi)=exp(A·Xi+b)
+1+exp(A·Xi+b).
+This gives us a conditional generative model for yigivenXi. Putting it
+in another way, we assume that the logit transformation of p(C=yi|Xi)
+can be modeled by the linear combination of features of the instance Xi,
+i.e.,
+logp(C=yi|Xi)
+1−p(C=yi|Xi)=A·Xi+b.A Survey of Text Classiﬁcation Algorithms 197
+Thus logistic regression is also a linear classiﬁer as the decision boundary
+is determined by a linear function of the features. In the case of binaryclassiﬁcation, p(C=y
+i|Xi) can be used to determine the class label
+(e.g., using a threshold of 0.5). In the case of multi-class classiﬁcation,
+we have p(C=yi|Xi)∝exp(A·Xi+b), and the class label with the
+highest value according to p(C=yi|Xi) would be assigned to Xi. Given
+a set of training data points {(X1,yi),...(Xn,yn)}, the logistic regres-
+sion classiﬁer can be trained by choosing parameters Ato maximize the
+conditional likelihood/producttextn
+i=1p(yi|Xi).
+In some cases, the domain knowledge may be of the form, where
+some sets of words are more important than others for a classiﬁcation
+problem. For example, in a classiﬁcation application, we may know thatcertaindomain-words( Knowledge Words (KW) )maybemoreimportant
+to classiﬁcation of a particular target category than other words. Insuch cases, it has been shown [35] that it may be possible to encodesuch domain knowledge into the logistic regression model in the formof prior on the model parameters and use Bayesian estimation of model
+parameters.
+It is clear that the regression classiﬁers are extremely similar to the
+SVM model for classiﬁcation. Indeed, since LLSF, Logistic Regression,and SVM are all linear classiﬁers, they are thus identical at a concep-tual level; the main diﬀerence among them lies in the details of theoptimization formulation and implementation. As in the case of SVMclassiﬁers, training a regression classiﬁer also requires an expensive opti-
+mization process. For example, ﬁtting LLSF requires expensive matrix
+computations in the form of a singular value decomposition process.
+6.3 Neural Network Classiﬁers
+The basic unit in a neural network is a neuronorunit. Each unit
+receives a set of inputs, which are denoted by the vector Xi, which in
+this case, correspond to the term frequencies in the ith document. Each
+neuron is also associated with a set of weights A, which are used in
+order to compute a function f(·) of its inputs. A typical function which
+is often used in the neural network is the linear function as follows:
+pi=A·Xi (6.14)
+Thus, for a vector Xidrawn from a lexicon of dwords, the weight vector
+Ashould also contain delements. Now consider a binary classiﬁcation
+problem, in which all labels are drawn from {+1,−1}. We assume that
+the class label of Xiis denoted by yi. In that case, the sign of the
+predicted function piyields the class label.198 MINING TEXT DATA
+x
+x x
+xx
+xx
+xo
+o
+o
+oo
+o
+o
+oAx
+o
+o
+Figure 6.2. The sign of the projection onto the weight vector Ayields the class label
+In order to illustrate this point, let us consider a simple example in
+a 2-dimensional feature space, as illustrated in Figure 6.2. In this case,
+we have illustrated two diﬀerent classes, and the plane corresponding to
+Ax= 0 is illustrated in the same ﬁgure. It is evident that the sign of
+the function A·Xiyields the class label. Thus, the goal of the approach
+is tolearnthe set of weights Awith the use of the training data. The
+idea is that we start oﬀ with random weights and gradually update them
+when a mistake is made by applying the current function on the trainingexample. The magnitude of the update is regulated by a learning rate μ.
+This forms the core idea of the perceptron algorithm ,w h i c hi sa sf o l l o w s :
+Perceptron Algorithm
+Inputs: Learning Rate: μ
+Training Data (
+Xi,yi)∀i∈{1...n}
+Initialize weight vectors in Ato 0 or small random numbers
+repeat
+Apply each training data to the neural network to check if the
+sign ofA·Ximatches yi;
+if sign of A·Xidoesnotmatchyi, then
+update weights Abased on learning rate μ
+untilweights in Aconverge
+The weights in Aare typically updated (increased or decreased) propor-
+tionally to μ·Xi, so as to reduce the direction of the error of the neuron.
+We further note that many diﬀerent update rules have been proposedin the literature. For example, one may simply update each weight by
+μ, rather than by μ·
+Xi. This is particularly possible in domains suchA Survey of Text Classiﬁcation Algorithms 199
+x
+xx
+x
+oooo
+oxo
+o
+ox
+x
+oooo
+oo x
+Figure 6.3. Multi-Layered Neural Networks for Nonlinear Separation
+as text, in which all feature values take on small non-negative values of
+relatively similar magnitude. A number of implementations of neuralnetwork methods for text data have been studied in [34, 90, 101, 117,129].
+A natural question arises, as to how a neural network may be used,
+if all the classes may not be neatly separated from one another witha linear separator, as illustrated in Figure 6.2. For example, in Figure6.3, we have illustrated an example in which the classes may not beseparated with the use of a single linear separator. The use of mul-
+tiple layers of neurons can be used in order to induce such non-linear
+classiﬁcation boundaries. The eﬀect of such multiple layers is to inducemultiple piece-wise linear boundaries, which can be used to approximate
+enclosed regions belonging to a particular class. In such a network, the
+outputs of the neurons in the earlier layers feed into the neurons in thelater layers. The training process of such networks is more complex, asthe errors need to be back-propagated over diﬀerent layers. Some ex-amples of such classiﬁers include those discussed in [75, 110, 126, 132].However, the general observation [117, 129] for text has been that lin-ear classiﬁers generally provide comparable results to non-linear data,
+and the improvements of non-linear classiﬁcation methods are relatively
+small. This suggests that the additional complexity of building more in-volved non-linear models does not pay for itself in terms of signiﬁcantlybetter classiﬁcation.
+6.4 Some Observations about Linear Classiﬁers
+While the diﬀerent linear classiﬁers have been developed indepen-
+dently from one another in the research literature, they are surprisinglysimilar at a basic conceptual level. Interestingly, these diﬀerent lines of
+work have also resulted in a number of similar conclusions in terms of200 MINING TEXT DATA
+the eﬀectiveness of the diﬀerent classiﬁers. We note that the main dif-
+ference between the diﬀerent classiﬁers is in terms of the details of theobjective function which is optimized, and the iterative approach used
+in order to determine the optimum direction of separation. For exam-
+ple, the SVM method uses a Quadratic Programming (QP) formulation,whereas the LLSF method uses a closed-form least-squares formulation.On the other hand, the perceptron method does not try to formulatea closed-form objective function, but works with a softer iterative hillclimbing approach. This technique is essentially inherited from the it-erative learning approach used by neural network algorithms. However,
+its goal remains quite similar to the other two methods. Thus, the diﬀer-
+ences between these methods are really at a detailed level, rather thana conceptual level, in spite of their very diﬀerent research origins.
+Another general observation about these methods is that all of them
+can be implemented with non-linear versions of their classiﬁers. For ex-ample, it is possible to create non-linear decision surfaces with the SVMclassiﬁer, just as it is possible to create non-linear separation boundaries
+by using layered neurons in a neural network [132]. However, the general
+consensus has been that the linear versions of these methods work verywell, and the additional complexity of non-linear classiﬁcation does nottend to pay for itself, except for some special data sets. The reason forthis is perhaps because text is a high dimensional domain with highlycorrelated features and small non-negative values on sparse features.For example, it is hard to easily create class structures such as that in-
+dicated in Figure 6.3 for a sparse domain such as text containing only
+small non-negative values on the features. On the other hand, the highdimensional nature of correlated text dimensions is especially suited toclassiﬁers which can exploit the redundancies and relationships betweenthe diﬀerent features in separating out the diﬀerent classes. Commontext applications have generally resulted in class structures which arelinearly separable over this high dimensional domain of data. This is
+one of the reasons that linear classiﬁers have shown an unprecedented
+success in text classiﬁcation.
+7. Proximity-based Classiﬁers
+Proximity-based classiﬁers essentially use distance-based measures in
+order to perform the classiﬁcation. The main thesis is that documentswhich belong to the same class are likely to be close to one anotherbasedonsimilaritymeasuressuchasthedotproductorthecosinemetric[115]. In order to perform the classiﬁcation for a given test instance, two
+possible methods can be used:A Survey of Text Classiﬁcation Algorithms 201
+We determine the k-nearest neighbors in the training data to the
+test instance. The majority (or most abundant) class from these k
+neighbors are reported as the class label. Some examples of such
+methods are discussed in [25, 54, 134]. The choice of ktypically
+ranges between 20 and 40 in most of the afore-mentioned work,depending upon the size of the underlying corpus.
+We perform training data aggregation during pre-processing, inwhich clusters or groups of documents belonging to the same classare created. A representative meta-document is created from each
+group. The same k-nearest neighbor approach is applied as dis-
+cussed above, except that it is applied to this new set of meta-documents (or generalized instances [76]) rather than to the orig-
+inal documents in the collection. A pre-processing phase of sum-marization is useful in improving the eﬃciency of the classiﬁer, be-cause it signiﬁcantly reduces the number of distance computations.In some cases, it may also boost the accuracy of the technique, es-
+pecially when the data set contains a large number of outliers.
+Some examples of such methods are discussed in [55, 76, 109].
+A method for performing nearest neighbor classiﬁcation in text data
+is theWHIRL method discussed in [25]. The WHIRL method is es-
+sentially a method for performing soft similarity joins on the basis oftext attributes. By softsimilarity joins, we refer to the fact that the
+two records may not be exactly the same on the joined attribute, but anotion of similarity used for this purpose. It has been observed in [25]that any method for performing a similarity-join can be adapted as anearest neighbor classiﬁer, by using the relevant text documents as the
+joined attributes.
+One observation in [134] about nearest neighbor classiﬁers was that
+feature selection and document representation play an important partin the eﬀectiveness of the classiﬁcation process. This is because mostterms in large corpora may not be related to the category of interest.Therefore, a number of techniques were proposed in [134] in order tolearn the associations between the words and the categories. These
+are then used to create a feature representation of the document, so
+that the nearest neighbor classiﬁer is more sensitive to the classes inthe document collection. A similar observation has been made in [54],in which it has been shown that the addition of weights to the terms(based on their class-sensitivity) signiﬁcantly improves the underlyingclassiﬁer performance. The nearest neighbor classiﬁer has also beenextended to the temporally-aware scenario [114], in which the timeliness
+of a training document plays a role in the model construction process.202 MINING TEXT DATA
+In order to incorporate such factors, a temporal weighting function has
+been introduced in [114], which allows the importance of a document togracefully decay with time.
+For the case of classiﬁers which use grouping techniques, the most
+basic among such methods is that proposed by Rocchio in [109]. In thismethod, a singlerepresentative meta-document is constructed from each
+of the representative classes. For a given class, the weight of the term t
+k
+isthenormalizedfrequencyoftheterm tkindocumentsbelongingtothat
+class, minus the normalized frequency of the term in documents whichdo not belong to that class. Speciﬁcally, let f
+k
+pbe the expected weight of
+termtkin a randomly picked document belonging to the positive class,
+andfk
+nbe the expected weight of term tkin a randomly picked document
+belonging to the negative class. Then, for weighting parameters αpand
+αn, the weight fk
+rocchiois deﬁned as follows:
+fk
+rocchio=αp·fk
+p−αn·fk
+n (6.15)
+The weighting parameters αpandαnare picked so that the positive
+class has much greater weight as compared to the negative class. Forthe relevant class, we now have a vector representation of the terms(f
+1
+rocchio,f2
+rocchio...fn
+rocchio). This approach is applied separately to each
+oftheclasses, inordertocreateaseparatemeta-documentforeachclass.
+For a given test document, the closest meta-document to the test doc-ument can be determined by using a vector-based dot product or othersimilarity metric. The corresponding class is then reported as the rele-vantlabel. ThemaindistinguishingcharacteristicoftheRocchiomethodis that it creates a single proﬁle of the entire class. This class of methodsis also referred to as the Rocchio framework . The main disadvantage of
+this method is that if a single class occurs in multiple disjoint clusters
+which are not very well connected in the data, then the centroid of theseexamples may not represent the class behavior very well. This is likelyto be a source of inaccuracy for the classiﬁer. The main advantage ofthis method is its extreme simplicity and eﬃciency; the training phase islinear in the corpus size, and the number of computations in the testingphase are linear to the number of classes, since all the documents have
+already been aggregated into a small number of classes. An analysis of
+the Rocchio algorithm, along with a number of diﬀerent variations maybe found in [64].
+In order to handle the shortcomings of the Rocchio method, a number
+of classiﬁers have also been proposed [1, 14, 55, 76], which explicitlyperform the clustering of each of the classes in the document collection.These clusters are used in order to generate class-speciﬁc proﬁles. These
+proﬁles are also referred to as generalized instances in [76]. For a givenA Survey of Text Classiﬁcation Algorithms 203
+test instance, the label of the closest generalized instance is reported by
+the algorithm. The method in [14] is also a centroid-based classiﬁer, butis speciﬁcally designed for the case of text documents. The work in [55]
+shows that there are some advantages in designing schemes in which the
+similarity computations take account of the dependencies between theterms of the diﬀerent classes.
+We note that the nearest neighbor classiﬁer can be used in order to
+generate a ranked list of categories for each document. In cases, where adocument is related to multiple categories, these can be reported for thedocument, as long as a thresholding method is available. The work in
+[136] studies a number of thresholding strategies for the k-nearest neigh-
+bor classiﬁer. It has also been suggested in [136] that these thresholdingstrategies can be used to understand the thresholding strategies of otherclassiﬁers which use ranking classiﬁers.
+8. Classiﬁcation of Linked and Web Data
+In recent years, the proliferation of the web and social network tech-
+nologies has lead to a tremendous amount of document data, which isexpressed in the form of linked networks. The simplest example of this is
+the web, in which the documents are linked to one another with the use
+of hyper-links. Social networks can also be considered a noisy exampleof such data, because the comments and text proﬁles of diﬀerent usersare connected to one another through a variety of links. Linkage infor-mation is quite relevant to the classiﬁcation process, because documentsof similar subjects are often linked together. This observation has beenused widely in the collective classiﬁcation literature [12], in which a sub-
+set of network nodes are labeled, and the remaining nodes are classiﬁed
+on the basis of the linkages among the nodes.
+Ingeneral,acontent-basednetworkmaybedenotedby G=(N,A,C),
+whereNis the set of nodes, Ais the set of edges between the nodes,
+andCis a set of text documents. Each node in Ncorresponds to a
+text document in C, and it is possible for a document to be the empty,
+when the corresponding node does not contain any content. A subset of
+the nodes in Nare labeled. This corresponds to the training data. The
+classiﬁcation problem in this scenario is to determine the labels of theremaining nodes with the use of the training data. It is clear that boththe content and structure can play a useful and complementary role inthe classiﬁcation process.
+An interesting method for combining linkage and content information
+for classiﬁcation was discussed in [20]. In this paper, a hypertext cate-
+gorization method was proposed, which uses the content and labels of204 MINING TEXT DATA
+neighboring web pages for the classiﬁcation process. When the labels of
+all the nearest neighbors are available, then a Bayesian method can beadapted easily for classiﬁcation purposes. Just as the presence of a word
+in a document can be considered a Bayesian feature for a text classiﬁer,
+the presence of a link between the target page, and a page (for whichthe label is known) can be considered a feature for the classiﬁer. Thereal challenge arises when the labels of all the nearest neighbors are notavailable. In such cases, a relaxation labeling method was proposed inorder to perform the classiﬁcation. Two methods have been proposed inthis work:
+Fully Supervised Case of Radius one Enhanced LinkageAnalysis: In this case, it is assumed that all the neighboring class
+labels are known. In such a case, a Bayesian approach is utilized
+in order to treat the labels on the nearest neighbors as features forclassiﬁcation purposes. In this case, the linkage information is thesole information which is used for classiﬁcation purposes.
+When the class labels of the nearest neighbors are not
+known: In this case, an iterative approach is used for combining
+text and linkage based classiﬁcation. Rather than using the pre-deﬁned labels (which are not available), we perform a ﬁrst labelingof the neighboring documents with the use of document content.These labels are then used to classify the label of the target doc-ument, with the use of boththe local text and the class labels of
+the neighbors. This approach is used iteratively for re-deﬁning the
+labels of both the target document and its neighbors until conver-
+gence is achieved.
+The conclusion from the work in [20] is that a combination of text and
+linkage based classiﬁcation always improves the accuracy of a text clas-siﬁer. Even when none of the neighbors of the document have knownclasses, it seemed to be always beneﬁcial to add link information tothe classiﬁcation process. When the class labels of all the neighborsare known, then the advantages of using the scheme seem to be quitesigniﬁcant.
+An additional idea in the paper is that of the use of bridgesin order
+to further improve the classiﬁcation accuracy. The core idea in the useof a bridge is the use of 2-hoppropagation for link-based classiﬁcation.
+The results with the use of such an approach are somewhat mixed, asthe accuracy seems to reduce with an increasing number of hops. Thework in [20] shows results on a number of diﬀerent kinds of data setssuch as the Reuters database ,US patent database ,a n dYahoo!. Since
+theReuters database contains the least amount of noise, and pure textA Survey of Text Classiﬁcation Algorithms 205
+classiﬁers were able to do a good job. On the other hand, the US patent
+database and theYahoo! database contain an increasing amount of noise
+which reduces the accuracy of text classiﬁers. An interesting observa-
+tion in [20] was that a scheme which simply absorbed the neighbor text
+into the current document performed signiﬁcantly worse than a scheme
+which was based on pure text-based classiﬁcation. This is because thereare often signiﬁcant cross-boundary linkages between topics, and suchlinkages are able to confuse the classiﬁer. A publicly available implemen-tation of this algorithm may be found in the NetKittool kit available in
+[92].
+Another relaxation labeling method for graph-based document clas-
+siﬁcation is proposed in [4]. In this technique, the probability that theend points of a link take on a particular pair of class labels is quanti-ﬁed. We refer to this as the link-class pair probability . The posterior
+probability of classiﬁcation of a node Tinto class iis expressed as sum
+of the probabilities of pairing all possible class labels of the neighborsofTwith class label i. We note a signiﬁcant percentage of these (ex-
+ponential number of ) possibilities are pruned, since only the currently
+most probable
+5labelings are used in this approach. For this purpose,
+it is assumed that the class labels of the diﬀerent neighbors of T(while
+dependent on T) are independent of each other. This is similar to the
+naive assumption, which is often used in Bayes classiﬁers. Therefore, theprobability for a particular combination of labels on the neighbors canbe expressed as the product of the corresponding link-class pair proba-
+bilities. The approach starts oﬀ with the use of a standard content-based
+Bayes or SVM classiﬁer in order to assign the initial labels to the nodes.Then, an iterative approach is used to reﬁne the labels, by using themost probably label estimations from the previous iteration in order toreﬁne the labels in the current iteration. We note that the link-class pairprobabilities can be estimated as the smoothed fraction of edges in thelast iteration which contain a particular pair of classes as the end points
+(hard labeling), or it can also be estimated as the average product of
+node probabilities over all edges which take on that particular class pair(soft labeling). This approach is repeated to convergence.
+Another method which uses a naive Bayes classiﬁer to enhance link-
+based classiﬁcation is proposed in [104]. This method incrementallyassigns class labels, starting oﬀ with a temporary assignment and thengradually making them permanent. The initial class assignment is based
+on a simple Bayes expression based on both the terms and links in the
+5In the case of hard labeling , the single most likely labeling is used, whereas in the case of
+soft labeling , a small set of possibilities is used.206 MINING TEXT DATA
+document. In the ﬁnal categorization, the method changes the term
+weights for Bayesian classiﬁcation of the target document with the termsin the neighbor of the current document. This method uses a broad
+framework which is similar to that in [20], except that it diﬀerentiates
+between the classes in the neighborhood of a document in terms of theirinﬂuence on the class label of the current document. For example, docu-mentsforwhichtheclasslabelwaseitheralreadyavailableinthetrainingdata, or for which the algorithm has performed a ﬁnal assignment, havea diﬀerent conﬁdence weighting factor than those documents for whichthe class label is currently temporarily assigned. Similarly, documents
+whichbelongtoacompletelydiﬀerentsubject(basedoncontent)arealso
+removed from consideration from the assignment. Then, the Bayesianclassiﬁcation is performed with the re-computed weights, so that thedocument can be assigned a ﬁnal class label. By using this approach thetechnique is able to compensate for the noise and inconsistencies in thelink structures among diﬀerent documents.
+One major diﬀerence between the work in [20] and [104], is that the
+former is focussed on using link information in order to propagate thelabels, whereas the latter attempts to use the content of the neighboringpages. Another work along this direction, which uses the content of theneighboring pages more explicitly is proposed in [105]. In this case, thecontent of the neighboring pages is broken up into diﬀerent ﬁelds suchas titles, anchor text, and general text. The diﬀerent ﬁelds are givendiﬀerent levels of importance, which is learned during the classiﬁcation
+process. It was shown in [105] that the use of title ﬁelds and anchor
+ﬁelds is much more relevant than the general text. This accounts formuch of the accuracy improvements demonstrated in [105].
+The work in [2] proposes a method for dynamic classiﬁcation in text
+networks with the use of a random-walk method. The key idea in thework is to transform the combination of structure and content in the
+network into a pure network containing only content. Thus, we trans-
+form the original network G=(N,A,C)i n t oa naugmented network
+G
+A=(N∪Nc,A∪Ac), where NcandAcare an additional set of nodes
+and edges added to the original network. Each node in Nccorresponds
+to a distinct word in the lexicon. Thus, the augmented network contains
+the original structural nodes N, and a new set of word nodes Nc.T h e
+added edges in Acare undirected edges added between the structural
+nodesNand the word nodes Nc. Speciﬁcally, an edge (i,j ) is added
+toAc, if the word i∈Ncoccurs in the text content corresponding to
+the node j∈N. Thus, this network is semi-bipartite , in that there are
+no edges between the diﬀerent word nodes. An illustration of the semi-bipartite content-structure transformation is provided in Figure 6.4.A Survey of Text Classiﬁcation Algorithms 207
+1
+2
+34
+STRUCTURAL NODES
+WORD NODESDASHED LINES => WORD PRESENCE IN NODES
+Figure 6.4. The Semi-bipartite Transformation
+It is important to note that once such a transformation has been
+performed,anyofthecollectiveclassiﬁcationmethods[12]canbeappliedto the structural nodes. In the work in [2], a random-walk methodhas been used in order to perform the collective classiﬁcation of theunderlying nodes. In this method, repeated random walks are performedstarting at the unlabeled nodes which need to be classiﬁed. The randomwalks are deﬁned only on the structural nodes, and each hop may either
+be astructural h o po ra contenthop. We perform ldiﬀerent random
+walks, each of which contains hnodes. Thus, a total of l·hnodes
+are encountered in the diﬀerent walks. The class label of this nodeis predicted to be the label with the highest frequency of presence inthe diﬀerent l·hnodes encountered in the diﬀerent walks. The error
+of this random walk-based sampling process has been bounded in [12].In addition, the method in [12] can be adapted to dynamic content-
+based networks, in which the nodes, edges and their underlying content
+continuously evolve over time. The method in [2] has been comparedto that proposed in [18] (based on the implementation in [92]), and ithas been shown that the classiﬁcation methods of [12] are signiﬁcantlysuperior.
+Another method for classiﬁcation of linked text data is discussed in
+[139]. This method designs two separate regularization conditions; one
+is for the text-only classiﬁer (also referred to as the localclassiﬁer), and208 MINING TEXT DATA
+the other is for the link information in the network structure. These reg-
+ularizers are expressed in the terms of the underlying kernels; the linkregularizer is related to the standard graph regularizer used in the ma-
+chine learning literature, and the text regularizer is expressed in terms
+of the kernel gram matrix. These two regularization conditions are com-bined in two possible ways. One can either use linear combinations ofthe regularizers, or linear combinations of the associated kernels. Itwas shown in [139] that both combination methods perform better thaneitherpurestructure-basedorpuretext-basedmethods. Themethodus-ing a linear combination of regularizers was slightly more accurate and
+robust than the method which used a linear combination of the kernels.
+A method in [32] designs a classiﬁer which combines a Naive Bayes
+classiﬁer (on the text domain), and a rule-based classiﬁer (on the struc-tural domain). The idea is to invent a set of predicates, which aredeﬁned in the space of links, pages and words. A variety of predicates(or relations) are deﬁned depending upon the presence of the word ina page, linkages of pages to each other, the nature of the anchor text
+of the hyperlink, and the neighborhood words of the hyperlink. These
+essentially encode the graph structure of the documents in the form ofboolean predicates, and can also be used to construct relational learners.The main contribution in [32] is to combine the relational learners on thestructural domain with the Naive Bayes approach in the text domain.We refer the reader to [32, 33] for the details of the algorithm, and thegeneral philosophy of such relational learners.
+One of the interesting methods for collective classiﬁcation in the con-
+text of email networks was proposed in [23]. The technique in [23] isdesigned to classify speechactsin email. Speech acts essentially char-
+acterize, whether an email refers to a particular kind of action (such asscheduling a meeting). It has been shown in [23] that the use of se-quential thread-based information from the email is very useful for theclassiﬁcation process. An email system can be modeled as a network
+in several ways, one of which is to treat an email as a node, and the
+edges as the thread relationships between the diﬀerent emails. In thissense, the work in [23] devises a network-based mining procedure whichuses both the content and the structure of the email network. However,this work is rather speciﬁc to the case of email networks, and it is notclear whether the technique can be adapted (eﬀectively) to more generalnetworks.
+A diﬀerent line of solutions to such problems, which are deﬁned on
+a heterogeneous feature space is to use latent space methods in orderto simultaneously homogenize the feature space, and also determine thelatent factors in the underlying data. The resulting representation canA Survey of Text Classiﬁcation Algorithms 209
+be used in conjunction with any of the text classiﬁers which are designed
+for latent space representations. A method in [140] uses a matrix factor-ization approach in order to construct a latent space from the underlying
+data. Bothsupervisedandunsupervisedmethodswereproposedforcon-
+structing the latent space from the underlying data. It was then shownin [140] that this feature representation provides more accurate results,when used in conjunction with an SVM-classiﬁer.
+Finally, a method for web page classiﬁcation is proposed in [119]. This
+method is designed for using intelligent agents in web page categoriza-tion. The overall approach relies on the design of two functions which
+correspond to scoring web pages and links respectively. An advice lan-
+guage is created, and a method is proposed for mapping advice to neuralnetworks. It is has been shown in [119] how this general purpose systemmay be used in order to ﬁnd home pages on the web.
+9. Meta-Algorithms for Text Classiﬁcation
+Meta-algorithms play an important role in classiﬁcation strategies be-
+cause of their ability to enhance the accuracy of existing classiﬁcationalgorithms by combining them, or making a general change in the diﬀer-
+ent algorithms to achieve a speciﬁc goal. Typical examples of classiﬁer
+meta-algorithms include bagging,stacking andboosting [42]. Some of
+these methods change the underlying distribution of the training data,others combine classiﬁers, and yet others change the algorithms in orderto satisfy speciﬁc classiﬁcation criteria. We will discuss these diﬀerentclasses of methods in this section.
+9.1 Classiﬁer Ensemble Learning
+In this method, we use combinations of classiﬁers in conjunction with
+a voting mechanism in order to perform the classiﬁcation. The idea is
+that since diﬀerent classiﬁers are susceptible to diﬀerent kinds of over-training and errors, a combination classiﬁer is likely to yield much morerobust results. This technique is also sometimes referred to as stacking
+orclassiﬁer committee construction .
+Ensemble learning has been used quite frequently in text categoriza-
+tion. Most methods simply use weighted combinations of classiﬁer out-
+puts (either in terms of scores or ranks) in order to provide the ﬁnalclassiﬁcation result. For example, the work by Larkey and Croft [79]used weighted linear combinations of the classiﬁer scores or ranks. Thework by Hull [60] used linear combinations of probabilities for the samegoal. A linear combination of the normalized scores was used for classi-ﬁcation [137]. The work in [87] used classiﬁer selection techniques and210 MINING TEXT DATA
+voting in order to provide the ﬁnal classiﬁcation result. Some examples
+of such voting and selection techniques are as follows:
+In a binary-class application, the class label which obtains themajority vote is reported as the ﬁnal result.
+For a given test instance, a speciﬁc classiﬁer is selected, depending
+upon the performance of the classiﬁer which are closest to that
+test instance.
+A weighted combination of the results from the diﬀerent classiﬁersare used, where the weight is regulated by the performance ofthe classiﬁer on validation instances which are most similar to the
+current test instance.
+The last two methods above try to select the ﬁnal classiﬁcation in a
+smarter way by discriminating between the performances of the clas-
+siﬁers in diﬀerent scenarios. The work by [77] used category-averaged
+features in order to construct a diﬀerent classiﬁer for each category.
+Themajorchallengeinensemblelearningistoprovidetheappropriate
+combination of classiﬁers for a particular scenario. Clearly, this combi-nation can signiﬁcantly vary with the scenario and the data set. In orderto achieve this goal, the method in [10] proposes a method for proba-bilistic combination of text classiﬁers. The work introduces a number of
+variables known as reliability variables in order to regulate the impor-
+tance of the diﬀerent classiﬁers. These reliability variables are learneddynamically for each situation, so as to provide the best classiﬁcation.
+9.2 Data Centered Methods: Boosting and
+Bagging
+While ensemble techniques focus on combining diﬀerent classiﬁers,
+data-centered methods such as boosting and bagging typically focus ontrainingthesameclassiﬁerondiﬀerentpartsofthetrainingdatainordertocreatediﬀerentmodels. Foragiventestinstance, acombinationoftheresults obtained from the use of these diﬀerent models is reported. An-
+othermajordiﬀerencebetweenensemble-methodsandboostingmethods
+is that the training models in a boosting method are not constructed in-dependently, but are constructed sequentially. Speciﬁcally, after iclassi-
+ﬁers are constructed, the ( i+1)th classiﬁer is constructed on those parts
+of the training data which the ﬁrst iclassiﬁers are unable to accurately
+classify. The results of these diﬀerent classiﬁers are combined togethercarefully, where the weight of each classiﬁer is typically a function of
+its error rate. The most well known meta-algorithm for boosting is theA Survey of Text Classiﬁcation Algorithms 211
+AdaBoost algorithm [48]. Such boosting algorithms have been applied to
+a variety of scenarios such as decision tree learners, rule-based systems,and Bayesian classiﬁers [49, 61, 73, 100, 116, 118].
+Wenotethatboostingisalsoakindofensemblelearningmethodology,
+except that we train the same model on diﬀerent subsets of the datain order to create the ensemble. One major criticism of boosting is
+that in many data sets, some of the training records are noisy, and
+a classiﬁcation model should be resistant to overtraining on the data.Since the boosting model tends to weight the error-prone examples moreheavily in successive rounds, this can cause the classiﬁcation process tobe more prone to overﬁtting. This is particularly noticeable in the caseof noisy data sets. Some recent results have suggested that all convexboosting algorithms may perform poorly in the presence of noise [91].
+These results tend to suggest that the choice of boosting algorithm may
+be critical for a successful outcome, depending upon the underlying dataset.
+Baggingmethods[16]aregenerallydesignedtoreducethemodelover-
+ﬁtting error which arises during the learning process. The idea in bag-ging is to pick bootstrap samples (samples with replacement) from the
+underlying collection, and train the classiﬁers in these samples. The
+classiﬁcation results from these diﬀerent samples are then combined to-
+gether in order to yield the ﬁnal result. Bagging methods are generallyused in conjunction with decision trees, though these methods can beused in principle with any kind of classiﬁer. The main criticism of thebagging method is that it can sometimes lead to a reduction in accuracybecause of the smaller size of each individual training sample. Baggingis useful only if the model is unstable to small details of the training
+algorithm, because it reduces the overﬁtting error. An example of such
+an algorithm would be the decision tree model, which is highly sensitiveto how the higher levels of the tree are constructed in a high dimen-sional feature space such as text. Bagging methods have not been usedfrequently in text classiﬁcation.
+9.3 Optimizing Speciﬁc Measures of Accuracy
+We note that the use of the absolute classiﬁcation accuracy is not
+the only measure which is relevant to classiﬁcation algorithms. For ex-
+ample, in skewed-class scenarios, as often arise in the context of appli-
+cations such as fraud detection, and spam ﬁltering, it is more costlyto misclassify examples of one class than another. For example, whileit may be tolerable to misclassify a few spam emails (thereby allowingthem into the inbox), it is much more undesirable to incorrectly mark212 MINING TEXT DATA
+a legitimate email as spam. Cost-sensitive classiﬁcation problems also
+naturally arise in cases in which one class is more rare than the other,and it is therefore more desirable to identify the rare examples. In such
+cases, it is desirable to optimize the cost-weighted accuracy of the clas-
+siﬁcation process. We note that many of the broad techniques whichhave been designed for non-textual data [40, 42, 45] are also applicableto text data, because the speciﬁc feature representation is not materialto how standard algorithms for modiﬁed to the cost-sensitive case. Agood understanding of cost-sensitive classiﬁcation both for the textualand non-textual case may be found in [40, 45, 3]. Some examples of
+how classiﬁcation algorithms may be modiﬁed in straightforward ways
+to incorporate cost-sensitivity are as follows:
+In a decision-tree, the split condition at a given node tries to max-imize the accuracy of its children nodes. In the cost-sensitive case,the split is engineered to maximize the cost-sensitive accuracy.
+In rule-based classiﬁers, the rules are typically quantiﬁed and or-dered by measures corresponding to their predictive accuracy. Inthecost-sensitivecase, therulesarequantiﬁedandorderedbytheircost-weighted accuracy .
+In Bayesian classiﬁers, the posterior probabilities are weighted by
+the cost of the class for which the prediction is made.
+In linear classiﬁers, the optimum hyperplane separating the classesis determined in a cost-weighted sense. Such costs can typicallybe incorporated in the underlying objective function. For example,theleast-squareerrorintheobjectivefunctionoftheLLSFmethodcan be weighted by the underlying costs of the diﬀerent classes.
+In ak-nearest neighbor classiﬁer, we report the cost-weighted ma-
+jority class among the knearest neighbors of the test instance.
+We note that the use of a cost-sensitive approach is essentially a
+change of the objective function of classiﬁcation, which can also be for-mulated as an optimization problem. While the standard classiﬁcation
+problem generally tries to optimize accuracy, the cost-sensitive version
+tries to optimize a cost-weighted objective function. A more generalapproach was proposed in [50] in which a meta-algorithm was proposedfor optimizing a speciﬁc ﬁgure of merit such as the accuracy, preci-sion, recall, or F
+1-measure. Thus, this approach generalizes this class
+of methods to any arbitrary objective function , making it essentially an
+objective-centered classiﬁcation method . A generalized probabilistic de-
+scent algorithm (with the desired objective function) is used in conjunc-A Survey of Text Classiﬁcation Algorithms 213
+tion with the classiﬁer of interest in order to derive the class labels of
+the test instance. The work in [50] shows the advantages of using the
+technique over a standard SVM-based classiﬁer.
+10. Conclusions and Summary
+The classiﬁcation problem is one of the most fundamental problems
+in the machine learning and data mining literature. In the context of
+text data, the problem can also be considered similar to that of clas-
+siﬁcation of discrete set-valued attributes, when the frequencies of the
+words are ignored. The domains of these sets are rather large, as it com-
+prises the entire lexicon. Therefore, text mining techniques need to be
+designed to eﬀectively manage large numbers of elements with varying
+frequencies. Almost all the known techniques for classiﬁcation such as
+decision trees, rules, Bayes methods, nearest neighbor classiﬁers, SVM
+classiﬁers, and neural networks have been extended to the case of text
+data. Recently, a considerable amount of emphasis has been placed on
+linear classiﬁers such as neural networks and SVM classiﬁers, with the
+latter being particularly suited to the characteristics of text data. In re-
+cent years, the advancement of web and social network technologies have
+lead to a tremendous interest in the classiﬁcation of text documents con-
+taining links or other meta-information. Recent research has shown that
+the incorporation of linkage information into the classiﬁcation process
+can signiﬁcantly improve the quality of the underlying results.
+References
+[1] C. C. Aggarwal, S. C. Gates, P. S. Yu. On Using Partial Supervi-
+sion for Text Categorization, IEEE Transactions on Knowledge and
+Data Engineering , 16(2), 245–255, 2004.
+[2] C. C. Aggarwal, N. Li. On Node Classiﬁcation in Dynamic Content-
+based Networks, SDM Conference , 2011.
+[3] I. Androutsopoulos, J. Koutsias, K. Chandrinos, G. Paliouras, C.
+Spyropoulos.AnEvaluationofNaiveBayesianAnti-SpamFiltering.
+Workshop on Machine Learning in the New Information Age ,i n
+conjunction with ECML Conference , 2000.
+http://arxiv.org/PS_cache/cs/pdf/0006/0006013v1.pdf
+[4] R. Angelova, G. Weikum. Graph-based text classiﬁcation: learn
+from your neighbors. ACM SIGIR Conference , 2006.
+[5] C. Apte, F. Damerau, S. Weiss. Automated Learning of Decision
+Rules for Text Categorization, ACM Transactions on Information
+Systems, 12(3), pp. 233–251, 1994.214 MINING TEXT DATA
+[6] M. Aizerman, E. Braverman, L. Rozonoer. Theoretical foundations
+of the potential function method in pattern recognition learning,Automation and Remote Control , 25: pp. 821–837, 1964.
+[7] L.Baker,A.McCallum.DistributionalClusteringofWordsforText
+Classiﬁcation, ACM SIGIR Conference , 1998.
+[8] R. Bekkerman, R. El-Yaniv, Y. Winter, N. Tishby. On Feature Dis-
+tributional Clustering for Text Categorization. ACM SIGIR Con-
+ference, 2001.
+[9] S. Basu, A. Banerjee, R. J. Mooney. Semi-supervised Clustering by
+Seeding. ICML Conference , 2002.
+[10] P. Bennett, S. Dumais, E. Horvitz. Probabilistic Combination of
+Text Classiﬁers using Reliability Indicators: Models and Results.ACM SIGIR Conference , 2002.
+[11] P. Bennett, N. Nguyen. Reﬁned experts: improving classiﬁcation in
+large taxonomies. ACM SIGIR Conference , 2009.
+[12] S. Bhagat, G. Cormode, S. Muthukrishnan. Node Classiﬁcation in
+Social Networks, Book Chapter in Social Network Data Analytics,
+Ed. Charu Aggarwal, Springer , 2011.
+[13] A. Blum, T. Mitchell. Combining labeled and unlabeled data with
+co-training. COLT, 1998.
+[14] D. Boley, M. Gini, R. Gross, E.-H. Han, K. Hastings, G. Karypis,
+V. Kumar, B. Mobasher, J. Moore. Partitioning-based clustering
+for web document categorization. Decision Support Systems , Vol.
+27, pp. 329–341, 1999.
+[15] L. Brieman, J. Friedman, R. Olshen, C. Stone. Classiﬁcation and
+Regression Trees , Wadsworth Advanced Books and Software, CA,
+1984.
+[16] L. Breiman. Bagging Predictors. Machine Learning , 24(2), pp. 123–
+140, 1996.
+[17] L. Cai, T. Hofmann. Text categorization by boosting automatically
+extracted concepts. ACM SIGIR Conference , 2003.
+[18] S. Chakrabarti, S. Roy, M. Soundalgekar. Fast and Accurate Text
+Classiﬁcation via Multiple Linear Discriminant Projections, VLDB
+Journal, 12(2), pp. 172–185, 2003.
+[19] S. Chakrabarti, B. Dom. R. Agrawal, P. Raghavan. Using taxon-
+omy, discriminants and signatures for navigating in text databases,
+VLDB Conference , 1997.
+[20] S. Chakrabarti, B. Dom, P. Indyk. Enhanced hypertext categoriza-
+tion using hyperlinks. ACM SIGMOD Conference , 1998.A Survey of Text Classiﬁcation Algorithms 215
+[21] S. Chakraborti, R. Mukras, R. Lothian, N. Wiratunga, S. Watt,
+D. Harper. Supervised Latent Semantic Indexing using AdaptiveSprinkling, IJCAI, 2007.
+[22] D. Chickering, D. Heckerman, C. Meek. A Bayesian approach for
+learning Bayesian networks with local structure. Thirteenth Con-
+ference on Uncertainty in Artiﬁcial Intelligence , 1997.
+[23] V. R. de Carvalho, W. Cohen. On the collective classiﬁcation of
+email ”speech acts”, ACM SIGIR Conference , 2005.
+[24] V. Castelli, T. M. Cover. On the exponential value of labeled sam-
+ples.Pattern Recognition Letters , 16(1), pp. 105–111, 1995.
+[25] W. Cohen, H. Hirsh. Joins that generalize: text classiﬁcation using
+Whirl.ACM KDD Conference , 1998.
+[26] W. Cohen, Y. Singer. Context-sensitive learning methods for text
+categorization. ACM Transactions on Information Systems , 17(2),
+pp. 141–173, 1999.
+[27] W. Cohen. Learning rules that classify e-mail. AAAI Conference ,
+1996.
+[28] W. Cohen. Learning with set-valued features. AAAI Conference ,
+1996.
+[29] W. Cooper. Some inconsistencies and misnomers in probabilistic
+information retrieval. ACM Transactions on Information Systems ,
+13(1), pp. 100–111, 1995.
+[30] C. Cortes, V. Vapnik. Support-vector networks. Machine Learning ,
+20: pp. 273–297, 1995.
+[31] T. M. Cover, J. A. Thomas. Elements of information theory. New
+York: John Wiley and Sons, 1991.
+[32] M.Craven,S.Slattery.Relationallearningwithstatisticalpredicate
+invention: Better models for hypertext. Machine Learning , 43: pp.
+97–119, 2001.
+[33] M. Craven, D. DiPasquo, D. Freitag, A. McCallum, T. Mitchell, K.
+Nigam, S. Slattery. Learning to Extract Symbolic Knowledge fromthe Worldwide Web. AAAI Conference , 1998.
+[34] I. Dagan, Y. Karov, D. Roth. Mistake-driven Learning in Text Cat-
+egorization, Proceedings of EMNLP , 1997.
+[35] A. Dayanik, D. Lewis, D. Madigan, V. Menkov, A. Genkin. Con-
+structing informative prior distributions from domain knowledge in
+text classiﬁcation. ACM SIGIR Conference , 2006.
+[36] A. P. Dempster, N.M. Laird, D.B. Rubin. Maximum likelihood from
+incomplete data via the em algorithm. Journal of the Royal Statis-
+tical Society, Series B , 39(1): pp. 1–38, 1977.216 MINING TEXT DATA
+[37] F. Denis, A. Laurent. Text Classiﬁcation and Co-Training from
+Positive and Unlabeled Examples, ICML 2003 Workshop: The
+Continuum from Labeled to Unlabeled Data. http://www.grappa.
+univ-lille3.fr/ftp/reports/icmlws03.pdf .
+[38] S. Deerwester, S. Dumais, T. Landauer, G. Furnas, R. Harshman.
+Indexing by Latent Semantic Analysis. JASIS, 41(6), pp. 391–407,
+1990.
+[39] P. Domingos, M. J. Pazzani. On the the optimality of the simple
+Bayesian classiﬁer under zero-one loss. Machine Learning, 29(2–3),
+pp. 103–130, 1997.
+[40] P. Domingos. MetaCost: A General Method for making Classiﬁers
+Cost-Sensitive. ACM KDD Conference , 1999.
+[41] H. Drucker, D. Wu, V. Vapnik. Support Vector Machines for Spam
+Categorization. IEEE Transactions on Neural Networks , 10(5), pp.
+1048–1054, 1999.
+[42] R. Duda, P. Hart, W. Stork. Pattern Classiﬁcation , Wiley Inter-
+science, 2000.
+[43] S. Dumais, J. Platt, D. Heckerman, M. Sahami. Inductive learn-
+ing algorithms and representations for text categorization. CIKM
+Conference , 1998.
+[44] S. Dumais, H. Chen. Hierarchical Classiﬁcation of Web Content.
+ACM SIGIR Conference , 2000.
+[45] C. Elkan. The foundations of cost-sensitive learning, IJCAI Con-
+ference, 2001.
+[46] R. Fisher. The Use of Multiple Measurements in Taxonomic Prob-
+lems.Annals of Eugenics , 7, pp. 179–188, 1936.
+[47] R. El-Yaniv, O. Souroujon. Iterative Double Clustering for Unsu-
+pervised and Semi-supervised Learning. NIPS Conference, 2002.
+[48] Y. Freund, R. Schapire. A decision-theoretic generalization of on-
+line learning and an application to boosting. In Proc. Second Eu-
+ropean Conference on Computational Learning Theory , pp. 23–37,
+1995.
+[49] Y. Freund, R. Schapire, Y. Singer, M. Warmuth. Using and combin-
+ing predictors that specialize. Proceedings of the 29th Annual ACM
+Symposium on Theory of Computing , pp. 334–343, 1997.
+[50] S. Gao, W. Wu, C.-H. Lee, T.-S. Chua. A maximal ﬁgure-of-merit
+learning approach to text categorization. SIGIR Conference , 2003.
+[51] R. Gilad-Bachrach, A. Navot, N. Tishby. Margin based feature se-
+lection – theory and algorithms. ICML Conference , 2004.A Survey of Text Classiﬁcation Algorithms 217
+[52] S.Gopal,Y.Yang.Multilabelclassiﬁcationwithmeta-levelfeatures.
+ACM SIGIR Conference , 2010.
+[53] L.Guthrie,E.Walker.DocumentClassiﬁcationbyMachine:Theory
+and Practice. COLING , 1994.
+[54] E.-H. Han, G. Karypis, V. Kumar. Text Categorization using
+Weighted-Adjusted k-nearest neighbor classiﬁcation, PAKDD Con-
+ference, 2001.
+[55] E.-H. Han, G. Karypis. Centroid-based Document Classiﬁcation:
+Analysis and Experimental Results, PKDD Conference , 2000.
+[56] D. Hardin, I. Tsamardinos, C. Aliferis. A theoretical characteriza-
+tion of linear SVM-based feature selection. ICML Conference , 2004.
+[57] T. Hofmann. Probabilistic latent semantic indexing. ACM SIGIR
+Conference , 1999.
+[58] P. Howland, M. Jeon, H. Park. Structure Preserving Dimension Re-
+duction for Clustered Text Data based on the Generalized Singular
+Value Decomposition. SIAM Journal of Matrix Analysis and Appli-
+cations, 25(1): pp. 165–179, 2003.
+[59] P. Howland, H. Park. Generalizing discriminant analysis using the
+generalized singular value decomposition, IEEE Transactions on
+Pattern Analysis and Machine Intelligence , 26(8), pp. 995–1006,
+2004.
+[60] D.Hull,J.Pedersen,H.Schutze.Methodcombinationfordocument
+ﬁltering. ACM SIGIR Conference , 1996.
+[61] R. Iyer, D. Lewis, R. Schapire, Y. Singer, A. Singhal. Boosting for
+document routing. CIKM Conference , 2000.
+[62] M. James. Classiﬁcation Algorithms , Wiley Interscience, 1985.
+[63] D. Jensen, J. Neville, B. Gallagher. Why collective inference im-
+proves relational classiﬁcation. ACM KDD Conference , 2004.
+[64] T. Joachims. A Probabilistic Analysis of the Rocchio Algorithm
+with TFIDF for Text Categorization. ICML Conference , 1997.
+[65] T. Joachims. Text categorization with support vector machines:
+learning with many relevant features. ECML Conference , 1998.
+[66] T.Joachims.Transductiveinferencefortextclassiﬁcationusingsup-
+port vector machines. ICML Conference , 1999.
+[67] T. Joachims. A Statistical Learning Model of Text Classiﬁcation for
+Support Vector Machines. ACM SIGIR Conference , 2001.
+[68] D. Johnson, F. Oles, T. Zhang, T. Goetz. A Decision Tree-based
+Symbolic Rule Induction System for Text Categorization, IBM Sys-
+tems Journal , 41(3), pp. 428–437, 2002.218 MINING TEXT DATA
+[69] I. T. Jolliﬀee. Principal Component Analysis. Springer, 2002.
+[70] T.Kalt,W.B.Croft.Anewprobabilisticmodeloftextclassiﬁcation
+and retrieval. Technical Report IR-78, University of Massachusetts
+Center for Intelligent Information Retrieval, 1996. http://ciir.
+cs.umass.edu/publications/index.shtml
+[71] G. Karypis, E.-H. Han. Fast Supervised Dimensionality Reduction
+with Applications to Document Categorization and Retrieval, ACM
+CIKM Conference , 2000.
+[72] T. Kawatani. Topic diﬀerence factor extraction between two docu-
+ment sets and its application to text categorization. ACM SIGIR
+Conference , 2002.
+[73] Y.-H. Kim, S.-Y. Hahn, B.-T. Zhang. Text ﬁltering by boosting
+naive Bayes classiﬁers. ACM SIGIR Conference, 2000.
+[74] D. Koller, M. Sahami. Hierarchically classifying documents with
+very few words, ICML Conference , 2007.
+[75] S. Lam, D. Lee. Feature reduction for neural network based text
+categorization. DASFAA Conference, 1999.
+[76] W. Lam, C. Y. Ho. Using a generalized instance set for automatic
+text categorization. ACM SIGIR Conference , 1998.
+[77] W. Lam, K.-Y. Lai. A meta-learning approach for text categoriza-
+tion.ACM SIGIR Conference , 2001.
+[78] K. Lang. Newsweeder: Learning to ﬁlter netnews. ICML Confer-
+ence, 1995.
+[79] L. S. Larkey, W. B. Croft. Combining Classiﬁers in text categoriza-
+tion.ACM SIGIR Conference , 1996.
+[80] D. Lewis, J. Catlett. Heterogeneous uncertainty sampling for super-
+vised learning. ICML Conference , 1994.
+[81] D. Lewis, M. Ringuette. A comparison of two learning algorithms
+for text categorization. SDAIR, 1994.
+[82] D. Lewis. Naive (Bayes) at forty: The independence assumption in
+information retrieval. ECML Conference , 1998.
+[83] D. Lewis. An Evaluation of Phrasal and Clustered Representations
+for the Text Categorization Task, ACM SIGIR Conference, 1992.
+[84] D. Lewis, W. Gale. A sequential algorithm for training text classi-
+ﬁers,SIGIR Conference , 1994.
+[85] D. Lewis, K. Knowles. Threading electronic mail: A preliminary
+study.Information Processing and Management, 33(2), pp. 209–
+217, 1997.A Survey of Text Classiﬁcation Algorithms 219
+[86] H. Li, K. Yamanishi. Document classiﬁcation using a ﬁnite mix-
+ture model. Annual Meeting of the Association for Computational
+Linguistics , 1997.
+[87] Y. Li, A. Jain. Classiﬁcation of text documents. The Computer
+Journal, 41(8), pp. 537–546, 1998.
+[88] B. Liu, W. Hsu, Y. Ma. Integrating Classiﬁcation and Association
+Rule Mining. ACM KDD Conference , 1998.
+[89] B. Liu, L. Zhang. A Survey of Opinion Mining and Sentiment Anal-
+ysis. Book Chapter in Mining Text Data, Ed. C. Aggarwal, C. Zhai,
+Springer, 2011.
+[90] N. Littlestone. Learning quickly when irrelevant attributes abound:
+A new linear-threshold algorithm. Machine Learning, 2: pp. 285–
+318, 1988.
+[91] P. Long, R. Servedio. Random Classiﬁcation Noise defeats all Con-
+vex Potential Boosters. ICML Conference , 2008.
+[92] S. A. Macskassy, F. Provost. Classiﬁcation in Networked Data: A
+Toolkit and a Univariate Case Study, Journal of Machine Learning
+Research, Vol. 8, pp. 935–983, 2007.
+[93] A. McCallum. Bow: A toolkit for statistical language modeling,
+text retrieval, classiﬁcation and clustering. http://www.cs.cmu.
+edu/ ~mccallum/bow, 1996.
+[94] A. McCallum, K. Nigam. A Comparison of Event Models for Naive
+Bayes Text Classiﬁcation. AAAI Workshop on Learning for Text
+Categorization, 1998.
+[95] A. McCallum, R. Rosenfeld, T. Mitchell, A. Ng. Improving text
+classiﬁcation by shrinkage in a hierarchy of classes. ICML Confer-
+ence, 1998.
+[96] McCallum, Andrew Kachites. ”MALLET: A Machine Learning for
+Language Toolkit.” http://mallet.cs.umass.edu. 2002.
+[97] T. M. Mitchell. Machine Learning . WCB/McGraw-Hill, 1997.
+[98] T. M. Mitchell. The role of unlabeled data in supervised learning.
+Proceedings of the Sixth I nternational Colloquium on Cognitive Sci-
+ence, 1999.
+[99] D. Mladenic, J. Brank, M. Grobelnik, N. Milic-Frayling. Feature se-
+lection using linear classiﬁer weights: interaction with classiﬁcation
+models.ACM SIGIR Conference, 2004.
+[100] K. Myers, M. Kearns, S. Singh, M. Walker. A boosting approach
+to topic spotting on subdialogues. ICML Conference , 2000.220 MINING TEXT DATA
+[101] H. T. Ng, W. Goh, K. Low. Feature selection, perceptron learn-
+ing, and a usability case study for text categorization. ACM SIGIR
+Conference , 1997.
+[102] A. Y. Ng, M. I. Jordan. On discriminativevs. generative classiﬁers:
+a comparison of logistic regression and naive Bayes. NIPS. pp. 841-
+848, 2001.
+[103] K. Nigam, A. McCallum, S. Thrun, T. Mitchell. Learning to clas-
+sify text from labeled and unlabeled documents. AAAI Conference ,
+1998.
+[104] H.-J. Oh, S.-H. Myaeng, M.-H. Lee. A practical hypertext cat-
+egorization method using links and incrementally available class
+information. ACM SIGIR Conference , 2000.
+[105] X. Qi, B. Davison. Classiﬁers without borders: incorporating
+ﬁelded text from neighboring web pages. ACM SIGIR Conference ,
+2008.
+[106] J. R. Quinlan, Induction of Decision Trees, Machine Learning ,
+1(1), pp 81–106, 1986.
+[107] H. Raghavan, J. Allan. An interactive algorithm for asking and
+incorporating feature feedback into support vector machines. ACM
+SIGIR Conference , 2007.
+[108] S. E. Robertson, K. Sparck-Jones. Relevance weighting of search
+terms.Journal of the American Society for Information Science , 27:
+pp. 129–146, 1976.
+[109] J. Rocchio. Relevance feedback information retrieval. The Smart
+Retrieval System- Experiments in Automatic Document Processing ,
+G. Salton, Ed. Prentice Hall, Englewood Cliﬀs, NJ, pp 313–323,
+1971.
+[110] M. Ruiz, P. Srinivasan. Hierarchical neural networks for text cat-
+egorization. ACM SIGIR Conference , 1999.
+[111] F. Sebastiani. Machine Learning in Automated Text Categoriza-
+tion,ACM Computing Surveys , 34(1), 2002.
+[112] M. Sahami. Learning limited dependence Bayesian classiﬁers,
+ACM KDD Conference , 1996.
+[113] M. Sahami, S. Dumais, D. Heckerman, E. Horvitz. A Bayesian
+approach to ﬁltering junk e-mail. AAAI Workshop on Learning for
+Text Categorization. Tech. Rep. WS-98-05, AAAI Press. http://
+robotics.stanford.edu/users/sahami/papers.html
+[114] T. Salles, L. Rocha, G. Pappa, G. Mourao, W. Meira Jr., M.
+Goncalves. Temporally-aware algorithms for document classiﬁca-
+tion.ACM SIGIR Conference , 2010.A Survey of Text Classiﬁcation Algorithms 221
+[115] G. Salton. An Introduction to Modern Information Retrieval, Mc
+Graw Hill, 1983.
+[116] R.Schapire,Y.Singer.BOOSTEXTER:ABoosting-basedSystem
+for Text Categorization, Machine Learning, 39(2/3), pp. 135–168,
+2000.
+[117] H. Schutze, D. Hull, J. Pedersen. A comparison of classiﬁers and
+document representations for the routing problem. ACM SIGIR
+Conference , 1995.
+[118] R. Shapire, Y. Singer, A. Singhal. Boosting and Rocchio applied
+to text ﬁltering. ACM SIGIR Conference, 1998.
+[119] J. Shavlik, T. Eliassi-Rad. Intelligent agents for web-based tasks:
+An advice-taking approach. AAAI-98 Workshop on Learning for
+Text Categorization. Tech. Rep. WS-98-05, AAAI Press , 1998.
+http://www.cs.wisc.edu/ ~shavlik/mlrg/publications.html
+[120] V. Sindhwani, S. S. Keerthi. Large scale semi-supervised linear
+SVMs.ACM SIGIR Conference, 2006.
+[121] N. Slonim, N. Tishby. The power of word clusters for text clas-
+siﬁcation. European Colloquium on Information Retrieval Research
+(ECIR), 2001.
+[122] N. Slonim, N. Friedman, N. Tishby. Unsupervised document clas-
+siﬁcation using sequential information maximization. ACM SIGIR
+Conference , 2002.
+[123] J.-T. Sun, Z. Chen, H.-J. Zeng, Y. Lu, C.-Y. Shi, W.-Y. Ma. Su-
+pervised Latent Semantic Indexing for Document Categorization.
+ICDM Conference , 2004.
+[124] V. Vapnik. Estimations of dependencies based on statistical data,
+Springer, 1982.
+[125] V. Vapnik. The Nature of Statistical Learning Theory , Springer,
+New York, 1995.
+[126] A. Weigand, E. Weiner, J. Pedersen. Exploiting hierarchy in text
+catagorization. Information Retrieval , 1(3), pp. 193–216, 1999.
+[127] S, M. Weiss, C. Apte, F. Damerau, D. Johnson, F. Oles, T. Goetz,
+T. Hampp. Maximizing text-mining performance. IEEE Intelligent
+Systems, 14(4), pp. 63–69, 1999.
+[128] S. M. Weiss, N. Indurkhya. Optimized Rule Induction, IEEE Exp. ,
+8(6), pp. 61–69, 1993.
+[129] E. Wiener, J. O. Pedersen, A. S. Weigend. A Neural Network Ap-
+proach to Topic Spotting. SDAIR, pp. 317–332, 1995.222 MINING TEXT DATA
+[130] G.-R. Xue, D. Xing, Q. Yang, Y. Yu. Deep classiﬁcation in large-
+scale text hierarchies. ACM SIGIR Conference , 2008.
+[131] J. Yan, N. Liu, B. Zhang, S. Yan, Z. Chen, Q. Cheng, W. Fan,
+W.-Y. Ma. OCFS: optimal orthogonal centroid feature selection for
+text categorization. ACM SIGIR Conference , 2005.
+[132] Y. Yang, L. Liu. A re-examination of text categorization methods,
+ACM SIGIR Conference , 1999.
+[133] Y. Yang, J. O. Pederson. A comparative study on feature selection
+in text categorization, ACM SIGIR Conference , 1995.
+[134] Y. Yang, C.G. Chute. An example-based mapping method for
+text categorization and retrieval. ACM Transactions on Informa-
+tion Systems , 12(3), 1994.
+[135] Y. Yang. Noise Reduction in a Statistical Approach to Text Cat-
+egorization, ACM SIGIR Conference , 1995.
+[136] Y. Yang. A Study on Thresholding Strategies for Text Categoriza-
+tion.ACM SIGIR Conference , 2001.
+[137] Y. Yang, T. Ault, T. Pierce. Combining multiple learning strate-
+gies for eﬀective cross-validation. ICML Conference , 2000.
+[138] J. Zhang, Y. Yang. Robustness of regularized linear classiﬁcation
+methods in text categorization. ACM SIGIR Conference , 2003.
+[139] T. Zhang, A. Popescul, B. Dom. Linear prediction models with
+graph regularization for web-page categorization, ACM KDD Con-
+ference, 2006.
+[140] S. Zhu, K. Yu, Y. Chi, Y. Gong. Combining content and link for
+classiﬁcation using matrix factorization. ACM SIGIR Conference ,
+2007.Chapter 7
+TRANSFER LEARNING FOR TEXT
+MINING
+Weike Pan
+Hong Kong University of Science and Technology
+Clearwater Bay, Kowloon, Hong Kong
+weikep@cse.ust.hk
+Erheng Zhong
+Hong Kong University of Science and Technology
+Clearwater Bay, Kowloon, Hong Kong
+ezhong@cse.ust.hk
+Qiang Yang
+Hong Kong University of Science and Technology
+Clearwater Bay, Kowloon, Hong Kong
+qyang@cse.ust.hk
+Abstract Over the years, transfer learning has received much attention in machine
+learning research and practice. Researchers have found that a major
+bottleneck associated with machine learning and text mining is the lack
+of high-quality annotated examples to help train a model. In response,
+transfer learning oﬀers an attractive solution for this problem. Various
+transfer learning methods are designed to extract the useful knowledge
+from diﬀerent but related auxiliary domains. In its connection to text
+mining, transfer learning has found novel and useful applications. In
+this chapter, we will review some most recent developments in transfer
+learningfortextmining, explainrelatedalgorithmsindetail, andproject
+future developments of this ﬁeld. We focus on two important topics:
+cross-domain text document classiﬁcation and heterogeneous transfer
+learning that uses labeled text documents to help classify images.
+Keywords: Transfer learning, text mining, classiﬁcation, clustering, learning-to-
+rank.
+© Springer Science+Business Media, LLC 2012 223  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_7,

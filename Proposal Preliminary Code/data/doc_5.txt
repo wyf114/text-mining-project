@@ -1,0 +1,969 @@
+Chapter 5
+DIMENSIONALITY REDUCTION AND
+TOPIC MODELING:
+FROM LATENT SEMANTIC INDEXING
+TO LATENT DIRICHLET ALLOCATION
+AND BEYOND
+Steven P. Crain
+School of Computational Science and Engineering
+College of Computing
+Georgia Institute of Technology
+s.crain@gatech.edu
+Ke Zhou
+School of Computational Science and Engineering
+College of Computing
+Georgia Institute of Technology
+kzhou@gatech.edu
+Shuang-Hong Yang
+School of Computational Science and Engineering
+College of Computing
+Georgia Institute of Technology
+shy@gatech.edu
+Hongyuan Zha
+School of Computational Science and Engineering
+College of Computing
+Georgia Institute of Technology
+zha@cc.gatech.edu
+© Springer Science+Business Media, LLC 2012 129  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_5,130 MINING TEXT DATA
+Abstract The bag-of-words representation commonly used in text analysis can be
+analyzed very eﬃciently and retains a great deal of useful information,butit isalso troublesomebecausethesamethoughtcan beexpressed us-ing many diﬀerent terms or one term can have very diﬀerent meanings.Dimension reduction can collapse together terms that have the samesemantics, to identify and disambiguate terms with multiple meaningsand to provide a lower-dimensional representation of documents that
+reﬂects concepts instead of raw terms. In this chapter, we survey two
+inﬂuential forms of dimension reduction. Latent semantic indexing usesspectral decomposition to identify a lower-dimensional representationthat maintains semantic properties of the documents. Topic modeling,including probabilistic latent semantic indexing and latent Dirichlet al-location, isaformofdimensionreductionthatusesaprobabilisticmodelto ﬁnd the co-occurrence patterns of terms that correspond to semantictopics in a collection of documents. We describe the basic technologiesin detail and expose the underlying mechanism. We also discuss recent
+advances that have made it possible to apply these techniques to very
+large and evolving text collections and to incorporate network structureor other contextual information.
+Keywords: Dimension reduction, Latent semantic indexing, Topic modeling, Latent
+Dirichlet allocation.
+1. Introduction
+In 1958, Lisowsky completed an index of the Hebrew scriptures to
+help scholars identify the meanings of terms that had long since becomeunfamiliar [42]. Through a tedious manual process, he collected togetherall of the contexts in which every term occurred. As he did this, he
+needed to suppress diﬀerences in word form that were not signiﬁcant
+while preserving diﬀerences that might aﬀect the semantics. He hopedby this undertaking to enable other researchers to analyze the diﬀerentpassages and understand the semantics of each term in context.
+The core task of automated text mining shares many of the same chal-
+lenges that Lisowsky faced. The same concept can be expressed usinganynumberofdiﬀerentterms( synonymy )andconverselytheapparently
+same term can have very diﬀerent meanings in diﬀerent contexts ( pol-
+ysemy). Automated text mining must leverage clues from the context
+to identify diﬀerent ways of expressing the same concept and to identifyand disambiguate terms that are polysemous. It must also present thedata in a form that enables human analysts to identify the semanticsinvolved when they are not known a priori.
+It is common to represent documents as a bag of words (BOW), ac-
+counting for the number of occurrences of each term but ignoring theDimensionality Reduction and Topic Modeling 131
+order. This representation balances computational eﬃciency with the
+need to retain the document content. It also results in a vector represen-tation that can be analyzed with techniques from applied mathematics
+and machine learning, notably dimension reduction, a technique that is
+used to identify a lower-dimensional representation of a set of vectorsthat preserves important properties.
+BOW vectors have a very high dimensionality — each dimension cor-
+responding to one term from the language. However, for the task ofanalyzing the concepts present in documents, a lower-dimensional se-mantic space is ideal — each dimension corresponding to one concept
+or one topic. Dimension reduction can be applied to ﬁnd the semantic
+space and its relationship to the BOW representation. The new repre-sentation in semantic space reveals the topical structure of the corpusmore clearly than the original representation.
+Two of the many dimension reduction techniques that have been ap-
+plied to text mining stand out. Latent semantic indexing , discussed
+in Section 2, uses a standard matrix factorization technique (singular
+vector decomposition) to ﬁnd a latent semantic space. Topic models ,
+on the other hand, provide a probabilistic framework for the dimensionreduction task. We describe topic modeling in Section 3, including prob-abilistic latent semantic indexing (PLSI) and latent Dirichlet allocation(LDA). In Section 4, we describe the techniques that are used to inter-pret and evaluate the latent semantic space that results from dimensionreduction. Many recent advances have made it possible to apply di-
+mension reduction and topic modeling to large and dynamic datasets.
+Other advances incorporate network structures like social networks orother contextual information. We highlight these extensions in Section 5before concluding in Section 6.
+1.1 The Relationship Between Clustering,
+Dimension Reduction and Topic Modeling
+Clustering, dimension reduction and topic modeling have interesting
+relationships. For text mining, these techniques represent documents ina new way that reveals their internal structure and interrelations, yetthere are subtle distinctions. Clustering uses information on the similar-
+ity(ordissimilarity)betweendocumentstoplacedocumentsintonatural
+groupings, so that similar documents are in the same cluster. Soft clus-
+teringassociates each document with multiple clusters. By viewing each
+cluster as a dimension, clustering induces a low-dimensional representa-tion for documents. However, it is often diﬃcult to characterize a cluster132 MINING TEXT DATA
+in terms of meaningful features because the clustering is independent of
+the document representation, given the computed similarity.
+On the other hand, dimension reduction starts with a feature repre-
+sentation of documents (typically a BOW model) and looks for a lower-
+dimensional representation that is faithful to the original representation.Although this close coupling with the original features results in a morecoherent representation that maintains more of the original informationthan clustering, interpretation of the compressed dimensions is still dif-ﬁcult. Speciﬁcally, each new dimension is usually a function of all theoriginal features, so that generally a document can only be fully under-
+stood by considering all of the dimensions together.
+Topic modeling essentially integrates soft clustering with dimension
+reduction. Documents are associated with a number of latent topics,which correspond to both document clusters and compact representa-tions identiﬁed from a corpus. Each document is assigned to the topicswith diﬀerent weights, which specify both the degree of membership inthe clusters as well as the coordinates of the document in the reduced
+dimension space. The original feature representation plays a key role in
+deﬁning the topics and in identifying which topics are present in eachdocument. The result is an understandable representation of documentsthat is useful for analyzing the themes in documents.
+1.2 Notation and Concepts
+Documents. We use the following notation to consistently describe
+the documents used for training or evaluation. Dis a corpus of M
+documents, indexed by d. There are Wdistinct terms in the vocabulary,
+indexedby v. Theterm-documentmatrix XisaW×Mmatrixencoding
+the occurrences of each term in each document. The LDA model hasKtopics, indexed by i. The number of tokens in any set is given by
+N, with a subscript to specify the set. For example, N
+iis the number
+of tokens assigned to topic i. A bar indicates set complement, as for
+example ¯ zdn≡{zd/primen/prime:d/prime/negationslash=dorn/prime/negationslash=n}.
+Multinomial distribution. A commonly used probabilistic model
+for texts is the multinomial distribution,
+M(X|Ψ)∝W/productdisplay
+v=1ψxvv,
+which captures the relative frequency of terms in a document and is
+essentially equivalent to the BOW-vector with /lscript1-norm standardization
+as/summationtextW
+v=1ψv=1 .Dimensionality Reduction and Topic Modeling 133
+Dirichlet distribution. Dirichlet distribution is the conjugate
+distribution to multinomial distribution and therefore commonly usedas prior for multinomial models:
+D(Ψ|Ξ)=Γ/parenleftbigg
+K/summationtext
+i=1ξi/parenrightbigg
+K/producttext
+i=1Γ(ξi)K/productdisplay
+i=1ψξi−1
+i.
+This distributions favors imbalanced multinomial distributions, where
+mostoftheprobabilitymassisconcentratedonasmallnumberofvalues.As a result, it is well suited for models that reﬂect commonly observedpower law distributions in human language.
+Generative process. A generative process is an algorithm describ-
+ing how an outcome was selected. For example, one could describe thegenerative process of rolling a die: one side is selected from a multino-
+mial distribution with 1 /6 probability on each of the six sides. For topic
+modeling, a random generative process is valuable even though choos-ing the terms in a document is not random, because they capture realstatistical correlations between topics and terms.
+2. Latent Semantic Indexing
+LSI is an automatic indexing method that projects both documents
+and terms into a low dimensional space which, by intent, represents thesemantic concepts in the document. By projecting documents into the
+semantic space, LSI enables the analysis of documents at a conceptual
+level, purportedly overcoming the drawbacks of purely term-based anal-ysis. For example, in information retrieval, users may use many diﬀerentqueries to describe the same information need, and likewise, many of therelevant documents may not contain the exact terms used in the partic-ular query. In this case, projecting documents into the semantic spaceenables the search engine to ﬁnd documents containing the same con-
+cepts but diﬀerent terms. The projection also helps to resolve terms that
+are associated with multiple concepts. In this sense, LSI overcomes theissues of synonymy andpolysemy that plague term-based information
+retrieval.
+LSI was applied to text data in the 1980s and later used for indexing
+in information retrieval systems [23]. It has also been used for a varietyof tasks, including assigning papers to reviewers [28] and cross-lingual
+retrieval.134 MINING TEXT DATA
+LSI is based on the singular value decomposition (SVD) of the term-
+document matrix, which constructs a low rank approximation of theoriginal matrix while preserving the similarity between the documents.LSI is meant to interpret the dimensions of the low-rank approximationas semantic concepts although it is surpassed in this regard by later im-provements such as PLSI. We now describe the basic steps for perform-
+ing LSI. Then, we will discuss the implementation issues and analyze
+the underlying mechanisms for LSI.
+2.1 The Procedure of Latent Semantic Indexing
+Given the term-document matrix Xof a corpus, the d-th column Xd
+represents a document din the corpus and the v-th row of the matrix
+X, denoted by Tv, represents a term v. Several possibilities for the
+encoding are discussed in the implementation issues section.
+Let the singular value decomposition of Xbe
+X=UΣVT,
+where the matrices UandVare orthonormal and Σ is diagonal—
+Σ=⎡
+⎢⎣σ1
+...
+σmin{W,M}⎤
+⎥⎦.
+The values σ1,σ2,...,σmin{W,M}are the singular values of the matrix
+X. Without loss of generality, we assume that the singular values are
+arranged in descending order, σ1≥σ2≥···≥σmin{W,M}.
+For dimension reduction, we approximate the term-document matrix
+Xby a rank- Kapproximation ˆX. This is done with a partial SVD using
+the singular vectors corresponding to the Klargest singular values.
+ˆX=ˆUˆΣˆVT
+=/bracketleftbigU1...UK/bracketrightbig⎡
+⎢⎣σ1
+...
+σK⎤
+⎥⎦⎡
+⎢⎣VT
+1...
+VT
+K⎤
+⎥⎦. (5.1)
+SVD produces the rank- KmatrixˆXthat minimizes the distance from
+Xin terms of the spectral norm and the Frobenius norm. Although Xis
+typically sparse, ˆXis generally not sparse. Thus, ˆXc a nb ev i e w e da sa
+smoothed version of X, obtained by propagating the co-occurring terms
+inthedocumentcorpus. Thissmoothingeﬀectisachievedbydiscovering
+a latent semantic space formed by the documents. Speciﬁcally, we canDimensionality Reduction and Topic Modeling 135
+observe from Eqn. (5.1) that each document dcan be represented by a
+K-dimensional vector ˆXd, which is the d-th row of the matrix ˆV.T h e
+relation between the representation of document din term space Xdand
+the latent semantic space ˆXdis given by
+Xd=ˆUˆΣˆXd.
+Similarly, eachterm vcanberepresentedbythe K-dimensionalvector
+ˆTvgiven by
+Tv=ˆVˆΣˆTv.
+Thus, LSI projects both terms and documents into a K-dimensional
+latent semantic space. We can utilize these projections into latent se-
+mantic space to perform several tasks.
+Information retrieval. In information retrieval, we are given a
+queryqwhich contains several key terms that describe the information
+need. The goal is to return documents that are related to the query. In
+this case, we can view the query as a short document and project it intothe latent semantic space using
+ˆq=ˆΣ
+−1ˆUTq.
+Then, the similarity between the query and document can be measured
+in the latent semantic space. For example, we can use the inner product
+ˆVT
+dˆq. By using the smoothed latent semantic space for the comparison,
+we mitigate the problems with synonymy and polysemy.
+Document similarity. The similarity between document dand
+d/primecan be measured using their representations in the latent semantic
+space, for example, using the inner product of ˆXdandˆXd/prime. This can
+be used to cluster or classify documents. Additional regularization maybe necessary to resolve the non-identiﬁability of the SVD [63].
+Term similarity. Analogous to the document similarity, term sim-
+ilarities can be measured in the latent semantic space, so as to identifyterms with similar meanings.
+2.2 Implementation Issues
+2.2.1 Term-Document Matrix Representation. LSI uti-
+lizes the term-document matrix Xfor a document corpus, which rep-
+resents the occurrences of terms in documents. In practice, the term-
+document matrix can be constructed in several ways. For example, each136 MINING TEXT DATA
+entryxvdcan represent the number of times that the term voccurs in
+document d. However, Zipf’s law shows that real documents tend to be
+bursty—a globally uncommon term is likely to occur multiple times in
+a document if it occurs at all [19]. As a result, simply using the term
+frequency tends to exaggerate the contribution of the term. This prob-lem can be directly addressed by using a binary representation, whichonly indicates whether a term occurs in a particular document and ig-noresitsfrequency. Globalterm-weightmethods, suchastermfrequencyweighted with inverse document frequency (IDF) [44], provide a goodcompromise for most document corpora. Besides these BOW represen-
+tations, the language pyramid model [70] provides a multi-resolution
+matrix representation for documents, encoding not only the semanticinformation of term occurrence but also the spatial information such asterm proximity, ordering, long distance dependence and so on.
+2.2.2 Computation. LSI relies on a partial SVD of the term-
+document matrix, which can be computed using the Lanczos algorithm[7, 30, 73]. The Lanczos algorithm is an iterative algorithm that com-putes the eigenvalues and eigenvectors of a large and sparse matrix X
+using the matrix vector multiplication. This process can be acceleratedby exploiting any special structure of the term-document matrix. Forexample, ZhaandZhang[75]provideaneﬃcientalgorithmwhenthema-
+trix has a low-rank-plus-shift structure, which arises when regularization
+isadded. NumerousimplementationsthatusetheLanczosalgorithmareavailable, including SVDPACK ( http://www.netlib.org/svdpack).
+2.2.3 Handling Changes. In real world applications, the
+corpus often changes rapidly. As a result, it is impractical to apply LSIto the corpus every time a document is added, removed or changed.There are two strategies for eﬃciently handling these changes.
+Fold-in. One method for updating LSI is called fold-in, where we
+compute the projection of the new documents and terms into the latentsemanticspacebasedontheprojectionfororiginaldocumentsandterms.In order to fold in a document represented by vector d∈R
+Winto a
+existing latent semantic indexing, we can project the document into thelatent semantic space based on the SVD decomposition obtained from
+the original corpus.
+ˆd=ˆΣ
+−1ˆUTd.
+Fold-inisveryeﬃcientbecausetheSVDdoesnotneedtoberecomputed.
+Because the term vector dis typically sparse, the fold-in process can be
+computed in O(KN) time, where Nis the number of unique terms in d.Dimensionality Reduction and Topic Modeling 137
+Updating the semantic space. Although the fold-in process
+is eﬃcient and maintains a consistent indexing, there is no longer anyguarantee that the indexing provides the best rank- Kapproximation of
+the modiﬁed corpus. Over time, the outdated model becomes increas-ingly less useful. Several methods for updating the LSI model have been
+proposed that are both eﬃcient and accurate [8, 52, 74]. For example,Zha and Simon [74] provide an updating algorithm based on performing
+LSI on [ ˆXX
+/prime] instead of [ XX/prime], whereX/primeis the term-document matrix
+for new documents. Speciﬁcally, the low-rank approximate ˆXis used
+to replace the document-term matrix Xof the original corpus. Assume
+that the QR decomposition of the matrix ( I−ˆUˆUT)X/primeis
+(I−ˆUˆU)X/prime=U/primeR,
+whereRis a triangular matrix and ˆX=ˆUˆΣˆVis the partial SVD of the
+matrixX. Then we have
+[XX/prime]=[ˆUU/prime]/bracketleftbiggˆΣˆUTX
+0R/bracketrightbigg/bracketleftbiggˆVT0
+0I/bracketrightbigg
+.
+Now we can compute the best rank- Kapproximation of/bracketleftbiggˆΣˆUTX
+0R/bracketrightbigg
+by
+SVD: /bracketleftbiggˆΣˆUTX
+0R/bracketrightbigg
+=ˆPΣ/primeˆQT.
+Then, the partial SVD for [ ˆXX/prime] can be expressed as
+/parenleftBig
+[ˆUU/prime]ˆP/parenrightBig
+Σ/prime/parenleftbigg/bracketleftbiggˆV0
+0I/bracketrightbigg
+ˆQ/parenrightbiggT
+,
+which provides an approximation of the partial SVD for [ XX/prime]. A the-
+oretical analysis by Zha and Simon shows that this approximation willnot introduce unacceptable errors into LSI [74].
+2.3 Analysis
+Due to the popularity of LSI, there has been considerable research
+into the underlying mechanism of LSI.
+Term context. LSI improves the performance of information re-
+trieval by discovering the latent concepts in a document corpus and thussolving the problems of synonymy and polysemy. Bast and Majumdar
+[5] demonstrate this point by considering the projections of a query q138 MINING TEXT DATA
+and document dinto the latent semantic space by the mapping
+f(x)=ˆUTx.
+The cosine similarity of the query and document in the latent semantic
+space is
+Sqd=qTˆUˆUTd
+/bardblˆUTq/bardbl/bardblˆUTd/bardbl.
+Since the factor /bardblˆUTq/bardbldoes not depend on documents, it can be ne-
+glected without aﬀecting the ranking. Note that
+/bardblˆUTd/bardbl=/bardblˆUˆUTd/bardbl,
+so the cosine similarity Sqdcan expressed by
+Sqd=qTˆUˆUTd
+/bardblˆUˆUTd/bardbl=qTTd
+/bardblTd/bardbl,
+whereT≡ˆUˆUT.
+The similarity Sqdbetween query qand document dcan be expressed
+by the cosine similarity of query qand the transformed document Td.
+In term-based information retrieval, the transformation T=I, so the
+original document is used to calculate the similarity. In LSI, however,
+the transformation Tis not the identity matrix. Intuitively, the entry
+tvv/primerepresents the relationship between terms vandv/prime. Speciﬁcally,
+the occurrence of term vin document has an equivalent impact on the
+similarity to tvv/primetimes the occurrence of term vin the same document.
+In this sense, LSI enriches the document by introducing similar termsthat may not occur in the original document.
+Bast and Majumdar [5] also analyze LSI from the view of identifying
+terms that appear in similar contexts in the documents. Consider the
+sequence of the similarities between a pair of terms with respect to the
+dimension of latent semantic space, K
+vv/prime(k)=/summationtextk
+i=1U(i)
+vU(i)T
+v/prime, where
+U(i)is from the rank- ipartial SVD. The trend of the sequence can be
+categorized into three diﬀerent types: increasing steadily (A); ﬁrst in-
+creasing and then decreasing (B); or, no clear trend (C). If terms vand
+v/primeare related, the sequence is usually of Type A or B. Otherwise, the
+sequence is of Type C. This result is closely related to global specialstructures in the term-document matrix Xthat arise from similar con-
+texts for similar terms. Thus, the sequence K
+vv/primeof similar terms have
+the speciﬁc shapes described above.
+Since LSI captures the contexts of terms in documents, it is able to
+deal with the problems of synonymy and polysemy: synonymy can beDimensionality Reduction and Topic Modeling 139
+captured since terms with the same meaning usually occur in similar
+context; polysemy can be addressed since terms with diﬀerent meaningcan be distinguished by their occurrences in diﬀerent context. Landauer
+[40] also provides intuition for LSI by showing that it captures several
+important aspects of human languages.
+Dimension of the latent semantic space. Dupert [29] studies
+how to determine the optimal number of latent factors for ﬁnding the
+most similar terms of a query. In particular, he shows how LSI can deal
+with the problem of synonymy in the context of Correlation method. Healso provides an upper bound for the dimension of latent semantic spacein order to present the corpus correctly.
+Probabilistic analysis. Kubato Ando and Lee [38] explore the
+relationship between the performance of LSI and the uniformity of theunderlying distribution. When the topic-documents distribution is quiteuniform, LSI can recover the optimal representation precisely. Papadim-itriou et al. [53] and Ding [26] analyze LSI from a probabilistic perspec-tive which is related to probabilistic latent semantic indexing [36], which
+we discuss next.
+3. Topic Models and Dimension Reduction
+TabooR/circlecopyrt(aregisteredtrademarkofHasbro)isagamewhereoneplayer
+must help a teammate guess a word from a game card without using anyof the taboo words listed on the card. The surprising diﬃculty of thegame highlights that certain terms are very likely to be present basedon the topic of a document. Latent topic models capture this idea by
+modelingtheconditionalprobabilitythatanauthorwilluseatermgiven
+the topic the author is writing about.
+LSI reduced the dimensionality of documents by projecting the BOW
+vectors into a semantic space constructed from the SVD of the term-document matrix. By providing a mechanism to explicitly reason aboutlatent topics, probabilistic topic models can achieve a similar yet moremeaningful latent semantic space. The results are presented in familiarprobabilistic terms, and thus can be directly incorporated into other
+probabilistic models and analyzed with standard statistical techniques.
+Moreover, Bayesian methods can be used to make the models robust toparameter selection. Finally, one of the most useful advantages is thatthe models can be easily extended by modifying the structure to solveinteresting related problems.140 MINING TEXT DATA
+3.1 Probabilistic Latent Semantic Indexing
+PLSI, proposed by Hofmann [36], provides a crucial step in topic
+modeling by extending LSI in a probabilistic context. PLSI has seenwidespread use in text document retrieval, clustering and related areas;it builds on the same conceptual assumptions as LSI, but uses a radicallydiﬀerent probabilistic generative process for generating the terms in the
+documents of a text corpus.
+PLSI is based on the following generative process for ( w,d), a word
+win document d:
+Sample a document dfrom multinomial distribution p(d).
+Sample a topic i∈{1,...,K}based on the topic distribution
+θdi=p(z=i|d).
+Sample a term vfor token wbased on Φ iv=p(w=v|z=i).
+In other words, an unobservable topic variable zis associated with
+each observation ( v,d) in PLSI. The joint probability distribution for
+p(v,d) can be expressed as
+p(v,d)=p(d)p(v|d),where p(v|d)=K/summationdisplay
+i=1p(v|z=i)p(z=i|d).
+This equation has the geometric interpretation that the distribution
+of terms conditioned on documents p(z=i|d) is a convex combination
+of the topic-speciﬁc term distributions p(v|z=i).
+Connection to LSI. An alternative way to express the joint prob-
+ability is given by
+p(v,d)=K/summationdisplay
+i=1p(z=i)p(d|z=i)p(v|z=i).
+This formulation is sometimes called the symmetric formulation because
+it models the documents and terms in a symmetric manner. This for-mulation has a nice connection to LSI: the probability distributionsp(d|z=i)a n dp(w|z=i) can be viewed as the projections of docu-
+ments and terms into the latent semantic spaces, just like the matrices
+ˆVandˆUin LSI. Also, the distribution p(z=i) is similar to the diago-
+nal matrix ˆΣ in LSI. This is the sense in which PLSI is a probabilistic
+version of LSI.Dimensionality Reduction and Topic Modeling 141
+3.1.1 Algorithms. The maximal likelihood method is used
+to estimate the parameters p(d),p(z|d)a n dp(v|z). Given the term-
+documentmatrix X, thelog-likelihoodofobserveddatacanbeexpressed
+as
+L=M/summationdisplay
+d=1W/summationdisplay
+v=1xvdlogp(w=v,d)
+=M/summationdisplay
+d=1W/summationdisplay
+v=1xvdlogK/summationdisplay
+i=1p(w=v|z=i)p(z=i|d)p(d).(5.2)
+Maximizing the log-likelihood function is equivalent to minimizing the
+Kullback-Leibler divergence (KL) [39] between the measured empirical
+distribution ˆ p(v|d) and the model distribution p(w|d)=/summationtextK
+i=1p(w|z=
+i)p(z=i|d). Since this is non-convex, expectation-maximization (EM)
+[24] is used to seek a locally optimal solution. The log-likelihood value(Eqn. (5.2)) increases on each iteration and converges to a local maxi-
+mum.
+Expectation. The E-step computes the posterior of the latent variable
+zbased on the current estimation of the parameters.
+p
+/prime(z=i|d,v)=p(d)p(z=i|d)p(v|z=i)/summationtextK
+i/prime=1p(d)p(z=i/prime|d)p(v|z=i/prime),
+where the prime on pindicates the new estimate of the probability for
+the next step.
+Maximization. The M-step updates the parameters once the latent
+variables are known using the posterior estimated in the previous E-step:
+p
+/prime(w=v|z)∝M/summationdisplay
+d=1xvdp/prime(z=i|d,w=v);
+p/prime(z=i|d)∝W/summationdisplay
+v=1xvdp/prime(z=i|d,w=v);
+p/prime(d)∝W/summationdisplay
+v=1xvd.
+3.1.2 Updating. Given a new document d, the fold-in process
+can be applied to obtain its representation in the latent semantic space,much like for LSI. Speciﬁcally, an EM algorithm similar to parameterestimation can be used to obtain p(z|d) [37].p(w|z)a n dp(z) are not
+updated in the M-step during fold-in.142 MINING TEXT DATA
+Figure 5.1. Diagram of the LDA graphical model
+3.2 Latent Dirichlet Allocation
+PLSI provides a good basis for text analysis, but it has two prob-
+lems. First, it contains a large number of parameters that grows linearly
+with the number of documents so that it tends to overﬁt the trainingdata. Second, there is no natural way to compute the probability ofa document that was not in the training data. LDA includes a pro-cess for generating the topics in each document, thus greatly reducing
+the number of parameters to be learned and providing a clearly-deﬁned
+probability for arbitrary documents. Because LDA has a rich generativemodel, it is also readily adapted to speciﬁc application requirements,which we describe in Section 5.
+3.2.1 Model. Like PLSI, LDA is based on a hypothetical gen-
+erative process for a corpus. A diagram of the graphical model showinghow the diﬀerent random variables are related is shown in Fig. 5.1. In
+the diagram, each random variable is represented by a circle (continu-ous) or square (discrete). A variable that is observed (its outcome is
+known) is shaded. An arrow is drawn from one random variable to an-other if the the outcome of the second variable depends on the value of
+the ﬁrst variable. A rectangular plate is drawn around a set of variables
+to show that the set is repeated multiple times, as for example for eachdocument or each token.
+Choose the term probabilities for each topic. The dis-
+tribution of terms for each topic iis represented as a multinomialDimensionality Reduction and Topic Modeling 143
+distribution Φi, which is drawn from a symmetric Dirichlet distri-
+bution with parameter β.
+Φi∼D(β);p(Φi|β)=Γ(Wβ)
+[Γ(β)]WW/productdisplay
+v=1φβ−1
+iv.
+Choose the topics of the document. The topic distribu-
+tion for document dis represented as a multinomial distribution
+θd, which is drawn from a Dirichlet distribution with parameters
+α. The Dirichlet distribution captures the document-independent
+popularity and the within-document burstiness of each topic.
+θd∼D(α);p(θd|α)=Γ(/summationtextK
+i=1αi)/producttextK
+i=1Γ(αi)K/productdisplay
+i=1θαi−1
+di.
+Choose the topic of each token. The topic zdnfor each
+token index nis chosen from the document topic distribution.
+zdn∼M(θd);p(zdn=i|θd)=θdi.
+Choose each token. Each token wat each index is chosen from
+the multinomial distribution associated with the selected topic.
+wdn∼M(φzdn);p(wdn=v|zdn=i,φi)=φiv.
+Mechanism. LDA provides the mechanism for ﬁnding patterns of
+term co-occurrence and using those patterns to identify coherent topics.
+Suppose that we have used LDA to learn a topic iand that for term v,
+p(w=v|z=i) is high. As a result of the LDA generative process, any
+document dthat contains term vhas an elevated probability for topic
+i, that is, p(zdn/prime=i|wdn=v)>p(zdn/prime=i). This in turn means that
+all terms that co-occur with term vare more likely to have been gen-
+erated by topic i, especially as the number of co-occurrences increases.
+Thus, LDA results in topics in which the terms that are most probable
+frequently co-occur with each other in documents.
+Moreover, LDA also helps with polysemy. Consider a term vwith
+two distinct meanings in topics iandi/prime. Considering only this term, the
+model places equal probability on topics iandi/prime. However, if the other
+words in the context place a 90% probability on iand only a 9% prob-
+ability on i/prime, then LDA will be able to use the context to disambiguate
+the topic: it is topic iwith 90% probability.144 MINING TEXT DATA
+Wallach et al. [60] show that the symmetry or asymmetry of the
+Dirichlet priors strongly inﬂuences the mechanism. For the topic-speciﬁcterm distributions, a symmetric Dirichlet prior provides smoothing sothat unseen terms will have non-zero probability. However, an asym-metric prior would equally aﬀect all topics, making them less distinctive.
+In contrast, they showed that an asymmetric prior for the document-
+speciﬁc topic distributions made LDA more robust to stop words and
+less sensitive to the selection of the number of topics. The stop wordswere mainly relegated to a small number of highly probable topics thatinﬂuence most documents uniformly. The asymmetric prior also resultsin more stable topics, which means that additional topics will makesmall improvements in the model instead of radically altering the topicstructure. This is similar to the situation of LSI, where performance
+is optimal when Σ scales the contribution of each dimension according
+to its eigenvalue. In the same way, LDA will perform best if αis non-
+uniform and corresponds to some natural values characteristic of thedataset.
+One disadvantage of LDA is that it tends to learn broad topics. Con-
+sider the case where a concept has a number of aspects to it. Each ofthe aspects co-occurs frequently with the main concept, and so LDA
+will favor a topic that includes the concept and all of its aspects. It will
+further favor adding other concepts to the same topic if they share thesame aspects. As this process continues, the topics become more diﬀuse.When sharper topics are desired, a hierarchical topic model may be moreappropriate.
+Likelihood. Training an LDA model involves ﬁnding the optimal
+set of parameters, under which the probability of generating the trainingdocuments is maximized. The probability of the training documentsunder a given LDA model is called the empirical likelihood L. It can
+also be used to identify the optimal model conﬁguration using Bayesian
+model selection.
+L=
+M/productdisplay
+d=1N/productdisplay
+n=1p(wdn|zdn,Φ)p(zdn|θd)p(θd|α)p(Φ|β)
+=φzwθdzΓ/parenleftbiggK/summationtext
+i=1αi/parenrightbigg
+K/producttext
+i=1Γ(αi)K/productdisplay
+i=1θαi−1
+diΓ(Wβ)
+[Γ(β)]WW/productdisplay
+v=1φβ−1
+v.
+Unfortunately, the direct optimization of the likelihood is problem-
+atic because the topic assignments zdnare not directly observed. EvenDimensionality Reduction and Topic Modeling 145
+inference for a single document is intractable. We describe two diﬀerent
+approximations for LDA. Collapsed Gibbs sampling samples a value foreachz
+dnin turn, conditioned on the topic assignments for the other to-
+kens. Variational Bayes approximates the model with a series of simpler
+models that bound the likelihood but neglect the troublesome depen-dencies.
+3.2.2 Collapsed Gibbs. Gibbs sampling is commonly used to
+estimate the distribution of values for a probability model when exact
+inference is intractable. First, values are assigned to each variable inthe model, either randomly or using a heuristic. Each variable is thensampled in turn, conditioned on the values of the other variables. Inthe limit of the number of iterations, this process explores all conﬁg-urations and yields unbiased estimates of the underlying distributions.In practice, Gibbs sampling is implemented by rejecting a large num-
+ber of samples during an initial burn-in period and then averaging the
+assignments during an additional large number of samples.
+Incollapsed Gibbs sampling, certain variables are marginalized out of
+the model. Griﬃths and Steyvers [32] propose collapsed Gibbs samplingfor LDA, with both θandΦmarginalized. Only z
+dnis sampled, and
+the sampling is done conditioned on α,βand the topic assignments of
+other words ¯ zdn.
+p(zdn|¯zdn)∝(Ndz+αz)(Nzw+β).
+TheNstatistics do not include the contribution from the word being
+sampled, and must be updated after each sampling.
+The equation makes intuitive sense. A topic that is used frequently
+in the document has a higher probability in θand so is more likely for
+the current token also. This characteristic corresponds to the burstiness
+observed in documents [19]. Similarly, a topic that is frequently assigned
+for the same term corpus-wide is more likely to be correct here also.
+After burn-in, the implementation can keep statistics of the number
+of times each topic is selected for each word. These statistics can then beaggregated and normalized to estimate the topic distributions for eachdocument or word. To apply a trained model to additional documents,the only change is that the N
+zwstatistic is not updated.
+3.2.3 Variational Approximation. Variational approxima-
+tion provides an alternative algorithm for training an LDA model. Wewill ﬁrst consider the case of inferring the topics of a document given
+an existing LDA model, before we explain how the model is trained. A146 MINING TEXT DATA
+Figure 5.2. Diagram of the LDA variational model
+direct approach for topic inference is to apply Bayes’ rule:
+p(θ|wd)=p(θ,wd)
+p(wd)=/integraltext
+Zp(d,θ,Z|α,β)dZ/integraltext
+Z,θp(d,θ,Z|α,β)dZdθ,
+whereZ={z1,z2,...,zN}. However, the marginalization in both nu-
+merator and denominator is intractable. The Variational Bayesian ap-
+proach provides an approximate solution; instead of inferring the latent
+variablesbydirectlymarginalizingthejointdistribution p(wd,θ,Z|α,β),
+it uses a much simpler distribution as a proxy and performs the inferencethrough optimization.
+Variational inference approximates the true posterior distribution of
+the latent variables by a fully-factorized distribution—this proxy is usu-ally referred to as the variational model, which assumes all the latentvariables are independent of each other. For LDA,
+q(Z,θ|γ,φ)=q(θ|γ)
+N/productdisplay
+n=1q(zn|φn)=D(θ|γ)N/productdisplay
+n=1M(zn|φn).
+Essentially, this variational distribution is a simpliﬁcation of the originalLDA graphical model by removing the edges between the nodes θandZ
+(Figure 5.2). The optimal approximation is achieved by optimizing thedistance (for example, the KL divergence) between the true model andthe variational model:
+min
+γ,φKL[q(θ,Z|γ,φ)||p(θ,Z|α,β)].Dimensionality Reduction and Topic Modeling 147
+ItcanbeshownthattheaboveKL-divergenceisthediscrepancybetween
+the true log-likelihood and its variational lower-bound that is used in thevariational EM algorithm (described later in this section) for estimating
+the LDA hyperparameters αandβ.
+The optimization has no close-form solution but can be implemented
+through iterative updates,
+γ
+i=αi+N/summationdisplay
+n=1φni,φni∝βiwnexp[Ψ(γi)],
+where Ψ( ·) is the bi-gamma function.
+Variational EM for parameter estimation. We can learn a
+LDA topic model by maximizing the likelihood of the corpus.
+max
+α,βM/summationdisplay
+d=1logp(wd|α,β)
+=max
+α,βM/summationdisplay
+d=1log/integraldisplay
+θd,Zdp(wd,θd,Zd|α,β)dθddZd.
+Again, it involves intractable computation of the marginal distribution
+and we therefore resort to variational approximation, which provides atractable lower bound,
+L(γ,φ)=l o gp(w
+d|α,β)−KL(q(Z,θ|γ,φ)||p(Z,θ|α,β))
+≤logp(wd|α,β),
+whereL(γ,φ)=Eq[logp(wd,θ,Z)−logq] is the variational lower bound
+for the log-likelihood. The maximum likelihood estimation therefore
+involves a two-layer optimization,
+max
+α,βM/summationdisplay
+d=1max
+γd,φdL(γd,φd).
+The inner-loop (the optimization with respect to γandφ, referred to
+as the Variational E-step) goes through the whole corpus and performsvariationalapproximationforeachofthedocuments, whichendsupwitha tight lower bound for the log-likelihood. Then the M-step updates themodel parameters ( αandβ) by optimizing this lower-bound approxi-
+mation of the log-likelihood. The E- and M-steps are alternated in an
+outer loop until convergence.148 MINING TEXT DATA
+In the E-step, γandφare alternately optimized for each document—
+in practice, 20 iterations is adequate for a good ﬁt. The outer loop
+may need to be repeated hundreds of times for full convergence. For
+best results, the likelihood of a separate validation corpus controls early
+stopping.
+3.2.4 Implementations. There have been substantial eﬀorts
+in developing eﬃcient and eﬀective implementations of LDA, especially
+for parallel or distributed architectures. In order to provide a quick
+hands-on experience, we list a few implementations that are open-sourceor publicly accessible in Table 5.1.
+Table 5.1. Publicly-accessible implementations of LDA.
+Name Language Algorithm Reference
+LDA-C C Var. EM www.cs.princeton.edu/ ~blei/lda-c
+Mallet Java Gibbs mallet.cs.umass.edu
+GibbsLDA++ C++ Gibbs gibbslda.sourceforge.net
+Gensim Python Gibbs nlp.fi.muni.cz/projekty/gensim
+Matlab-LDA Matlab Gibbs psiexp.ss.uci.edu/programs data
+4. Interpretation and Evaluation
+We have looked at three methods for dimension reduction of textual
+data. These methods have much in common: they identify the relation-
+ships of terms and documents to the dimensions of a latent semantic
+space. Intuitively, the latent dimensions correspond to concepts or top-ics that are meaningful to the authors. In this section, we discuss how tojump from the mathematical representations to meaningful topics, howto evaluate the resulting models and how to apply them to applications.
+4.1 Interpretation
+The common way to interpret the topic models that are discovered by
+dimensionreduction isthroughinspection oftheterm-topicassociations.
+Typically, practitioners examine the ﬁve to twenty terms that are most
+strongly associated with each topic, and attempt to discern the com-monality. For LSI, the terms can be sorted according to the coeﬃcientcorresponding to the given feature in the semantic space. For the proba-bilistic models, the terms are sorted by the probability of generating theterm conditioned on the topic. This approach was popularized followingBlei et al. [13], and is generally used to report qualitative topic model
+results even though it has many disadvantages. The chief problem isDimensionality Reduction and Topic Modeling 149
+that the top terms are often dominated by globally probable terms that
+may not be representative of the topic. Stop word removal and varia-tions on IDF weighting both help substantially, but the characterization
+is sensitive to the precise method used to order terms. Mei et al. [47]
+provide an alternative approach that automatically selects a portion ofa document to use as a label for each topic. Buntine and Jakulin [16]provide a more general framework for interpreting topic models.
+4.2 Evaluation
+There are three main approaches to evaluating the models resulting
+from dimension reduction. The ﬁt of the models to test data is im-portant for understanding how well the models generalize to new data,
+but application-driven metrics are also essential if the model is to be
+useful. When it is necessary for a human to interact with the model,interpretability should also be evaluated.
+Fit of test data. A very common approach is to train a model on a
+portion of the data and to evaluate the ﬁt of the model on another por-tion of the data. For LSI, the test documents can be projected into thelatent semantic space and then the /lscript
+2error introduced by the approxi-
+mation can be calculated. The probabilistic models can be evaluated bycomputing the probability of generating the test documents given themodel.
+Perplexity [4] is the most common way to report this probability.
+Computed as
+exp/parenleftBigg
+−1
+NM/summationdisplay
+d=1Nd/summationdisplay
+n=1logp(wdn|model)/parenrightBigg
+,
+the perplexity corresponds to the eﬀective size of the vocabulary. For
+example, avalueof100indicatesthattheprobabilitiesresultingfromthe
+model are equivalent to randomly picking each word from a vocabularyof 100 words. This means that smaller values indicate that the modelﬁts the test data better.
+Wallach et al. [61], evaluate several diﬀerent ways to compute this
+probability and recommended the left-to-right method, in which the
+probability of generating each token in a document is conditioned on
+all previous tokens in the document so that the interaction between the
+tokens in the document are properly accounted for.
+Application performance. Another common approach is to mea-
+sure the utility of topic models in some application. Whenever the di-150 MINING TEXT DATA
+mension reduction is being carried out with a speciﬁc application in
+mind, this in an important evaluation. For example, Wei and Croft[65] discuss the evaluation of LDA models for document search using
+standard information retrieval metrics.
+Interpretability. For text mining, the ability to use the discovered
+models to better understand the documents is essential. Unfortunately,the ﬁt of test data and application performance metrics completely ig-
+nore the topical structure. In fact, models with better perplexity are
+often harder to interpret [18]. This is not surprising, because the task ofﬁnding a meaningful model that ﬁts well is more constrained than thetask of ﬁnding any model that ﬁts well, so the best ﬁt is likely to befound using a less meaningful model.
+Chang et al. [18] propose a new evaluation protocol based on a user
+study. Starting with a list of top terms for each topic that has been
+tainted with an additional term, users are asked to identify the spurious
+term. User performance on this task is higher when the topic is coher-ent so that the extra term stands out. They also conducted a similarexperiment to measure the appropriateness of topic assignments to testdocuments.
+4.3 Parameter Selection
+Asuncion et al. [3] compare a variety of diﬀerent algorithms for the
+LDA model. They found that with careful selection of the regularization
+hyperparameters αandβ, all of the algorithms had similar perplexity.
+A grid search over possible values yields the best performance, but in-terleaving optimization of the hyperparameters with iterations of thealgorithm is almost as good with much less computational cost.
+4.4 Dimension Reduction
+Latent topic models, including LSI, PLSI and LDA, are commonly
+used as dimension reduction tools for texts. After the training process,
+thedocument dcanberepresentedbyitstopicdistribution p(z|d), where
+zc a nb ev i e w e da sa K-dimensional representation of the original docu-
+ment. The similarity between documents can then be measured by theirsimilarity in the topic space.
+S
+dd/prime=K/summationdisplay
+z=1p(z|d)p(z|d/prime).
+Through this equation, documents are projected into a low dimensional
+space. The terms are projected into a K-dimensional space in the sameDimensionality Reduction and Topic Modeling 151
+way. For probabilistic topic models, KL divergence can be used for an
+alternative comparison.
+Handlingofsynonymyisanaturalresultofdimensionreduction. Mul-
+tiple terms associated with the same concept are projected into the same
+place in the latent semantic space. Polysemy presents a more diﬃcultchallenge. Griﬃths and Steyvers [31] found that LSI was able to detectpolysemy: a term that was projected onto multiple latent dimensionsgenerally had multiple meanings. LDA can resolve polysemy providedthat one of the topics associated with a polysemous term is associatedwith additional tokens in the document.
+5. Beyond Latent Dirichlet Allocation
+LDA has many advantages for topic modeling, including its relative
+simplicity to implement and the useful topics that it unearths. However,with additional eﬀort topic modeling can be adapted to the characteris-tics of a particular problem. In this section, we survey recent advancesthat make it practical to apply topic modeling to very large text corpora,dynamic data, data that is embedded in a network and other problemswith special characteristics.
+5.1 Scalability
+Standard LDA learning algorithms read the documents in the training
+corpus numerous times and are inherently serial. In practice, this meansthat LDA models are trained on only a small fraction of the availabledata. However, recent advances in online and parallel algorithms makeit reasonable to train and apply models at very large scale.
+Eﬃcient parallel implementations are available based on either col-
+lapsed Gibbs sampling or variational approximation. Smola et al. [56]
+performGibbssamplingbasedonslightlyoutdatedtermandtopicstatis-
+tics in parallel with threads that globally update the statistics. Usingvariational approximation, Asuncion et al. [3] interleave an inferencestep on all documents with a parallel aggregation of the term and topicstatistics. Both of these methods achieve scalability through approxi-mations that have no known convergence guarantee. In contrast, Yan etal. [66] and Liu et al. [43], use careful scheduling to achieve strong par-
+allelization without approximation. However, the approximate methods
+are easier to implement correctly and work very well in practice.
+5.2 Dynamic Data
+Numerous approaches are possible when the corpus of documents is
+changing over time or must be processed as a stream. One common152 MINING TEXT DATA
+approach is to augment the corpus with the time of each document
+and incorporate time into the model. Wang and Agichtein [64] modelthe revision history of documents by considering the temporal dimension
+andextendLSItotensorfactorization. PLSIcanbesimilarlyaugmented
+to model the temporal patterns of activities in videos [59]. Mølgaard etal. [50] study temporal PLSI for music retrieval, which can be viewed asa probabilistic model for tensor factorization. Blei and Laﬀerty modeledtime evolution of topic models [10] to analyze how the topics used in acorpus changed over time.
+For streaming data, Yao et al. [72] present a time and space eﬃcient
+algorithmforapplyinganexistingtopicmodeltoastreamofdocuments,
+using a modiﬁcation of Gibbs sampling. Hoﬀman et al. [35] developedan online algorithm for LDA that retrains the model for each documentin turn. Interestingly, they found that this approach did not sacriﬁceany quality in the learned model as measured using perplexity. Theyfurther show that the online algorithm corresponds to stochastic gradi-ent descent on the variational objective function, and so converges to a
+stationary point of that function.
+The online training process for LDA optimizes each document in turn.
+First, it uses standard variational approximation to estimate the proba-bility distribution for the topic of each word φ
+j. Next, topic models ˜Φi
+are estimated as if the corpus consisted of Mcopies of this document,
+based on φj.
+˜Φij=β+MNjφij.
+The estimate of the topic models Φiare then updated to include the
+contribution from this document by
+Φij←(Φij+ρ˜Φij)/(1+ρ),
+whereρ=(t0+t)−κwhen processing the t-th document. t0is a parame-
+ter that slows the algorithm during the early iterations and 0 .5<κ≤1
+is a parameter that controls the rate of learning. This algorithm is es-
+sentially the variational algorithm applied to a diﬀerent single documenton each iteration, with appropriate changes to how the topic models areupdated. For very large datasets, this is many times faster than otheralgorithms and yet yields very excellent results.
+5.3 Networked Data
+Networksplayanimportantroleinmanytextminingproblems. Email
+messages are linked to the senders and recipients. Publications are also
+linked by citations. Many documents are related to a social network.Dimensionality Reduction and Topic Modeling 153
+The analysis of these documents can reveal more interesting structure if
+the network graph can be incorporated.
+LSI has been applied to analysis network data. Ng et al. analyze
+the connection between the LSI and HIST [51], which is a widely used
+algorithm for network data. Other approaches learn low-dimensionalrepresentations of documents based on both their contents and the cita-tion graph between them through learning from multiple relationshipsbetween diﬀerent types of entities [69, 76].
+PLSI has also been applied to analyze the network data. Cohn and
+Chang apply PLSI to model the citation graph and identity authori-
+tative document based on the latent factors [21]. Citations between
+documents can be modeled together with the contents of the documentsin a joint probabilistic model [20], through the probability of generatinga citation given a latent topic. Guo et al. [34] model the interaction oftopics between linked documents. Intuitively, the topics of a documentare borrowed from the documents to which it links. Deng et al. [25] pro-pose the two frameworks based on random walk and regularization to
+propagate the topics of documents according to the links between them.
+We describe the work of Mei et al. [46] in detail since it is repre-
+sentative of combining PLSI and network analysis. This work utilizesthe network structure as the regularization for PLSI through assum-ing that the topic distributions are similar for documents connected toeach other. The regularization term induced from the structure of thenetwork is optimized together with the log-likelihood function of PLSI.
+The model is applied to several applications such as author-topic analy-
+sis and spatial topic analysis, where network structures are constructedfrom co-authorships and adjacency of locations, respectively.
+Much research has explored various ways to integrate network infor-
+mation into topic models. Rosen-Zvi et al. incorporate authorship in-formation through author-speciﬁc topic mixtures [55]. Supervised topicmodels allow the per-topic term distributions to depend on a document
+label [12]. Chang and Blei incorporate relational information between
+documents[17]. Itisalsopossibletointegrategeneralﬁrstorderlogic[2].McCallum et al. extend LDA so that it can identify topic models thatare conditioned on the author and the audience of the communication[45]. This is useful for analyzing the social dynamics of communicationin a network.
+Relational topic models (RTM) extend LDA to jointly model the gen-
+eration of documents and the generation of links between documents
+[17]. The model predicts links based on the similarity of the topic mix-ture used in two documents, which adds the capability of predictingmissing links in the graph structure. Because the links inﬂuence the154 MINING TEXT DATA
+selection of topics, the model can more accurately predict links than a
+similar prediction based on topics from LDA.
+The generative process of documents is the same for RTM as for LDA.
+Once the documents are generated, the link λdebetween documents d
+andeis generated from exponential regression on the empirical topic
+mixtures ¯Zdand¯Ze,
+λde=e x p/parenleftbig
+ηT(¯Zd◦¯Ze)+ν/parenrightbig
+,
+where¯Zd≡1/Nd/summationtextN
+n=1Zdnanda◦bis the element-wise product of
+vectorsaandb. Typically the link is taken to be binary, in which case ν
+is used to control the threshold. ηis a parameter that must be learned
+which controls the importance of each topic in establishing the link. We
+generally expect it to have positive values, although a negative value ina social network would reﬂect the adage that opposites attract.
+5.4 Adapting Topic Models to Applications
+The graphical model of LDA can be easily extended to match the
+characteristics of a speciﬁc application. Here we survey some of thefruitful approaches.
+One important class of extensions to LDA has been the introduction
+of richer priors for document topic and term distributions. Instead ofusing a ﬁxed, global Dirichlet hyperparameter αfor all the documents in
+a corpus, Mimno and McCallum use regression from document featuresto establish a document-speciﬁc α[48]. This is a valuable enhancement
+when other meta-features are available that are expected to inﬂuencethe selected topics, as, for example, the identity of the author, the pub-
+lication venue and the dates.
+TheBayesianhierarchyofLDAprovidesausefulmodelingpipelinefor
+datawithcomplexstructure. Thehierarchycanmodelweb-likeintercon-nections and uncertain labels [67, 71]. The mixed membership stochastic
+block model coupled two LDA hierarchies to model inter-connected en-
+tities [1], which provides a ﬂexible model for network graphs and hasproven useful for a variety of applications ranging from role discovery to
+community detection in social, biological and information networks.
+Hierarchical topic models (hLDA) are used to identify subtopics that
+are increasingly more speciﬁc [9]. The hLDA model automatically learnsa tree structure hierarchy for topics while they are discovered from thedocuments. For additional ﬂexibility, hierarchical Dirichlet processes[57] can automatically discover an appropriate number of topics andsubtopics. There are also principled ways to learn correlations between
+topics [11, 41]. Other extensions support richer document representa-Dimensionality Reduction and Topic Modeling 155
+tions and contextual information, including bigrams [62], syntactic rela-
+tionships [15, 33] and product aspects [58].
+Multinomial distributions for term occurrences usually have a diﬃcult
+time modeling the word burstiness in language — if a word appears in adocument once, it will likely appear again in the same document. Thiseﬀect is commonly referred to as Zipf’s law, a profound characteristic
+of language. To discount this impact, Doyle and Elkan replace the per-
+topic Multinomial distribution with a Dirichlet-Compound Multinomial(also called the multivariate P` olya) distribution) [27]. Reisinger et al.
+substitutes spherical admixture models [54], which not only incorporatenegative correlations among term occurrence but also admit the naturaluse of cosine similarity to compare topics or documents.
+Standard topic models are not appropriate for identifying consistent
+topics across multiple languages, because the multiple languages do not
+co-occur in documents frequently enough to be assigned into the sametopics. Mimno et al. developed an extension that works with looselyaligneddocuments [49]—pairs of documents in diﬀerent languages that
+have nearly the same mixture of topics. Boyd-Graber and Blei explorevarious strategies for discovering multilingual topics from unaligned doc-uments [14]. Similar issues arise with documents in multiple dialects.
+Crain et al. [22] and Yang et al. [68] discuss extensions of LDA that
+ﬁnd shared topics between consumer and technical medical documents.
+6. Conclusion
+Using a BOW representation results in very eﬃcient text mining be-
+cause more complex factors like grammar and word order can be ne-glected. However, working directly with individual terms has a numberof strong limitations, because multiple documents can discuss the sameideas using very diﬀerent words, and likewise, the same word can have
+very diﬀerent meanings. Dimension reduction is able to lift the BOW
+representation to a more abstract level that better reﬂects the needsof a human analyst, where the new dimensions correspond to conceptsor topics. In this way, alternative ways of expressing the same contentcan be reduced to a common representation and terms with multiplemeanings can be identiﬁed.
+LSI is based on a spectral analysis of the term-document matrix.
+This approach identiﬁes common generalizations that are guaranteed to
+provide the best lower-dimensional representation of the original data.This representation is not necessarily easy to interpret, but is very usefulfor performing a conceptual match between two documents that may usediﬀerent terms for the same concepts.156 MINING TEXT DATA
+Probabilistic topic models provide an intuitive, probabilistic founda-
+tion for dimension reduction. They allow us to reason about the topicspresent in a document and expose the probability of seeing each word
+in any given topic. This makes it much easier to interpret what the
+topics mean. It also makes it easier to extend the models in interestingways. Many extensions to PLSI and LDA have been developed, both toallow them to be applied to large scale data and to incorporate specialstructure for a particular application.
+Acknowledgment
+PartoftheworkissupportedbyNSFgrantsIIS-1049694,IIS-1116886,
+a Yahoo! Faculty Research and Engagement Grant and a Department
+of Homeland Security Career Development Grant.
+References
+[1] E. Airoldi, D. Blei, S. Fienberg, and E. Xing. Mixed membership
+stochastic blockmodels. J. Mach. Learn. Res. , 9:1981–2014, June
+2008.
+[2] D. Andrzejewski, X. Zhu, M. Craven, and B. Recht. A framework
+for incorporating general domain knowledge into latent Dirichletallocation using ﬁrst-order logic. In IJCAI, 2011.
+[3] A. Asuncion, M. Welling, P. Smyth, and Y. Teh. On smoothing and
+inference for topic models. In UAI, pages 27–34, 2009.
+[4] L. Bahl, J. Baker, E. Jelinek, and R. Mercer. Perplexity—a mea-
+sure of the diﬃculty of speech recognition tasks. In Program, 94th
+Meeting of the Acoustical Society of America , volume 62, page S63,
+1977.
+[5] H. Bast and D. Majumdar. Why spectral retrieval works. In SIGIR,
+page 11, 2005.
+[6] J.-P. Benzecri. L’Analyse des Donnees. Volume II . 1973.
+[7] M. Berry. Large-scale sparse singular value computations. The
+International Journal Of Supercomputer Applications , 6(1):13–49,
+1992.
+[8] M. Berry, S. Dumais, and G. O’Brien. Using linear algebra for
+intelligent information retrieval. SIAM review , 37(4):573–595, 1995.
+[9] D. Blei, T. Griﬃths, M. Jordan, and J. Tenenbaum. Hierarchical
+topic models and the nested chinese restaurant process. In NIPS,
+2003.Dimensionality Reduction and Topic Modeling 157
+[10] D. Blei and J. Laﬀerty. Dynamic topic models. In ICML, pages
+113–120, 2006.
+[11] D. Blei and J. Laﬀerty. A correlated topic model of science. AAS,
+1(1):17–35, 2007.
+[12] D. Blei and J. McAuliﬀe. Supervised topic models. In NIPS, 2007.
+[13] D. Blei, A. Ng, and M. Jordan. Latent Dirichlet allocation. J.
+Mach. Learn. Res. , 3:993–1022, 2003.
+[14] J.Boyd-GraberandD.Blei. Multilingualtopicmodelsforunaligned
+text. InUAI, pages 75–82, 2009.
+[15] J.Boyd-GraberandD.Blei. Syntactictopicmodels. In NIPS,pages
+185–192. 2009.
+[16] W. Buntine and A. Jakulin. Discrete component analysis. In Craig
+Saunders, Marko Grobelnik, Steve Gunn, and John Shawe-Taylor,
+editors,Subspace, Latent Structure and Feature Selection , volume
+3940 ofLecture Notes in Computer Science , pages 1–33. Springer
+Berlin / Heidelberg, 2006.
+[17] J. Chang and D. Blei. Relational topic models for document net-
+works. In AIStats, 2009.
+[18] J. Chang, J. Boyd-Graber, S. Gerrish, C. Wang, and D. Blei. Read-
+ing tea leaves: How humans interpret topic models. In NIPS, pages
+288–296. 2009.
+[19] K. Church and W. Gale. Poisson mixtures. Natural Language En-
+gineering , 1:163–190, 1995.
+[20] D. Cohn. The missing link-a probabilistic model of document con-
+tent and hypertext connectivity. In NIPS, 2001.
+[21] D. Cohn and H. Chang. Learning to probabilistically identify au-
+thoritative documents. In ICML, pages 167–174, 2001.
+[22] S.Crain,S.-H.Yang,Y.Jiao,andH.Zha. Dialecttopicmodelingfor
+improved consumer medical search. In AMIA Annual Symposium ,
+2010.
+[23] S. Deerwester, S. Dumais, G. Furnas, T. Landauer, and R. Harsh-
+man. Indexing by latent semantic analysis. Journal of the American
+Society for Information Science , 41(6):391–407, September 1990.
+[24] A. Dempster, N. Laird, and D. Rubin. Maximum Likelihood from
+Incomplete Data via the EM Algorithm. Journal of the Royal Sta-
+tistical Society , 39(1):1–38, 1977.
+[25] H. Deng, J. Han, B. Zhao, Y. Yu, and C. Lin. Probabilistic Topic
+Models with Biased Propagation on Heterogeneous Information
+Networks. In KDD, pages 1271—-1279, San Diego, 2011. ACM.158 MINING TEXT DATA
+[26] C. Ding. A similarity-based probability model for latent semantic
+indexing. In SIGIR, pages 58–65, 1999.
+[27] G. Doyle and C. Elkan. Accounting for burstiness in topic models.
+InICML, 2009.
+[28] S. Dumais and J. Nielsen. Automating the assignment of submitted
+manuscripts to reviewers. In SIGIR, pages 233–244, 1992.
+[29] G. Dupret. Latent concepts and the number orthogonal factors in
+latent semantic analysis. SIGIR, pages 221–226, 2003.
+[30] G. Golub and C. Van Loan. Matrix computations (3rd ed.) . Johns
+Hopkins University Press, Baltimore, MD, USA, 1996.
+[31] T. Griﬃths and M. Steyvers. Latent Semantic Analysis: A Road to
+Meaning, chapter Probabilistic topic models. 2006.
+[32] T. Griﬃths and M. Steyvers. Finding scientiﬁc topics. In Proceed-
+ings of the National Academy of Sciences of the United States ofAmerica, volume 101, pages 5228–5235, 2004.
+[33] T. Griﬃths, M. Steyvers, D. Blei, and J. Tenenbaum. Integrating
+topics and syntax. In NIPS, pages 537–544, 2005.
+[34] Z, Guo, S. Zhu, Y. Chi, Z. Zhang, and Y. Gong. A latent topic
+model for linked documents. In SIGIR, page 720, 2009.
+[35] M. Hoﬀman, D. Blei, and F. Bach. Online learning for latent Dirich-
+let allocation. In NIPS, pages 856–864, 2010.
+[36] T. Hofmann. Probabilistic latent semantic analysis. In UAI,
+page 21, 1999.
+[37] T. Hofmann. Probabilistic latent semantic indexing. In SIGIR,
+pages 50–57, 1999.
+[38] R.KubotaAndoandL.Lee. Iterativeresidualrescaling:Ananalysis
+and generalization of LSI. In SIGIR, pages 154–162, 2001.
+[39] S. Kullback and R. Leibler. On information and suﬃciency. The
+Annals of Mathematical Statistics , 22(1):79–86, March 1951.
+[40] T. Landauer. On the computational basis of learning and cognition:
+ArgumentsfromLSA. Psychology of learning and motivation ,(1):1–
+63, 2002.
+[41] W. Li, D. Blei, and A. McCallum. Nonparametric Bayes Pachinko
+allocation. In UAI, 2007.
+[42] G.LisowskyandL.Rost. Konkordanz zum hebr¨ aischen Alten Testa-
+ment: nach dem von Paul Kahle in der Biblia Hebraica edidit RudolfKittel besorgten Masoretischen Text . Deutsche Bibelgesellschaft,
+1958.Dimensionality Reduction and Topic Modeling 159
+[43] Z. Liu, Y. Zhang, E.Y. Chang, and M. Sun. PLDA+: Parallel latent
+Dirichlet allocation with data placement and pipeline processing.ACM Trans. Intell. Syst. Technol. , 2:26:1–26:18, May 2011.
+[44] C.Manning,P.Raghavan,andH.Schutze. Introduction to Informa-
+tion Retrieval . Cambridge University Press, New York, NY, USA,
+2008.
+[45] A. McCallum, A. Corrada-Emmanuel, and X. Wang. Topic and role
+discoveryinsocialnetworks. In Proceedings of the 19th international
+joint conference on Artiﬁcial intelligence , pages 786–791, 2005.
+[46] Q. Mei, D. Cai, D. Zhang, and C. Zhai. Topic modeling with net-
+work regularization. In WWW, page 101, 2008.
+[47] Q. Mei, X. Shen, and C. Zhai. Automatic labeling of multinomial
+topic models. In KDD, pages 490–499, 2007.
+[48] D.MimnoandA.McCallum. Topicmodelsconditionedonarbitrary
+features with dirichlet-multinomial regression. In UAI, 2008.
+[49] D.Mimno,H.Wallach,J.Naradowsky,D.Smith,andA.McCallum.
+Polylingual topic models. In Proceedings of the 2009 Conference on
+Empirical Methods in Natural Language Processing , pages 880–889,
+2009.
+[50] L. Mølgaard, J. Larsen, and D. Lyngby. Temporal analysis of text
+data using latent variable models. 2009 IEEE International Work-
+shop on Machine Learning for Signal Processing , 2009.
+[51] A. Ng, A. Zheng, and M. Jordan. Link analysis, eigenvectors and
+stability. In International Joint Conference on Artiﬁcial Intelli-
+gence, volume 17, pages 903–910, 2001.
+[52] G. O’Brien. Information management tools for updating an SVD-
+encoded indexing scheme. Master’s thesis, The University of
+Knoxville, Tennessee , (October), 1994.
+[53] C. Papadimitriou, P. Raghavan, H. Tamaki, and S. Vempala. La-
+tent semantic indexing: A probabilistic analysis. In Proceedings of
+the seventeenth ACM SIGACT-SIGMOD-SIGART symposium onPrinciples of database systems , pages 159–168, 1998.
+[54] J. Reisinger, A. Waters, B. Silverthorn, and R. Mooney. Spherical
+topic models. In ICML, pages 903–910, 2010.
+[55] M. Rosen-Zvi, T. Griﬃths, M. Steyvers, and P. Smyth. The author-
+topic model for authors and documents. In UAI, 2004.
+[56] A. Smola and S. Narayanamurthy. An architecture for parallel topic
+models. Proc. VLDB Endow. , 3:703–710, September 2010.160 MINING TEXT DATA
+[57] Y. Teh, M. Jordan, M. Beal, and D. Blei. Hierarchical Dirichlet
+processes. JASA, 101, 2006.
+[58] I. Titov and R. McDonald. Modeling online reviews with multi-
+grain topic models. In WWW, pages 111–120, 2008.
+[59] J. Varadarajan, R. Emonet, and J. Odobez. Probabilistic latent
+sequential motifs: Discovering temporal activity patterns in videoscenes. In BMVC 2010 , volume 42, pages 177–196, 2010.
+[60] H. Wallach, D. Mimno, and A. McCallum. Rethinking LDA: Why
+priors matter. In NIPS, pages 1973–1981, 2009.
+[61] H. Wallach, I. Murray, R. Salakhutdinov and D. Mimno. Evaluation
+methods for topic models In ICML, pages 1105–1112, 2009.
+[62] H. Wallach. Topic modeling: beyond bag-of-words. In ICML, 2006.
+[63] Q. Wang, J. Xu, and H. Li. Regularized latent semantic indexing.
+InSIGIR, 2011.
+[64] Y. Wang and E. Agichtein. Temporal latent semantic analysis for
+collaboratively generated content: preliminary results. In SIGIR,
+pages 1145—-1146, 2011.
+[65] X. Wei and W. Bruce Croft. LDA-based document models for ad-
+hoc retrieval. In SIGIR, pages 178–185, 2006.
+[66] F. Yan, N. Xu, and Y. Qi. Parallel inference for latent Dirichlet
+allocation on graphics processing units. In NIPS, pages 2134–2142.
+2009.
+[67] S. Yang, J. Bian, and H. Zha. Hybrid generative/discriminative
+learning for automatic image annotation. In UAI, 2010.
+[68] S. Yang, S. Crain, and H. Zha. Briding the language gap: topic-level
+adaptation for cross-domain knowledge transfer. In AIStat, 2011.
+[69] S. Yang, B. Long, A. Smola, N. Sadagopan, Z. Zheng, and H. Zha.
+Like like alike – joint friendship and interest propagation in social
+networks. In WWW, 2011.
+[70] S. Yang and H. Zha. Language pyramid and multi-scale text anal-
+ysis. InCIKM, pages 639–648, 2010.
+[71] S. Yang, H. Zha, and B. Hu. Dirichlet-bernoulli alignment: A gen-
+erative model for multi-class multi-label multi-instance corpora. In
+NIPS, 2009.
+[72] L. Yao, D. Mimno, and A. McCallum. Eﬃcient methods for topic
+model inference on streaming document collections. In KDD, pages
+937–946, 2009.
+[73] Y. Saad. Numerical Methods for Large Eigenvalue Problems .
+Manchester University Press ND, 1992.Dimensionality Reduction and Topic Modeling 161
+[74] H. Zha and H. Simon. On updating problems in latent semantic
+indexing. SIAM Journal on Scientiﬁc Computing , 21(2):782, 1999.
+[75] H. Zha and Z. Zhang. On matrices with low-rank-plus-shift struc-
+tures: Partial SVD and latent semantic indexing. SIAM Journal
+Matrix Analysis and Applications , 21:522–536, 1999.
+[76] D. Zhou, S. Zhu, K. Yu, X. Song, B. Tseng, H. Zha, and C. Lee
+Giles. Learning multiple graphs for document recommendations. InWWW, page 141, 2008.Chapter 6
+A SURVEY OF TEXT CLASSIFICATION
+ALGORITHMS
+Charu C. Aggarwal
+IBM T. J. Watson Research Center
+Yorktown Heights, NY
+charu@us.ibm.com
+ChengXiang Zhai
+University of Illinois at Urbana-Champaign
+Urbana, IL
+czhai@cs.uiuc.edu
+Abstract Theproblemofclassiﬁcationhasbeenwidelystudiedinthedatamining,
+machine learning, database, and information retrieval communities with
+applications in a number of diverse domains, such as target marketing,
+medical diagnosis, news group ﬁltering, and document organization. In
+this paper we will provide a survey of a wide variety of text classiﬁcation
+algorithms.
+Keywords: Text Classiﬁcation
+1. Introduction
+The problem of classiﬁcation has been widely studied in the database,
+data mining, and information retrieval communities. The problem of
+classiﬁcation is deﬁned as follows. We have a set of training records
+D={X1,...,X N}, such that each record is labeled with a class value
+drawn from a set of kdiﬀerent discrete values indexed by {1...k}.T h e
+training data is used in order to construct a classiﬁcation model , which
+relatesthefeaturesintheunderlyingrecordtooneoftheclasslabels. For
+ag i v e ntest instance for which the class is unknown, the training model
+© Springer Science+Business Media, LLC 2012 163  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_6,

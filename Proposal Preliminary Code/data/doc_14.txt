@@ -1,0 +1,1559 @@
+Chapter 14
+BIOMEDICAL TEXT MINING: A SURVEY
+OF RECENT PROGRESS
+Matthew S. Simpson
+Lister Hill National Center for Biomedical Communications
+United States National Library of Medicine, National Institutes of Health
+simpsonmatt@mail.nih.gov
+Dina Demner-Fushman
+Lister Hill National Center for Biomedical Communications
+United States National Library of Medicine, National Institutes of Health
+ddemner@mail.nih.gov
+Abstract The biomedical community makes extensive use of text mining tech-
+nology. In the past several years, enormous progress has been made
+in developing tools and methods, and the community has been witness
+to some exciting developments. Although the state of the community
+is regularly reviewed, the sheer volume of work related to biomedical
+text mining and the rapid pace in which progress continues to be made
+make this a worthwhile, if not necessary, endeavor. This chapter pro-
+vides a brief overview of the current state of text mining in the biomed-
+ical domain. Emphasis is placed on the resources and tools available
+to biomedical researchers and practitioners, as well as the major text
+mining tasks of interest to the community. These tasks include the
+recognition of explicit facts from biomedical literature, the discovery
+of previously unknown or implicit facts, document summarization, and
+question answering. For each topic, its basic challenges and methods
+are outlined and recent and inﬂuential work is reviewed.
+Keywords: Biomedical information extraction, named entity recognition, relations,
+events, summarization, question answering, literature-based discovery
+© Springer Science+Business Media, LLC 2012  465  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_14,466 MINING TEXT DATA
+1. Introduction
+The state of biomedical text mining is reviewed relatively regularly. The
+recent surveys [238, 237], special journal issues [85, 29], and books [12]in this area indicate that general-purpose text and data mining tools arenotwell-suitedforthebiomedicaldomainbecauseitishighlyspecialized.
+Despite the restricted nature of the domain, biomedical text mining
+is of interest not only to researchers but to the general public as well
+(perhaps unbeknownst to them). The recent biomedical advances thathave prevented or altered the course of many diseases are undoubtedlyvalued by all. Progress in biomedicine is attributable to advances in theunderstanding of disease mechanisms and the societal and commercialvalue of researching these mechanisms as well as the approaches for theprevention and cure of diseases.
+Biomedical text mining holds the promise of, and in some cases deliv-
+ers a reduction in cost and an acceleration of discovery, providing timelyaccess to needed facts and explicit and implicit associations among facts.
+Duetothespeciﬁcgoalsofbiomedicaltextmining, biologistsandclin-
+icians are better positioned to deﬁne useful text mining tasks. CohenandHunter[33]notethatthemostfruitfulapproachestobiomedicaltextmining will combine the eﬀorts and leverage the abilities of both biolo-
+gists and computational linguists. Biologists and clinicians will leverage
+their ability to focus on speciﬁc tasks and experience in using the un-paralleled publicly available domain-speciﬁc knowledge sources whereastext mining specialists will provide system components and design andevaluate methods.
+The sheer size of the so-called bibliome (the entirety of the texts rel-
+evant to biology and medicine) dictates a stepwise approach to biomed-
+ical text mining. The goal of the ﬁrst step is to reduce the set of text
+documents to be mined. This reduction is most commonly achievedusing domain-speciﬁc information retrieval approaches, as described inInformation Retrieval: A Health and Biomedical Perspective [65]. Al-
+ternatively, document sets can be selected using clustering and classiﬁ-cation [98, 177, 22]. As discussed later in this chapter, the meaning andgrammar of biomedical texts are so intertwined that all surveys dedicate
+a section to natural language preprocessing and grammatical analysis.
+However, this chapter presents these methods (e.g., tokenization, part-of-speech tagging, parsing, etc.) as needed to describe the reviewed textmining approaches.
+This survey of recent advances in biomedical text mining begins with
+a discussion of the resources available for mining the biomedical liter-ature. It then proceeds to describe the basic tasks of named entityBiomedical Text Mining: A Survey of Recent Progress 467
+recognition and relation and event extraction. The more complex tasks
+ofsummarization, questionanswering, andliteraturebaseddiscoveryaredescribed thereafter. The chapter concludes with a discussion of open
+tasks and potentially high-impact avenues for further development of the
+domain.
+2. Resources for Biomedical Text Mining
+The primary resource for biomedical text mining is obviously text, andthis section introduces some widely-used text collections in the biomedi-cal domain. Although text mining does not require the use of specializedorannotatedcorpora,manuallyannotatedcollectionsareoftenmoreuse-ful than the original texts alone. For example, the original conception
+of literature-based discovery [189] was facilitated by the use of Medi-
+cal Subject Headings (MeSH
+R/circlecopyrt), which are controlled vocabulary terms
+added to bibliographic citations during the process of MEDLINER/circlecopyrtin-
+dexing. With the growth of publicly available annotated collections,the biomedical language processing community has begun focusing oncommon interchangeable annotation formats, guidelines, and standards,which this section also discusses. After describing these resources, the
+section concludes with a description of equally important lexical and
+knowledge-based repositories, widely-used biomedical text mining toolsand frameworks, and registries that provide overviews and links to textcollections and other resources.
+2.1 Corpora
+Whether text mining is viewed in the strict sense of discovery or inthe broader sense that includes all text processing and retrieval stepsleading towards discovery, MEDLINE was the ﬁrst—and remains the
+primary—resource in biomedical text mining. The MEDLINE database
+contains bibliographic references to journal articles in the life scienceswith a concentration on biomedicine, and it is maintained by the U.S.National Library of Medicine
+R/circlecopyrt(NLMR/circlecopyrt). The 2011 MEDLINE contains
+over 18 million references published from 1946 to the present in over5,500 journals worldwide.
+Abstracts of biomedical literature can be obtained in a variety of dif-
+ferent ways. For text mining purposes, MEDLINE/PubMed
+R/circlecopyrtrecords
+can be downloaded using the Entrez Programming Utilities [131]. Al-ternatively, subsets of MEDLINE citations can be obtained from thearchives of community-wide evaluations that use MEDLINE, as well asindividual research groups that share their annotations. Such collec-tions include the historic OHSUMED [200] set containing all MEDLINE468 MINING TEXT DATA
+citations in 270 medical journals published over a ﬁve-year period (1987–
+1991) and a more recent set of TREC Genomics Track data [201] thatcontains ten years of MEDLINE citations (1994–2003). Stand-oﬀ anno-tations supporting information retrieval relevance, document classiﬁca-tion, and question answering are available for portions of these collec-tions. Whereas TREC collections provide access to MEDLINE spans
+over a given time period, other collections are task-oriented. For exam-
+ple, theGENIAcorpus[90]contains1,999MEDLINEabstractsretrievedusing the MeSH terms “human,” “blood cells,” and “transcription fac-tors.” The GENIA corpus is currently the most thoroughly annotatedcollection of MEDLINE abstracts. It is annotated for part-of-speech,syntax, coreference, biomedical concepts and events, cellular localiza-tion, disease-gene associations, and pathways. In addition, the GENIA
+corpus is one of the three constituents of the BioScope corpus [217],
+which provides GENIA MEDLINE abstracts, ﬁve full-text articles, anda collection of radiology reports annotated with negation and modalitycues as well as scope. Other topically-annotated collections of MED-LINE abstracts include the earlier BioCreAtIve collections [69, 97] andthe PennBioIE corpus [105, 106]. The PennBioIE corpus contains 1100abstracts for cytochrome P-450 enzymes and 1157 oncology abstracts
+with annotations for paragraphs, sentences, tokens, parts-of-speech, syn-
+tax, and biomedical entities. Finally, the Collaborative Annotation of aLarge Biomedical Corpus (CALBC) initiative [26] has proposed the cre-ation of a “silver standard” corpus that contains MEDLINE abstractsthat have been automatically annotated with biomedical entities by theinitiative participants. This corpus has just recently become publiclyavailable.
+Being informative and undoubtedly useful for text mining, MEDLINE
+abstracts do not contain all the information presented in full-text arti-cles. Some information (e.g., the exact settings of an experiment or thediscussion of the results) is almost exclusively contained in the body ofan article. The promise of a qualitative increase in the amount of usefulinformation brought about several full-text collections. For example, theTREC Genomics Track dataset contains about 160,000 full-text articles
+from about 49 genomics-related journals, which were obtained in HTML
+format from the Highwire Press [66] electronic distribution of the jour-nals. Another collection of full-text articles annotated with relevanceto patients’ case descriptions was developed in the ImageCLEF evalua-tions [127, 84]. The Colorado Richly Annotated Full Text Corpus [38]adds to the growing body of semantically and syntactically annotatedfull text collections (including the full-text portion of the BioScope col-
+lection mentioned above). Finally, the largest publicly available sourceBiomedical Text Mining: A Survey of Recent Progress 469
+of original, full-text articles is the Open Access subset of PubMed Cen-
+tral [154].
+With the growing interest in clinical text mining and biosurveillance,
+several public collections of clinical text have recently become available.
+These collections include reports in the Multiparameter Intelligent Mon-itoring in Intensive Care (MIMIC II) database [171], the Pittsburgh col-lection of clinical reports [211], and the annotated i2b2 collections [214,213, 215, 216]. Several recent studies used the Web (i.e, Twitter andhealth-related blogs and community sites) as a corpus, but it is notclear if the collections created for these studies are publicly available or
+not.
+2.2 Annotation
+The annotation of biomedical text adds information to a document col-
+lection that can later be exploited for text mining purposes. In general,document annotation in the biomedical domain follows the principlesset forth in open-domain natural language processing (NLP) by addingannotations at multiple levels of linguistic analysis. The various aspectsinvolve grammatical (including morphological and syntactical), seman-
+tic, and pragmatic annotations [103]. Grammar and meaning are so
+intertwined that most annotation eﬀorts combine the two. For example,corpus creators might decide to annotate named entities of interest onlyin noun phrases. As an alternative, Wilbur et al. [222] focus on annotat-ing the “information-bearing fragments within scientiﬁc text” withoutspecifying any grammar restrictions. The authors deﬁne the followingﬁve annotation axes: Focus, Polarity, Certainty, Evidence, and Direc-
+tion. These classes are primarily used at the sentence level, and sen-
+tences may be broken as needed if a change in one of the annotationsaspects is detected. However, even meaning-centric annotations cannotbe completely grammar-free. For example, one of the clues for annotat-ing fragments as Evidence is a past tense verb indicating an observation
+or ﬁnding. The guidelines published by the authors [178] are a goodstarting point for developing other text-mining annotation guidelines in
+the biomedical domain.
+There are three approaches to the annotation of biomedical text.
+These methods include (1) a complete manual annotation that is basedon annotators’ knowledge; (2) an assisted annotation, in which the out-put of an annotation tool is manually corrected; and (3) an ontology-based annotation—either manual or assisted—in which only terms andrelations present in an existing knowledge source are annotated. Each
+of these approaches has its strengths and weaknesses. For example, an470 MINING TEXT DATA
+assisted annotation is usually more consistent, but it may be biased.
+Similarly, an ontology-based annotation will likely be biased towardsknown facts. Having more than one annotator for each text document
+andhavingvariousannotatorgroupscancompensateforsuchbiases[15].
+In addition to generic information extraction tools that can be used
+to assist in annotation (described below), several text mining tools havebeen developed to speciﬁcally support the annotation process. Exam-ples of widely-used tools for annotating biomedical text include Knowta-tor [140] and eHOST (Extensible Human Oracle Suite of Tools) [48], thelater of which is increasingly used for the annotation of clinical text. In
+order for such tools to be useful, they must be easy to use, support var-
+ious annotation types, and allow collaborative annotation, among otherfactors [115, 47].
+2.3 Knowledge Sources
+The biomedical domain oﬀers a rich set of knowledge sources support-ing text mining applications. The Uniﬁed Medical Language System
+R/circlecopyrt
+(UMLSR/circlecopyrt) [111], a compendium of controlled vocabularies that is main-
+tained by NLM, is the most comprehensive resource, unifying over 100
+dictionaries, terminologies, and ontologies in its Metathesaurus. It also
+provides a semantic network that represents relations between Metathe-saurus entries, a lexicon that contains lexicographic information aboutbiomedical terms and common English words, and a set of lexical tools.Overall, NLM provides over 200 knowledge sources and tools that canbe used for text mining [210]. Other sets of ontologies are maintainedby collaborative eﬀort in the OBO Foundry [143] and the National Cen-
+ter for Biomedical Ontology (NCBO) [129]. The NCBO ontologies are
+accessed and shared through BioPortal [130]. Other major centers thatmaintain specialized resources for biomedical text mining include theBritish National Centre for Text Mining [132] and the European Bioin-formatics Institute [52].
+In addition to these broad-coverage resources, the biomedical domain
+oﬀers in-depth knowledge sources focused on speciﬁc subdomains of
+biomedicine. Forexample, thePharmacogenomicsKnowledgeBase[152]
+is a collection of scientiﬁc publications annotated with primary genotypeand phenotype data, gene variants, and gene-drug-disease relationships.The annotations are downloadable for individual research purposes. An-other specialized source, the Neuroscience Information Framework [134],includes an ontology covering brain anatomy, cells, organisms, diseases,techniques, and other areas of neuroscience.Biomedical Text Mining: A Survey of Recent Progress 471
+The best knowledge source for a given text mining task is determined
+by the nature of the problem at hand. For example, mining the scientiﬁcliterature for relations between genes, diseases, and drugs ﬁrst requires
+recognizing instances of these entities. To aid in this task, a researcher
+might rely on knowledge of the terms’ corresponding semantic types inthe UMLS or instead may chose to use individual knowledge sources,such as the Gene Ontology [16], SNOMED Clinical Terms
+R/circlecopyrt[188], or
+the FDA Approved Drug Products with Therapeutic Equivalence Eval-uations (Orange Book) [209]. Approaches to the various text miningtasks in the biomedical domain make extensive use of the resources de-
+scribed in this section and sometimes derive meta-resources for a speciﬁc
+task. For example, Rinaldi et al. [163] deﬁne several entity types neededfor mining the literature for protein interactions (protein/gene names,chemical compounds, cell lines, etc.) and then automatically aggregateterms extracted from curated resources such as the UMLS, Aﬀymetrixidentiﬁers for micro array probes, organism databases, and others intoa list of 2,347,734 terms.
+2.4 Supporting Tools
+The variety and purpose of the tools supporting biomedical text miningechoes that of the knowledge sources described above. The followingdiscussion of text mining tools omits applications described in recentsurveysandinsteadfocusesonthebasic, widelyusedtoolsforidentifyingnamed entities and relations and the platforms that allow building textmining pipelines.
+The most widely used tool for named entity recognition that is based
+upon the UMLS is MetaMap [14]. MetaMap is a highly conﬁgurable
+application that identiﬁes UMLS Metathesaurus concepts in free text.Because MetaMap provides a wide range of conﬁguration options andrelies on the entire UMLS Metathesaurus, it is not easy to determine thebest conﬁguration for a given task. However, exploring the options usingthe interactive MetaMap website may aid with such choices. MetaMap,which was provided as service until recently, is now open source and
+available for download. Two statistical tools widely used for biological
+named entity recognition are ABNER [176] and BANNER [101]. BothABNER and BANNER are based on conditional random ﬁelds and relyon a wide array of features. Unlike ABNER, BANNER avoids seman-tic features, but it uses syntactic features. Both systems exploit suchdomain-speciﬁc language characteristics as capitalization, word shapes,preﬁxes, suﬃxes, and Greek letters.472 MINING TEXT DATA
+Tools for relation extraction are not yet as readily accessible as entity
+recognition tools. Kabiljo et al. [83] compared available tools for iden-tifying biomedical relations (AkanePPI, Whatizit, and OpenDMAP) to
+a simple, regular expression-based approach and found that the simple
+approach performed surprisingly well. The authors conclude that highrecall (around 90%) is achievable for extracting gene-protein relationswhen the available tools are combined.
+A recent trend in tool development and use is the assemblage of
+pipelines based on open-source frameworks, such as the GeneralizedArchitecture for Text Engineering (GATE) [39] and the Unstructured
+Information Management Architecture (UIMA) [54]. The most mature
+system for clinical text processing (ranging from identifying patients’problems to events) is MedLEE [58]. Descriptions of other systems andclinical text mining tasks can be found in a recent review [41].
+This section has presented only a snapshot of open-domain biomed-
+ical text mining resources. By its nature, the information containedherein will become dated sooner than the other material presented in
+this chapter. To compensate for the rapid progress of research related
+tobiomedicaltextmining,manyresearchersmaintainwebsiteswithlinksto useful resources (e.g., BioNLP [19]). Realizing that this task is tootime consuming for individual researchers, the U.S. Department of Vet-eransAﬀairsandNLMprovidearegistryofbiomedicaltextminingtools,known as ORBIT, which is maintained by the research community [144].
+3. Information Extraction
+A goal of many biomedical text mining tasks is the identiﬁcation of
+explicitly stated facts. Information extraction refers to the process by
+which structured facts are automatically derived from unstructured orsemi-structured text. In the biomedical domain, unstructured text com-monly includes scientiﬁc articles appearing in the biomedical literatureas well as clinical narratives found in electronic health records or otherclinical information systems. Although the information extracted fromthese sources can be the target of information retrieval systems, infor-
+mation extraction is often performed as an initial processing step for
+other biomedical text ming applications (Sections 4–6).
+Biomedical information extraction technology has undergone rapid
+development in recent years, spurred in part by community-wide evalu-ations that have been focussed speciﬁcally on text mining within thebiomedical domain. Some examples of recent evaluation forums in-clude BioCreAtivE [69, 97], BioNLP [89, 88], i2b2 [214, 213, 215, 216],
+JNLPBA [91], and LLL [133] shared tasks. The strong interest inBiomedical Text Mining: A Survey of Recent Progress 473
+community-wide evaluation eﬀorts such as these is reﬂective of the grow-
+ing volume of unstructured biomedical text available electronically indatabases such as MEDLINE or in clinical information systems.
+Three major subtasks of information extraction are particularly rele-
+vant for processing biomedical text. First, named entity recognition isa task that seeks to identify and classify biomedical entities into prede-ﬁned categories such as the names of proteins, genes, or diseases. Often,extracted entities are normalized to canonical, unambiguous represen-tations with the aid of ontological resources and further classiﬁed intosemantic categories. The second subtask of information extraction rele-
+vant to the biomedical domain is relation extraction, which aims to de-
+tect binary relationships among named entities. Examples include gene-disease relationships, protein-protein interactions, and medical problem-treatment relationships. Finally, the third major subtask, event extrac-tion, seeks to identify highly complex relations among extracted entities.Events relevant to the biomedical domain include, for example, gene ex-pression and regulation and protein binding.
+Although each of these subtasks are distinct in the type of informa-
+tion they aim to extract, they achieve their goals by employing similarmethods, which include machine learning, statistical analysis and othertechniquesofnaturallanguageprocessing. Challengesandapproachestothe subtasks of biomedical information extraction are discussed below.
+3.1 Named Entity Recognition
+Biomedical Named Entity Recognition (NER) refers to the task of au-tomatically identifying occurrences of biological or medical terms in un-
+structured text. Common entities of interest include gene and protein
+names, medical problems and treatments, drug names and their dosages,and other semantically well-deﬁned data classiﬁable within the biomedi-cal domain [104]. Although commonly discussed as a single task, NER istypically a three-step process that involves determining an entity’s sub-string boundaries within the text, assigning the entity to a predeﬁnedclass or category, and selecting the preferred name or unique identiﬁer
+of the concept that the entity names. This last subtask, entity normal-
+ization, is sometimes addressed as a separate problem from NER, butit is brieﬂy discussed here in the context of describing the many issuesthat make NER a challenging task in the biomedical domain.
+NER is particularly challenging for biomedical text due to a variety
+of reasons. The most basic obstacle results from the dynamic natureof scientiﬁc discovery. In the biomedical domain, there exists a vast
+amount of semantically relevant entities that is constantly and rapidly474 MINING TEXT DATA
+increasing as new scientiﬁc discoveries are made [226]. This ever-growing
+list of relevant terms is problematic for NER systems that rely only on adictionary of known terms or other curated resources to identify namedentities since these resources can never be complete as long as scientiﬁcprogress continues.
+Another challenge to biomedical NER is synonymy. In biomedical lit-
+erature, the same concept may be expressed using diﬀerent words. For
+example, “heart attack” and “myocardial infarction” refer to the samemedical problem so an NER system should recognize these terms as in-stances of the same concept, despite being expressed diﬀerently. Whenmany synonyms for a particular concept are in use, it becomes diﬃcultto integrate knowledge from multiple sources without a comprehensivesynonymy resource such as the UMLS Metathesaurus or Gene Ontol-
+ogy. However, given the rapidly increasing number of biomedical enti-
+ties, these resources are unlikely to be complete at any given moment,resulting in some synonymy relationships that may not be captured.
+Finally, the abundant use of acronyms and abbreviations in biomedi-
+cal literature make it diﬃcult to automatically identify the concepts towhich these terms refer. Often, successful acronym and abbreviationresolution depends greatly on the context in which the terms appear
+since the same term can refer to diﬀerent concepts. For example, the
+abbreviation RAcanreferto“rightatrium,”“rheumatoidarthritis,”“re-
+fractory anemia,” “renal artery,” or one of several other concepts [148].To address the challenges associated with acronyms, abbreviations, andsynonymy, NER systems typically perform some form of entity normal-ization.
+Entity normalization is a subtask of NER and refers to the process
+of mapping entity occurrences to their canonical, preferred names. Al-
+though a challenging task itself, entity normalization can help resolveissues resulting from synonymous terms and ambiguous acronyms andabbreviations by associating these entities with unique, unambiguousrepresentations. Often, since there may not be community-wide agree-ment on the preferred name for a given entity, the goal of entity normal-ization is to map an entity instance to the unique identiﬁer of a concept
+in a terminology resource. In general, entity normalization requires the
+existence of such terminology resources, though they may be incomplete.Since normalization is such a crucial component of many NER systems,it is often an implied processing step after identifying entity boundariesand assigning them to a category. However, the entity normalizationsubtask may be evaluated independently of these subtasks, as was thecase in recent BioCreAtivE shared task evaluations [67, 126].Biomedical Text Mining: A Survey of Recent Progress 475
+For NER systems that analyze large amounts of biomedical text, it is
+important to consider the quality that can be expected of the methodsbeing utilized. Typically, the performance of NER systems is measured
+in terms of precision, recall, and F-score. However, a variety of issues
+make these measurements diﬃcult to reliably obtain and compare.
+One issue is the availability of large, high-quality annotated corpora
+to serve as the ground truth on which to base NER system evaluations.The ground truth corpora must be large enough to allow the extrapola-tion of experimental results to large text collections, such as the entiretyof MEDLINE, and the annotations should exhibit high inter-annotator
+agreement and reﬂect expert-level judgement. However, while the size
+of a ground truth data set is crucial, annotation errors do not neces-sarily pose an insurmountable problem to system evaluation, especiallyif the data set is suﬃciently large. For example, Uzuner et al. [216]demonstrated that errors in the ground truth for a recent i2b2 sharedtask evaluation could aﬀect the relative performance of competing NERsystems by 0.05% at most.
+Another issue to consider when evaluating NER systems is how to
+deﬁne the boundaries of a correctly identiﬁed entity. A strict evalua-tion requires both the left and right boundaries of an extracted entityto exactly match those of the ground truth annotations while a looseevaluation requires only that the extracted entity boundaries overlapthose of the annotations [104]. Olsson et al. [142] showed that the choiceof a strict or loose evaluation aﬀects the relative performance of NER
+systems and suggested several scoring criteria for diﬀerent application
+needs.
+Recent community-wide evaluations have demonstrated that NER
+systems are typically capable of achieving favorable results. For ex-ample, the best performing systems achieved F-scores of 0.83 and 0.87
+for the ﬁrst [226] and second [187] BioCreAtIve gene mention recogni-tion tasks, 0.85 for the i2b2 concept extraction task [216], and 0.73 for
+the JNLPBA bio-entity recognition task [91]. Although NER systems
+may be tailored for a particular information extraction task, their pri-mary methods can broadly be grouped as following one of several basicapproaches, which are discussed below.
+Dictionary-based methods, one of the most basic biomedical NER
+approaches, utilize comprehensive lists of biomedical terms in order toidentify entity occurrences in text. Such systems determine whether a
+word or group of words selected from the text exactly matches a term
+from some biomedical resource. When used as stand-alone methods,dictionary-based approaches generally exhibit reasonably high precision,but they suﬀer from poor recall due to the existence of spelling mistakes476 MINING TEXT DATA
+and morphological variants [207]. However, low precision is also possible
+due to homonymy [68]. For example, many gene names and abbrevi-ations (e.g, “an,” “by,” and “can”) share lexical representations withcommon English words [99]. For these reasons, some form of inexactstring matching is commonly utilized to improve the precision and recallof dictionary-based approaches. Some methods improve performance by
+ﬁrst generating spelling variants for the terms in a biomedical resource,
+and then by appending these additional terms to the underlying wordlists [205, 204]. The methods are then able perform exact matchingusing the augmented resource. Other methods utilize algorithms suchas BLAST
+R/circlecopyrt[10, 11] to perform approximate string matching instead
+of exact matching [100]. Despite these improvements, dictionary-basedmethods are most often used in conjunction with more advanced NER
+approaches.
+Another approach to NER is to deﬁne rules that describe the compo-
+sition patterns of named biomedical entities and their context. Exam-ples of rule-based approaches include the EMPathIE and PASTA sys-tems [78, 61], which use context free grammars that recognize enzymeinteractions and protein structures. Other systems utilize pattern-basedrules that exploit the orthographic and lexical characteristics of targeted
+entity classesin order to recognizeprotein [59] and chemical[128] names.
+These simpler methods may be improved by additionally consideringcontextual information [70] and the results of syntactic parsing for de-termining entity boundaries [57]. However, while rule-based approachestypically achieve better performance than dictionary-based approaches,manual generation of the required rules is a time-consuming process,and, since the rules are usually very speciﬁc in order to achieve high
+precision, they are diﬃcult to extend to other entity classes.
+It is increasingly common for NER approaches to rely on statisti-
+cal methods instead of, or in combination with, dictionary- and rule-based approaches. Unlike the previously described approaches, statisti-cal methods typically rely on some form of machine learning algorithmto identify biomedical entities. While supervised machine learning ap-proaches must be trained with observations taken from large annotated
+corpora, recent work has investigated the automatic generation of train-
+ing data for the NER task through the use of bootstrapping and othersemi-supervised statistical techniques [218, 125, 212]. Common statis-tical methods used for NER can be grouped as either classiﬁcation- orsequence-based approaches.
+Classiﬁcation-based approaches transform the NER task into a clas-
+siﬁcation problem, which can either be applied to individual words or
+groups of words. Common classiﬁers used for biomedical NER includeBiomedical Text Mining: A Survey of Recent Progress 477
+Na¨ıve Bayes [139] and Support Vector Machine (SVM) [86, 118, 196,
+224] classiﬁers. Although it is possible to classify multi-word phrases,a popular approach follows the BIO tagging scheme [157], where indi-vidual tokens are classiﬁed as being at the beginning (B) of an entity,inside (I) the boundaries of an entity, or outside (O) the boundaries ofan entity. However, despite its success, this tagging scheme can be prob-
+lematic if entity boundaries overlap, and several authors have addressed
+the problem of recognizing nested biomedical entities [62, 8]. The per-formance of classiﬁcation-based approaches is highly dependent on thechoice of features used for training, and many authors have exploredvarious feature combinations. For example, Kazama et al. [86] and Mit-sumori et al. [118], consider morpho-syntactic properties of named en-tities, Takeuchi and Collier [196] consider orthographic and head-noun
+features, and Yamamoto et al. [224] explore a variety of features en-
+compassing boundary, morpho-lexical, and syntactic properties as wellas a dictionary-based feature that indicates whether a word appearsin a biomedical resource. Given the sensitivity of classiﬁcation-basedapproaches to the choice of features, automatic feature selection is animportant consideration. Hakenberg et al. [63] perform a systematicevaluation of common features and discuss their inﬂuence on the predic-
+tive quality of classiﬁcation-based NER systems.
+Unlike classiﬁcation-based approaches, sequence-based NER systems
+consider complete sequences of words instead of only individual wordsor phrases. They are trained on tagged corpora and aim to predictthe mostly likely tags for a given sequence of observations. A commonstatistical framework used for biomedical NER is the Hidden MarkovModel (HMM) [36, 179, 124, 93]. Methods based on the Maximum En-
+tropy Markov Model are also common [55, 37]. However, Conditional
+Random Fields (CRF) [141, 175] are often demonstrated to be superiorstatistical frameworks for biomedical NER. For example, CRFs wereutilized by the best performing system on the i2b2 medical concept ex-traction task [216] and by highly ranked systems on the BioCreAtIvegene mention recognition tasks [226, 187] and the JNLPBA bio-entityrecognition task [91]. Like other statistical methods, sequence-based ap-
+proaches can be trained on a variety of features including orthographic
+features [36, 124], preﬁx and suﬃx information [179], and part-of-speechtag sets augmented to include tags for entity classes [93].
+Many approaches do not just utilize a single method for perform-
+ing biomedical NER and instead rely on multiple techniques and var-ious resources. These hybrid approaches are often quite successful atcombining dictionary- or rule-based approaches with statistical meth-
+ods. As evidence of the advantages of hybrid approaches, Abacha et478 MINING TEXT DATA
+al. [2] compared the performance of common rule-based and statisti-
+cal approaches to medical entity recognition and concluded that hybridapproaches utilizing machine learning and domain knowledge performbest. There are numerous hybrid biomedical NER systems. For exam-ple, Sasaki et al. [173] use a dictionary-based approach to identify knownprotein names in parallel with part-of-speech tagging. They then use a
+CRF-based approach to reduce the number of false positives and false
+negatives in the resulting tagged sequence. Other methods create meta-learnersfrommultiplestatisticalmethods. Forexample, Zhouetal.[236]utilize a meta-learner composed of two HMMs trained on diﬀerent cor-pora whose outputs are combined with one SVM to recognize proteinand gene names. Similarly, Mika and Rost [117] compose a meta-learnerto recognize protein names from three SVMs trained on diﬀerent copora
+and feature sets whose outputs are then combined with a fourth SVM.
+Finally, Cai and Cheng [25] present an approach to biomedical NER thatutilizes three diﬀerent classiﬁers to improve the generalization ability ofthe system.
+A more thorough analysis of NER approaches in the biomedical do-
+main can be found in the several literature surveys dedicated to thesubject [99, 104].
+3.2 Relation Extraction
+Most information extraction tasks in the biomedical domain go beyondsimply identifying named entities and, in addition, involve determiningrelationships among those entities. In their simplest form, associationsamong biomedical entities are binary, involving only the pair-wise rela-tions between two entities. However, biomedical relationships can in-volve more than just two entities, and these complex associations arediscussed later with the event extraction task. The goal of the relation
+extraction task, therefore, is to identify occurrences of particular types
+of relationships between pairs of given entities. Although common en-tity classes (e.g., genes or drugs) are generally quite speciﬁc, the types ofidentiﬁed relationships may be broad, including any type of biomedicalassociation, or they may be speciﬁc, for example, by characterizing onlygene regulatory associations.
+A variety of biomedical relations have been the subject of information
+extraction tasks in the literature. In the current genomic era, much of
+this work has focussed on automatically extracting interactions betweengenes and proteins. In particular, because of its critical role in un-derstanding biological processes, Protein-Protein Interaction (PPI) hasbeen one of the most widely researched topics in biomedical informationBiomedical Text Mining: A Survey of Recent Progress 479
+extraction. Other associations of interest include interactions between
+proteins and point mutations [102], proteins and their binding sites [28],genes and diseases [31], and genes and phenotypic context [113]. In
+the clinical domain, relationships between patients’ presented medical
+problems and the tests or treatments they may undergo [216] is an in-creasingly important type of relation, especially considering the growingprominence of electronic health record systems.
+Biomedical relation extraction faces many of the same challenges as
+NER, including the creation of high quality annotated corpora for train-ing and evaluating relation extraction systems. Compared with the an-
+notation of named entities, the annotation of relations is considerably
+more complicated since relations are generally expressed as discontin-uous spans of text and the types of relations considered are usuallyapplication-speciﬁc [13]. Additionally, since there is often little consen-sus regarding how to best annotate given types of relations, the resultingresources are largely incompatible, and, as a result, the quality of themethods utilizing these resources is diﬃcult to evaluate. For example,
+Pyysalo et al. [155] performed a comparative analysis of ﬁve PPI corpora
+and found that the performance of state-of-the-art PPI extraction sys-tems, measured in terms of F-score, varied on average by 19 percentage
+points and by as much as 30 percentage points on the evaluated cor-pora. Participation in community-wide evaluations that are dedicatedto the relation extraction task is indispensable for obtaining annotatedcorpora.
+Relation extraction tasks have been a component of several recent
+evaluation forums, and these tasks include the LLL genic interactionchallenge [133], the BioCreAtIve PPI extraction task [96], and the i2b2relation extraction task [216]. The purpose of the LLL challenge wasto extract protein and gene relationships from abstracts contained inMEDLINE, and the best-performing system achieved an F-score of 0.54
+identifying these associations. The BioCreAtIve task consisted of four
+subtasks related to PPI extraction. These challenges included the clas-
+siﬁcation of PubMed abstracts as to whether they were relevant forPPI annotation, the identiﬁcation of binary protein-protein interactionsfrom full-text articles, the extraction of protein interaction methods,and the retrieval of textual evidence describing the interactions. Thebest-performing system achieved a precision of 0.37 at recall 0.33 forextracting binary PPI relations. Finally, the aim of the i2b2 relation ex-
+traction challenge was to identify medical problem-treatment, problem-
+test, and problem-problem relationships in clinical notes. Participantswere tasked, for example, with determining whether two co-occurringproblem and treatment concepts were related, and if so, whether the480 MINING TEXT DATA
+patient’s treatment improved, worsened, or caused the medical problem.
+The best-performing system on the i2b2 relation extraction challengedachieved an F-score of 0.74. Like the forums dedicated to evaluating
+the NER task, community-wide evaluations such as these have been
+instrumental in the development and evolution of relation extractionapproaches.
+Relation extraction approaches have shown an evolution from simple
+systems that rely solely on co-occurrence statistics to complex systemsutilizing syntactic analysis and dependency parsing. Some recent ap-proaches to the relation extraction task are described below. An ac-
+counting of additional methods can be found in other biomedical text
+mining surveys that cover the relation extraction task [13, 32, 238].
+The simplest method of identifying relations between biomedical enti-
+ties is to collect instances where the entities co-occur. If the entities arerepeatedly mentioned together, then there is a greater chance that theymay be related in some way, although the type and direction of this re-lation typically cannot be determined by co-occurrence statistics alone.
+For example, Chen et al. [30] apply co-occurrence statistics to compute
+the degree of association between diseases and drugs extracted fromclinical records and biomedical literature. Co-occurrence approachescommonly exhibit high recall and low precision.
+Rule-based approaches describe the linguistic patterns exhibited by
+particular relations. Unlike the systems based on term co-occurrences,rule-based approaches typically demonstrate high precision and low re-
+call. The rules used for relation extraction can be manually deﬁned by
+domain experts [172], or they can be derived from annotated copora bymachine learning algorithms [64].
+Classiﬁcation-basedapproachesarealsocommonlyusedtoidentifyre-
+lations, particularly those involving medical entities. Roberts et al. [168]describe a supervised machine learning system, trained on shallow fea-tures extracted from oncology reports, that detects various clinical re-
+lationships in patient narratives. Similarly, Rink et al. [167] describe a
+system that discovers relations between medical problems, treatments,and tests mentioned in electronic medical records. The system relies onsupervised machine learning and lexical, syntactic, and semantic con-text features. Bundschus et al. [23] utilize CRFs to identify and classifyrelations between diseases and treatments extracted from PubMed ab-stracts and relations between genes and diseases in the human GeneRIF
+database. Finally, Abach and Zweigenbaum [1] describe a hybrid ap-
+proach that utilizes patterns developed by domain experts as well asSVM classiﬁcation to extract relations that occur between diseases andtreatments in medical texts.Biomedical Text Mining: A Survey of Recent Progress 481
+An important advance in the evolution of relation extraction methods
+has been the consideration of syntactic structures. In particular, depen-dency parsing is capable of producing informative syntactic descriptions
+of biomedical text, in the form of dependency trees or graphs, which en-
+code grammatical relations between phrases or words. Fundel et al. [60]produce dependency trees from MEDLINE abstracts. Their system thenapplies three relation extraction rules to the syntactic structures in orderto identify gene and protein associations. Similarly, Rinaldi et al. [164]combine syntactic patterns obtained from dependency tree structuresin order to support querying the biomedical literature for interactions
+between genes and proteins. Miyao et al. [121] perform deep parsing to
+annotate predicate-argument structures in MEDLINE abstracts. Theirsystem then relies on the structural matching of the semantic annota-tions to identify and retrieve relational concepts. In other work, Miyaoet. al [122] evaluate various parsers and their output representations ontheir ability to improve accuracy when used as a component of a PPIextraction system.
+With the growing availability of large corpora containing relational
+annotations, many approaches utilize machine learning algorithms toextract useful information from syntactic structures rather than apply-ing manually derived patterns. In the context of kernel-based machinelearning, several authors have proposed kernels capable of measuringthe similarity between syntactic parse trees or graphs. Airola et al. [7]describe an all-paths graph kernel for computing the similarity between
+dependency graphs. The kernel function is then used in training a least
+squares support vector machine to identify protein-protein interactions.Kim et al. [92] suggest four genic relation extraction kernels deﬁnedon the shortest syntactic dependency path between two named entities.Finally, Miwa et al. [120] describe a framework for combining the out-puts of multiple kernels and syntactic parsers to extract protein-proteininteractions.
+Syntactic analysis is often complemented by semantic role labeling,
+a natural language processing technique that identiﬁes the semanticroles of words or phrases in sentences and expresses them as predicate-argument structures. Tsai et al. [202] construct a role labeling sys-tem that uses a maximum entropy machine learning model to extractbiomedical relations from a prepared portion of the GENIA corpus. Asdiscussed below, the annotation of semantic roles for named biomed-
+ical entities has enabled the extraction of a variety of complex entity
+associations.482 MINING TEXT DATA
+3.3 Event Extraction
+Recently, there has been a shift in biomedical information extraction
+from recognizing binary relations to the more ambitious task of identify-ing complex, nested event structures. Events are typically characterizedby verbs or nominalized verbs. For example, in the sentence “ glnAP2
+may be activated by NifA,” the verb activated speciﬁes the event, and
+glnAP2andNifAare the event’s arguments. Unlike the case of simple
+binary relations, both concept labels and semantic roles are assigned toan event and its arguments. In this example, the verb activated indi-
+cates a positive regulation type event, which expects a protein ( NifA)
+to act as the event’s cause and a gene ( glnAP2) to act as the event’s
+theme [13].
+Another important distinction between the extraction of binary rela-
+tions and complex events is that events can be nested, with one event
+functioning as a participant of another event. For example, in the sen-tence “RFLAT-1 activates RANTES gene expression” two events arepresent [13]. One event is indicated by the nominalized verb expression
+whose theme is RANTES , a gene, and the other event is indicated by
+the verb activates whose cause is RFLAT-1 , a protein, and whose theme
+is the gene expression event itself. Thus, event representations, unlike
+binary relations, are capable of capturing many diﬀerent types of asso-
+ciations with an arbitrary number of entities and events related by avariety of semantic roles.
+Due to the complexity of biomedical events, eﬀective event extraction
+typically requires a thorough analysis of sentence structure. Event ex-traction is particularly aided by the use of semantic processing and deepparsing techniques, which are capable of analyzing both the syntactic
+and semantic structure of biomedical text. Dependency parsing is an
+especially useful technique for capturing semantics such as predicate-argument relationships, which have been shown to be an eﬀective repre-sentation for event extraction [219]. Despite the complexity of the task,event extraction has broad applicability in the biomedical domain, andit is increasingly being used for the annotation of biomedical pathways,Gene Ontology annotation, and the enrichment of biological databases.
+The growing interest in event extraction has largely been driven by
+the introduction, mostly in the domain of systems biology, of corporacontaining the annotations necessary for the training and evaluation ofstatistical event extraction methods. The BioInfer corpus [156] was theﬁrst publicly available corpus in the biomedical domain to incorporateevent annotations. Other annotated event corpora include the GENIAEvent Corpus [92] and the Gene Regulation Event Corpus [198]. No-Biomedical Text Mining: A Survey of Recent Progress 483
+tably, the GENIA corpus remains one of the most widely used resources
+in biomedical text mining, and the data for the BioNLP shared tasks onevent extraction [89, 88] were prepared based on this resource.
+The BioNLP ’09 shared task [89] was the ﬁrst-of-its-kind community-
+wide evaluation of event extraction methods. The primary challengewas to extract event types related to protein biology from MEDLINEabstracts. Targeted event types included, among others, gene expres-sion, transcription, localization, binging, and regulation. The bindingevent type was more complex than the others since it required the de-tection of an arbitrary number of arguments, and the regulation event
+types were notable for allowing other events to act as their cause or
+theme. The best-performing system obtained an F-score of 0.52 on
+the primary event extraction task. The BioNLP ’11 shared task [88]repeated the evaluation from the previous meeting, but also includedadditional tasks targeting event types in other subdomains of biology.On the subtask comparable with that of that of the ﬁrst meeting, thebest-performingsystemachievedan F-scoreof0.57, whichdemonstrated
+a signiﬁcant improvement in the community. Successful systems at the
+BioNLP shared task meetings relied on a variety of techniques includ-ing machine learning, Markov logic networks, and dependency parsing.Several approaches to biomedical event extraction are described below.
+Most event extraction systems follow a pipelined approach that di-
+vides the task into a sequence of three stages. Fist, the systems predicta candidate set of event trigger words. Trigger words are often the
+verbs or nominalized verbs that indicate a particular event type, such as
+“phosphorylation,” “activates,” or “inhibits.” Then, the systems seek todetermine whether any recognized named entities or trigger words areinstantiations of event arguments. The ﬁnal stage in the process is asemantic post-processing step that attaches arguments to event triggersfollowing constraints on the type and number arguments allowable for agiven event type.
+This basic architecture is a common approach to the event extrac-
+tion task. Bj¨ orne et al. [21] describe the best-performing system on
+the BioNLP ’09 event extraction task. Their method trains separatemulti-class SVMs for detecting event triggers and arguments using anextensive set of features, especially those derived from dependency parsegraphs. Theirsystemthenusesarule-basedapproachforattachingargu-ments to their corresponding events. This approach has been combined
+with BANNER to perform event extraction on an unlabeled subset of
+citations from PubMed [20]. Miwa et al. [119] describe an event ex-traction approach similar to that of Bj¨ orne et al., but instead of relying
+on a rule-based approach to attach event participants to trigger words,484 MINING TEXT DATA
+they obtain an improvement by utilizing a classiﬁer and additional fea-
+tures for this step. Buyko et al. [24] describe a system that relies ona dictionary-based approach to identify event triggers and an ensemble
+of feature- and kernel-based classiﬁers trained using “trimmed” depen-
+dency graphs to identify event participants. Kilicoglu and Bergler [87]also use a dictionary-based approach to identify event riggers, but theydevelop rules based on syntactic dependency paths to detect event par-ticipants. Finally, Cohen et al. [34] describe a pattern-based approachto event extraction that utilizes the OpenDMAP system [79] to deﬁneentity and event types as well as the constraints on event arguments.
+Recently, joint prediction approaches have been proposed that seek
+to overcome the problem of cascading errors, which some of the aboveapproaches allow. For example, by separating the event trigger and ar-gument detection tasks, a system may not correctly extract an event ifit fails to detect a trigger word in the ﬁrst stage of the process. Poonand Vanderwende [153] propose a method based on Markov logic net-works that jointly predicts events and arguments. For each word, the
+system predicts whether it is an event trigger word, and for each syn-
+tactic dependency edge, the system predicts whether it is an argumentpath leading to an event theme or cause. Additionally, Riedel and Mc-Callum [161] propose a family of three joint prediction models basedon Markov logic that are less computationally complex than previouswork [160] and lead to better event extraction results.
+4. Summarization
+Information extraction techniques are often utilized as a ﬁrst step in
+other biomedical text mining tasks. One such task is the automatic sum-
+marization of biomedical documents. Automatic summarization refers
+to the process by which the salient aspects of one or more documentsis identiﬁed and presented succinctly and coherently. Due to the enor-mousgrowthofunstructuredinformationintheformofscientiﬁcarticlesand electronic health records, a means for clinicians and researches toquickly and reliably assimilate knowledge from a multitude of biomed-
+ical sources is desirable. Automatic summarization is one approach to
+determine and make accessible the important information contained inan increasingly large and diverse volume of biomedical text.
+In the biomedical domain, document summaries are commonly
+application-oriented, and can serve a variety of purposes. Summariesmay be either a generic assimilation of facts or they may be targeted [3].Generic summaries consider all the information contained in a document
+or set of documents while targeted summaries aim to satisfy a speciﬁcBiomedical Text Mining: A Survey of Recent Progress 485
+information need, which is usually presented to a system in the form of
+a query. For example, a targeted summary of the biomedical literaturemight seek to determine the best treatments for a given disease [56],
+whereas a generic summary might aim to extract from articles key sen-
+tences related to results or conclusions [169]. Additionally, a summary isconsidered indicative if its purpose is to inform a reader of the contentsof a document or set of documents, or it is informative if its purpose isto supplant those contents in terms of information coverage [3].
+Depending on their purpose, several diﬀerent types of document sum-
+maries can be produced. Single-document summaries seek to summarize
+the contents of individual sources, whereas multi-document summaries
+consider the information contained in a collection of sources [3]. Often,document clustering is utilized when generating multi-document sum-maries in order to produce a topical account of a particular group ofdocuments. Summaries may also be extractive or abstractive [3]. Ex-tractive summaries are created by identifying the salient textual com-ponents of documents (e.g., their important sentences or paragraphs)
+and then presenting this information as the summary. The representa-
+tive textual components are determined by statistical methods that rankthem according to relevance or by graph-based methods that organizethem according to their similarity. Alternatively, abstractive summariesare created by structuring document information in a way that can beprocessed by a natural language generation system to produce the sum-mary. Salient information is typically generated through prior knowl-
+edge of the documents’ structure or by utilizing ontological resources to
+produce semantic representations of the documents.
+Considering both the various types of summaries that may be gener-
+ated and their intended applications, the evaluation of summarizationtechniques within the biomedical domain is a challenging issue. This dif-ﬁculty is due, in part, to the subjective aspect of determining whether asummary is of “good” quality or not. Existing evaluation criteria con-
+sider the intrinsic aspects of a summary, such as its coherence, concise-
+ness, grammaticality, and readability. Other extrinsic evaluation criteriameasure, for example, whether a reader is able to comprehend the con-tent of a summary [3]. However, manual evaluations of summaries aretime-consuming and expensive to perform. A popular automatic sum-mary evaluation methodology is ROUGE [107]. ROUGE is an acronymfor Recall-Oriented Understudy for Gisting Evaluation, and it deter-
+mines the quality of an automatically generated summary by computing
+statistics based on n-gram co-occurrences and common subsequences be-
+tweenitandidealhuman-producedsummaries. ROUGEhasbeenshownto correlate well with human evaluations of single-document summaries.486 MINING TEXT DATA
+A related method is based on the Jensen-Shannon divergence of dis-
+tributions between an automatically generated summary and referencesummaries and is more eﬀective for the multiple document summariza-
+tion task [108].
+Recent biomedical text summarization techniques have been shown
+to be eﬀective tools for assimilating information from a diverse collec-tion of sources. While most approaches in the biomedical domain aimto produce targeted or topic-speciﬁc summaries, the types of generatedsummariesaregenerallymorediverseandincludebothsingle-andmulti-document summaries as well as extractive and abstractive summaries.
+However, given the rapidly expanding volume of published biomedical
+literature, multi-document summaries are increasingly viewed as impor-tant. Examples of recent text summarization approaches and their ap-plications are described below.
+One of the most basic approaches to biomedical text summarization
+involves the classiﬁcation of individual sentences into a given set of cat-egories. These categories may be speciﬁc to the biomedical domain, but
+they are often representative of the general rhetorical categories com-
+monly encountered in scientiﬁc literature. Agarwal and Yu [4] train aNa¨ıve Bayes classiﬁer to classify sentences in full-text biomedical arti-
+clesasbeingrelatedtotheintroduction, methods, results, anddiscussionrhetorical categories. Their system achieves an overall annotation agree-ment of 0.76 kappa with human annotators. Ruch et al. [169] describea similar approach that classiﬁes sentences in MEDLINE abstracts as
+being related to an article’s purpose, methods, results, or conclusions.
+Finally, Demner-Fushman and Lin [45] produce extractive summariesfor clinical information needs by extracting sentences from MEDLINEabstracts relating to the outcomes of a clinical study.
+While some of the above approaches apply generic summarization
+methods to biomedical articles, most applications are targeted and seeka concise description of a speciﬁc type of information. Since the under-
+standing of gene regulation and expression is crucial in current biomedi-
+cal research, a variety of targeted methods have been proposed to gener-ate multi-document gene summaries. Ling et al. [112] propose a methodforgeneratingabstractivemulti-documentgenesummariesfrombiomed-ical literature. Their two-stage approach to gene summarization ﬁrstretrieves articles that mention a particular gene, and it then identiﬁestext within those articles that pertains to several gene-related semantic
+categories, which include expression, sequence, and phenotypic infor-
+mation. Similarly, Yang et al. [225] describe an extractive approach togenesummarizationthatﬁrstclustersgenesintofunctionalgroupsbasedon their mentions in MEDLINE abstracts. Their system then presentsBiomedical Text Mining: A Survey of Recent Progress 487
+summariesforeachfunctionalgroupbyrankingandextractingsentences
+from the abstracts.
+A challenge facing many automatic summarization techniques is the
+accurate semantic interpretation of the text. To address this issue,
+several summarization methods utilize domain knowledge in order toproduce ontology-based document summaries. Reeve et al. [158] de-scribes a single-document abstractive approach that utilizes MetaMapto map text to concepts in the UMLS Metathesaurus. Their approachthen discovers strong thematic chains of UMLS semantic types and ex-tracts the corresponding sentences. Yoo et al. [229] describe an ap-
+proach to multi-document summarization that ﬁrst clusters articles into
+topical groups and then produces summaries for each cluster. Theirsystem uses a graph-based method for both document clustering andsummarization that is enriched with concepts from the MeSH ontol-ogy. Morales et al. [123] describe a similar graph-based approach tosingle-document summarization that represents documents using UMLSconcepts. Finally, Fiszman et al. [56] utilize SemRep [165] to produce
+multi-document summaries of MEDLINE citations according to disease-
+treatment relationships relevant to user-speciﬁed topics. Their approachhas become an integral component of Semantic MEDLINE [166].
+In addition to the text found in biomedical articles, the ﬁgures they
+contain also convey essential information. However biomedical imagesare seldom self-evident, and much of the information required for theircomprehension is found elsewhere in an article. Figure captions, article
+titles and abstracts, and snippets of text from within the bodies of arti-
+cles all contribute to image understanding [230]. Given that ﬁgures area crucial source of information in the biomedical literature, many meth-ods seek to incorporate image-related text into document summaries.However, since the number of such approaches is so large, and theirmethods are diverse, a full accounting of the use of image-related textin bioinformatics warrants a separate review.
+A few representative examples of ﬁgure summarization and the use
+ﬁgure captions for producing document summaries include the follow-ing. Similar to their approach for full-text summarization, Agarwal andYu [5] produce ﬁgure summaries consisting of one sentence each from anarticle’s introduction, methods, results, and discussion rhetorical cate-gories. Yu and Lee [232] produce ﬁgure summaries by extracting sen-tences from article abstracts that are similar to ﬁgure captions, and
+Simpson et al. [181] utilize image-related text to produce full-text sum-
+maries in support of case-based article retrieval.
+Several user-oriented systems have been developed for supporting
+biomedical document summarization. PERSIVAL [116, 49] is a clini-488 MINING TEXT DATA
+cal system that seeks to provide access to medical literature and con-
+sumer health information. For clinicians, the system produces targeted,multi-document summaries containing sentences, extracted from full-
+text biomedical articles, that relate to experimental results. For users
+of the system that are patients, PERSIVAL provides indicative sum-mariesofinformationthatiscommonlyrepeatedacrossasetofconsumerhealth documents. Anne O’Tate [184] is another user-oriented systemcapable of producing summaries of biomedical literature. Anne O’Tateis a web-based tool that provides navigable, extractive multi-documentsummaries of article citations retrieved by PubMed. The tool presents
+import words and authors mentioned in the results and can cluster the
+retrieved citations by topic.
+5. Question Answering
+Another biomedical text mining task that builds upon information ex-tractiontechniquesisquestionanswering. Unliketraditionalinformationretrieval, where a set of potentially relevant documents is returned fora given query, question answering refers to the process of providing di-
+rect and precise answers to natural language questions. Like automatic
+summarization, question answering is a task directed towards aiding
+researchers and health care professionals in managing the continuousgrowth of information in the biomedical domain. Since question answer-ing requires the use of complex natural language processing techniquesin order to produce accurate responses, question answering systems areoften regarded as the next generation of search engines.
+The basic processing steps required of a question answering system
+are well-understood. The input to such a system is natural language
+text. A question processing stage uses linguistic analysis and questionclassiﬁcation techniques to determine the type of question being posedto the system and the type of response it should generate. It then con-structs a query from the input text to be fed into a document processingstage. In the document processing stage, the system inputs the queryinto a search engine, which retrieves a set of documents, and from these
+documents, extracts relevant passages or snippets of text as potential
+answers. An answer processing stage ranks the candidate answers ac-cording to the degree to which they match the expected answer typethat was determined in the question processing stage. The output of aquestion answering system is the top-ranked answer.
+Several characteristics of this process distinguish question answering
+in the biomedical domain from general, open-domain question answer-
+ing systems. First, biomedical question answering is both challengedBiomedical Text Mining: A Survey of Recent Progress 489
+and advantaged by a prominent use of domain-speciﬁc terminology. Al-
+though terminological variations and synonymy make text mining diﬃ-cult in general for the biomedical domain (Section 3), question answer-
+ing systems may beneﬁt from the speciﬁcity and limited scope of po-
+tential questions that a domain-speciﬁc terminology provides. Second,the multitude of domain-speciﬁc corpora and the tools and methods re-quired for exploiting the semantic information they contain (Section 2)allow for deep question processing. Lastly, agreement on domain-speciﬁcstructuresinwhichtoorganizequestions—especiallyclinicalquestions—allows for answer processing strategies that can be tailored to speciﬁc
+question types.
+Due to the unique characteristics of biomedicine as an application
+domain for question answering, recently proposed systems have increas-ingly sought to incorporate deep semantic knowledge throughout theirprocessing stages in order to produce more precise responses. The re-mainder of the discussion in this section surveys biomedical question an-swering techniques, and organizes the methods according to the recent
+review by Athenikos and Han [17], in which the authors classify biomedi-
+cal“semanticknowledge-based”systemsintosemantics-based,inference-based, andlogic-basedapproaches. Semantics-basedapproachesproduceanswersto biomedical questions byexploiting the semanticmetadata en-coded in structured knowledge resources and ontologies; inference-basedapproaches derive responses by exploiting extracted semantic relation-ships, and logic-based approaches utilize explicit logical forms and theo-
+rem proving techniques to produce answers. The approaches can further
+be divided into those that support medical question answering and thosethat support biological question answering.
+5.1 Medical Question Answering
+A dominant theme of work related to medical (or clinical) question an-swering is the use of the evidence-based medicine framework. Evidence-based medicine [170] seeks to apply the best information garnered fromscientiﬁc inquiry to clinical decision making. For determining the best
+available evidence supporting an answer to a given clinical question, the
+evidence-based paradigm suggests questions be structured according tothe PICO [159] format. PICO is an acronym for Patient/Problem, In-tervention, Comparison, and Outcome. Clinical questions containingelements that pertain to each of these semantic roles are considered well-formed. In addition to the structure of clinical questions, taxonomies ofquestions in the evidence-based framework have also been proposed. Ely
+et al. [50] describe a generic taxonomy for clinical questions that distin-490 MINING TEXT DATA
+guishes among questions that are potentially answerable and those that
+arenot. The authorsclaim that questions involvingasearch for evidenceare among the answerable ones.
+The ﬁrst step towards answering a clinical question is processing the
+question so as to determine the type of answer to produce. Several au-thors in the medical domain have investigated question classiﬁcation asa means of analyzing and ﬁltering clinical questions. Huang et al. [77]describe a manual classiﬁcation of primary care clinical questions as ameans to evaluate the eﬀectives of the PICO framework. The authorsconcludethatPICOisausefulorganizingstructureforclinicalquestions,
+but they suggest it is less suitable for questions that do not involve ther-
+apy elements. Additionally, Yu et al. [234, 235, 231] investigate variousmachine learning approaches for question ﬁltering that automaticallydetermine whether a clinical question is answerable according to theevidence taxonomy proposed by Ely et al., which was described above.
+Most approaches to medical question answering in some way make use
+ofdomain-speciﬁcsemanticknowledgeforinformationextractionandre-
+trieval. Jacqumart et al. [40, 81] describe a semantics-based approach
+for the development of a French-language medical question answeringsystem. Their approach is notable for the use of pattern-based semanticmodels of medical questions and the use of UMLS concepts, semantictypesandrelationsforidentifyingnamedentitiesandextractinganswers.Niu et al. [135, 136, 138, 137] propose a PICO-based question answeringapproach within the EPoCare system. Their methods locate potential
+answers by identifying, in both the question and answer texts, semantic
+roles that correspond to the four elements of the PICO framework. Thesemantic roles identiﬁed in the question are then compared with thoseidentiﬁed in candidate answers to select a response. Similarly, Demner-Fushman et al [45, 44, 42, 109, 43] propose an approach to clinical ques-tion answering based on the semantic uniﬁcation of a query PICO framewith those of candidate answers. Making extensive us of MetaMap and
+SemRep, the authors describe semantic knowledge extractors for iden-
+tifying PICO elements in medical texts, a semantic matcher for scoringand ranking MEDLINE citations according to a query PICO frame, andan answer generator for extracting answers from the scored citations.Weiming et al. [221] describe a question answering approach that rep-resents questions and documents using UMLS concepts, semantic types,and semantic relations. Their approach is notable for incorporating a
+semantic clustering phase into the answer processing stage so as to or-
+ganize potential answers according to their hierarchical relationships inthe UMLS Metathesaurus. Finally AskHERMES [27] is an online clin-ical question answering system capable of processing long and complexBiomedical Text Mining: A Survey of Recent Progress 491
+questions. The system uses machine learning techniques with a variety
+oflexical, syntactic, andUMLS-derivedfeaturestoclassifyquestionsandtopically group and rank candidate answers. A preliminary version of
+AskHERMES, known as the MedQA [233] system, was a non-semantic-
+knowledge-based approach capable of answering deﬁnitional questions.
+Few approaches to question answering in the medical domain are
+inference- or logic-based. Terol et al. [197] describe an approach basedon comparing the formal logic forms derived from a natural languagequestion with those of candidate answers. Their technique utilizes apattern-based method for question classiﬁcation, and it identiﬁes medi-
+cal entities in both questions and answers based on UMLS concepts and
+semantic types.
+5.2 Biological Question Answering
+Whereas evidence-based medicine provides a means to structure clinicalquestions and answers, work in the biological domain has yet to adoptsuch a prominent framework. However, systems targeting the biologicaldomain still follow the general architecture of questioned answering sys-tems outlined previously. A review of recent work related to biological
+question answering is presented below.
+Like their use for medical question answering, semantics-based ap-
+proaches are also commonly employed for answering questions in thebiological domain. Takahashi et al. [195] describe an approach thatutilizes the UMLS Metathesaurus and other biological dictionaries andthesauri for analyzing questions and generating queries. Their systemthenusessemanticinformationoftermsselectedfromtheretrieveddocu-
+ments to assimilate and rank candidate answers. Lin et al. [110] propose
+a system for answering questions about biomolecular events, includinginteractions between genes and proteins (Section 3). Their approach in-volvestheuseofsemanticrolelabelingforextractingpredicate-argumentstructures and the use of semantic features for ranking candidate an-swers. The system provides answer responses in the form of biomedi-cal named entities. Finally, the BioSquash [180] system is a targeted,
+multi-document, semantic graph-based summarization system oriented
+towards answering biological questions.
+Like the use inference- and logic-based methods for medical question
+answering, few approaches in the biological domain make use of thesetechniques. Kontus et al. [94, 95] describe the AROMA inference-basedsystem for biological question answering. AROMA extracts rhetoricaland causal relationships from multiple biological texts, combines the ex-
+tracted text with manually entered domain knowledge, and encodes this492 MINING TEXT DATA
+information as Prolog facts. The system generates answers to questions
+by applying inference rules over the encoded facts. Rinaldi et al. [162]describe a logic-based approach to question answering in the genomics
+domain. Using deep linguistic and terminological information, the sys-
+tem derives logical forms for text taken from documents in the GENIAcorpus and a subset of full-text documents indexed in MEDLINE. Natu-ral language questions are processed with the same mechanism, and thesystem derives an answer using a theorem proving process.
+6. Literature-Based Discovery
+While the extraction of explicit relations and events among biomedicalentities can be used to produce rich document summaries and enable
+complex question answering systems, an exciting use of these methods
+aims to uncover relationships that are not present in the text, but thatcan be inferred from other information. Literature-based discovery refers
+to the task of utilizing scientiﬁc literature to uncover “hidden,” previ-ously unknown or neglected relationships between existing knowledge.Thegoalofdiscoveringtheseimplicitrelationshipsistoidentifyrelationsworthy of further scientiﬁc investigation or to ﬁnd evidence supporting
+suspected relations.
+As a technique useful for biomedical text mining, literature-based dis-
+covery was pioneered by the work of Swanson in the 1980s. Swansonsuggested that novel information could be uncovered by systematicallyreviewing “complementary but disjoint” bodies of literature [192]. Inwhat has become the prototypical example of literature-based discovery,Swanson linked ﬁsh oil, a substance widely-understood to have potential
+cardiovascular beneﬁts, with Raynaud’s syndrome, a vasospastic disor-
+der causing the narrowing of blood vessels [189]. The discovery suggestsﬁshoilsupplementsmayhelptocontrolthesymptomsofRaynaud’ssyn-drome. To further demonstrate the feasibility of his ideas, Swanson laterfound evidence for relationships between migraine and magnesium [190],somatomedin C and arginine [191], and viruses and their potential useas biological weapons [194].
+ThebasicpremiseofSwanson’sapproachisthatthereexiststwoscien-
+tiﬁc communities that do not communicate. A portion of the knowledgein one community may be related to or complement knowledge in theother one, but this relationship is unknown to either community. Forexample, suppose a scientiﬁc community has researched the relationshipbetween a medical ﬁnding or characteristic Band a disease C. Further
+suppose that a separate community has studied the aﬀects of substance
+Aon characteristic B. The use of literature-based discovery techniquesBiomedical Text Mining: A Survey of Recent Progress 493
+may suggest an A-Crelationship, indicating in this example that sub-
+stanceAmay potentially treat disease C.
+Weeber et al. [220] distinguish between two modes of discovery. A
+“closed discovery,” or hypothesis testing study, begins with known A-
+andC-terms. Thus, the discovery concerns ﬁnding novel B-terms that
+may explain the observed A-Cassociation or hypothesis. On the other
+hand, an “open discovery,” or hypothesis generation study, begins withknownA-Bassociations in one domain and seeks to discover B-Cre-
+lations in another domain, thereby suggesting or generating a potentialA-Cassociation.
+Sincethe pioneering work of Swanson, literature-based discovery tech-
+niqueshaveseenwidespreaduse. Existingapproachescanbegroupedbythe way in which they identify potentially novel relationships. There arethose that depend exclusively on the co-occurrence of terms or concepts,those that make use of semantic information to inform the processingof co-occurring terms, and those that construct interaction networks ofindividual relations whose paths can reveal hidden associations. Some
+recent methods following these general approaches are reviewed below.
+Unlike other text mining tasks, measuring the performance of literature-based discovery tools is not straightforward, and a discussion of systemevaluation follows as well.
+Co-occurrence-based methods are among the simplest, although less
+precise, approaches to literature-based discovery. Like the most ba-sic approaches to the relation extraction task (Section 3), these meth-
+ods seek to identify terms that frequently occur together. However,
+whereas approaches to relation extraction identify ﬁrst-order term co-occurrences, approaches to literature-based discovery explore second-order co-occurrences—the shared co-occurrences of two given biomedicalentities [238].
+Mostoftheearliestapproachestoliterature-baseddiscoveryandmany
+modern approaches rely on entity co-occurrence statistics. The Arrow-
+smith [193, 185, 182, 183, 199, 186] two-node search tool implements
+Swanson’s original approach to ﬁnd biologically meaningful links be-tween two sets of articles in PubMed using title words and phrases.Recent work related to this project has developed a method to esti-mate and rank the relevance of associations. BITOLA [74, 73, 72, 75]is a similar literature-based discovery system, but instead of identifyingrelations using title words, it represents documents using their MeSH
+terms and recognized gene symbols. Additionally, BITOLA uses asso-
+ciation rules [6] as a measure of concept relatedness instead of wordfrequencies. LitLinker [227] also utilizes MeSH terms; however, it uses astatistical approachbased on thebackground distribution of termproba-494 MINING TEXT DATA
+bilities to identify correlated concepts. Jelier et al. [82] describe a system
+that identiﬁes functional associations between genes and other biomed-ical concepts. Their approach measures the strength of association ofco-occurring concepts using a log likelihood ratio. RaJoLink [151] pro-vides semi-automated suggestions for links between two sets of articlesbased on rare terms identiﬁed in the literature. FACTA+ [203] uses an
+information theoretic score to rank indirectly associated concepts. It
+identiﬁes explicit associations among biomedical entities using methodsinheritedfromanearlierversionofthesystem[206]. Finally, unlikeotherliterature-based discovery methods that rely on associations explicit inscientiﬁc literature, Benton et al. [18] use a corpus of posts to Internetbreast cancer message boards to discover adverse drug eﬀects.
+Because systems relying solely on co-occurrence statistics tend to pro-
+ducealarge number of spurious relations, recentapproachesincreasingly
+rely on semantic information to identify hidden relations or augment theprocessing of co-occurring entities. Hristovski et al. [71] describe an im-provement to BITOLA that uses the semantic predications produced bySemRep and BioMedLEE [114] to enable users to eliminate uninterest-ing or incorrect relations. A similar approach is used in the EpiphaNetsystem [35], an interactive visualisation tool for exploring associations
+between concepts found in MEDLINE. EpiphaNet makes extensive use
+of MetaMap and SemRep for identifying explicit relations. Other sys-tems, including Weeber et al.’s DAD-system [220], ﬁlter candidate rela-tions based on the UMLS semantic type of identiﬁed B-terms. Recall
+that for hypothesis generation, B-terms are used to uncover hidden A-C
+relations from explicit A-BandB-Cassociations. Hu et al. [76] de-
+scribe a literature-based discovery method that uses association rules as
+a measure of concept relatedness but also ﬁlters potential relations using
+UMLS semantic types.
+Anotherapproachtodiscoveringhidden relationshipsamongbiomedi-
+cal entities involves the construction of interaction networks whose pathscan reveal indirect associations. Seki and Mostafa [174] build an infer-ence network [208] to predict implicit gene-disease associations. Genesand diseases are connected within the graph by intermediary nodes rep-
+resenting gene functions and phenotypes. Similarly, ¨Ozg¨ur et al. [145,
+146]buildagene-interactionnetworkbycollectinganinitialsetofknowndisease-related genes from biomedical texts using dependency parsingand SVMs. They then use network centrality metrics to predict gene-disease associations. Finally, Palakal et al. [149] describe BioMap, adirected graph that is constructed from explicit relationships betweenbiomedical entities identiﬁed within text. Users are able to query the
+graph to uncover implicit associations among the entities.Biomedical Text Mining: A Survey of Recent Progress 495
+Due to the nature of uncovering novel information, there is no ground
+truth available for evaluating literature-based discovery systems, andcomparing the relative performance of alternative approaches is diﬃcult.
+A common method for evaluating an automatic discovery technique is to
+use the system to replicate known discoveries, such as Swanson’s linkingof Raynaud’s syndrome with ﬁsh oil or migraine with magnesium [220].However, Yetisgen-Yildiz and Pratt [228] suggest this approach is un-informative of the overall performance of a system. They describe analternative methodology that divides the abstracts in MEDLINE intotwo sets: those that were published before a given cut-oﬀ date, and
+those that were published after this date. Literature-based discovery
+methods are then applied to the older set of abstracts as hypothesesgenerating systems and to the newer set as hypotheses testing systems,using the generated associations from the older set as input. The per-formance of a system can then be quantiﬁed using standard informationretrieval evaluation methods.
+7. Conclusion
+The past several years have seen some exciting developments in biomedi-
+cal text mining. Progress was made in (1) deﬁning and attempting more
+challenging tasks, such as event extraction and clinical text mining; (2)increasing the public availability of and community investment in re-sources, such as the MIMIC II database and the ORBIT registry; and(3) development and use of common frameworks, such as UIMA.
+It is interesting to compare the development of the ﬁeld to the desir-
+able directions outlined by the leading researchers in 2008 [9]. At that
+time, the researchers were asked about the importance of text mining
+for biology, the utility of the text mining systems, and future directions.
+Theﬁrstsuggestedavenueforfutureresearchwas fusing literature and
+biological databases through text mining . Understandably, this requires
+engaging the publishers of scientiﬁc literature and realizing potentiallyadditional eﬀorts by the publications’ authors. To that end, Elsevier ispiloting a tool, Reﬂect-Network [147], developed in partnership with the
+European Molecular Biology Laboratory and the Novo Nordisk Founda-
+tion Center for Protein Research. Reﬂect tags proteins and chemicals indocuments and generates a graphical representation displaying interac-tions between entities and additional details about them.
+The second proposed research direction was interactivity and user in-
+terfaces. This direction requires identifying more potential user groups
+and tasks. Progress was made in developing tools for database cura-496 MINING TEXT DATA
+tion [223, 150]; however, more research is still needed in identifying user
+groups and tasks in parallel with tool development for known users.
+The authors noted that success in the third direction, tool scala-
+bility and integration into workﬂows , depends on commonly accepted
+and used stable standards for the exchange and integration of infor-mation derived from text mining. Despite major initiatives towards
+seamless data exchange and interoperability (e.g., the i2b2 hive [80] or
+the eMERGE Network [51]) and pilot applications being included intoworkﬂows (e.g., NLM InfoBot [46]), this direction remains challenging.The eﬀorts needed to make a system scalable and capable of handlingreal-time workﬂow interactions were recently demonstrated in the IBMDeepQA project [53].
+Thelastdirection, development of text mining resources , isanongoing
+activity. Existing lexicons, standards, and ontologies are maintained—
+and new resources and community-wide evaluations emerge—followingthe progress in biology and medicine.
+Acknowledgements
+M.S.S. was supported in part by an appointment to the NLM Re-search Participation Program sponsored by the U.S. National Library ofMedicine and administered by the Oak Ridge Institute for Science andEducation.
+References
+[1] A. B. Abacha and P. Zweigenbaum. A hybrid approach for the ex-
+tractionofsemanticrelationsfromMEDLINEabstracts. InA.Gel-bukh, editor, Computational Linguistics and Intelligent Text Pro-
+cessing, volume 6609 of Lecture Notes in Computer Science , pages
+139–150. Springer Berlin / Heidelberg, 2011.
+[2] A. B. Abacha and P. Zweigenbaum. Medical entity recognition: A
+comparison of semantic and statistical methods. In Proceedings of
+BioNLP 2011 Workshop , pages 56–64, 2011.
+[3] S. Afantenos, V. Karkaletsis, and P. Stamatopoulos. Summariza-
+tion from medical documents: A survey. Artiﬁcial Intelligence in
+Medicine , 33(2):157–177, 2005.
+[4] S. Agarwal and H. Yu. Automatically classifying sentences in full-
+text biomedical articles into introduction, methods, results anddiscussion. Bioinformatics , 25(23):3174–3180, 2009.
+[5] S. Agarwal and H. Yu. FigSum: Automatically generating struc-
+tured text summaries for ﬁgures in biomedical literature. In AMIABiomedical Text Mining: A Survey of Recent Progress 497
+Annual Symposium Pr oceedings , pages 6–10, 2009.
+[6] R. Agrawal, H. Mannila, R. Srikant, H. Toivonen, and A. I.
+Verkamo. Fast discovery of association rules. In U. M. Fayyad,G. Piatetsky-Shapiro, P. Smyth, and R. Uthurusamy, editors, Ad-
+vances in Knowledge Discovery and Data Mining , pages 307–328.
+American Association for Artiﬁcial Intelligence, 1996.
+[7] A. Airola, S. Pyysalo, J. Bjorne, T. Pahikkala, F. Ginter, and
+T.Salakoski. All-pathsgraphkernelforprotein-proteininteractionextraction with evaluation of cross-corpus learning. BMC Bioin-
+formatics , 9(Suppl 11):S2, 2008.
+[8] B. Alex, B. Haddow, and C. Grover. Recognising nested named
+entities in biomedical text. In Proceedings of the Workshop on
+BioNLP 2007: Biological, Translational, and Clinical LanguageProcessing , pages 65–72, 2007.
+[9] R. B. Altman, C. M. Bergman, J. Blake, C. Blaschke, A. Cohen,
+F. Gannon, L. Grivell, U. Hahn, W. Hersh, L. Hirschman, L. J.Jensen, M. Krallinger, B. Mons, S. I. O’Donoghue, M. C. Peitsch,D. Rebholz-Schuhmann, H. Shatkay, and A. Valencia. Text miningfor biology - the way forward: opinions from leading scientists.Genome Biology , 9(Suppl 2):S7, 2008.
+[10] S.F.Altschul,W.Gish,W.Miller,E.W.Myers,andD.J.Lipman.
+Basic local alignment search tool. Journal of Molecular Biology ,
+215(3):403–410, 1990.
+[11] S. F. Altschul, T. L. Madden, A. A. Sch¨ aﬀer, J. Zhang, Z. Zhang,
+W. Miller, and D. J. Lipman. Gapped BLAST and PSI-BLAST:A new generation of protein database search programs. Nucleic
+Acids Research , 25(17):3389–3402, 1997.
+[12] S. Ananiadou and J. Mcnaught. Text Mining for Biology And
+Biomedicine . Artech House, Inc., 2005.
+[13] S. Ananiadou, S. Pyysalo, J. Tsujii, and D. B. Kell. Event extrac-
+tion for systems biology by text mining the literature. Trends in
+Biotechnology , 28(7):381–390, 2010.
+[14] A. R. Aronson and F.-M. Lang. An overview of MetaMap: his-
+torical perspective and recent advances. Journal of the American
+Medical Informatics Association , 17(3):229–236, 2010.
+[15] R. Artstein and M. Poesio. Inter-coder agreement for computa-
+tional linguistics. Computational Linguistics , 34(4):555–596, 2008.
+[16] M. Ashburner, C. A. Ball, J. A. Blake, D. Botstein, H. Butler,
+J. M. Cheryy, A. P. Davis, K. Dolinski, S. S. Dwight, J. T. Eppig,
+M. A. Harris, D. P. Hill, L. Issel-Tarver, A. Kasarskis, S. Lewis,498 MINING TEXT DATA
+J. C. Matese, J. E. Richardson, M. Ringwald, G. M. Rubin, and
+G. Sherlock. Gene ontology: Tool for the uniﬁcation of biology.Nature Genetics , 25(1):25–29, 2000.
+[17] S. J. Athenikos and H. Han. Biomedical question answering: A
+survey.Computer Methods and Programs in Biomedicine , 99(1):1–
+24, 2010.
+[18] B. Benton, L. Ungar, S. Hill, S. Hennessy, J. Mao, A. Chung, C. E.
+Leonard, and J. H. Holmes. Identifying potential adverse eﬀectsusing the web: A new approach to medical hypothesis generation.In Press, 2011.
+[19] BioNLP. http://www.bionlp.org/ .
+[20] J. Bj¨ orne, F. Ginter, S. Pyysalo, J. Tsujii, and T. Salakoski.
+Complex event extraction at PubMed scale. Bioinformatics,
+26(12):i382–i390, 2010.
+[21] J. Bj¨ orne, J. Heimonen, F. Ginter, A. Airola, T. Pahikkala, and
+T.Salakoski. Extractingcomplexbiologicaleventswithrichgraph-based feature sets. In Proceedings of the Workshop on Current
+Trends in Biomedical Natural Language Processing: Shared Task ,
+pages 10–18, 2009.
+[22] K. W. Boyack, D. Newman, R. J. Duhon, R. Klavans, M. Patek,
+J.R.Biberstine,B.Schijvenaars,A.Skupin,N.Ma,andK.Borner.Clustering more than two million biomedical publications: Com-paring the accuracies of nine text-based similarity approaches.
+PLoS ONE , 6(3):e18029, 2011.
+[23] M. Bundschus, M. Dejori, M. Stetter, V. Tresp, and H.-P. Kriegel.
+Extraction of semantic biomedical relations from text using con-
+ditional random ﬁelds. BMC Bioinformatics , 9(1):207, 2008.
+[24] E. Buyko, E. Faessler, J. Wermter, and U. Hahn. Event extraction
+from trimmed dependency graphs. In Proceedings of the Workshop
+on Current Trends in Biomedical Natural Language Processing:Shared Task , pages 19–27, 2009.
+[25] Y. Cai and X. Cheng. Biomedical named entity recognition with
+tri-training learning. In Proceedings of the 2009 2nd International
+Conference on Biomedical Engineering and Informatics ,pages1–5,
+2009.
+[26] CALBC challenge. http://www.calbc.eu/.
+[27] Y. Cao, F. Liu, P. Simpson, L. Antieau, A. Bennett, J. J. Cimino,
+J. Ely, and H. Yu. AskHERMES: An online question answeringsystem for complex clinical questions. Journal of Biomedical In-
+formatics, 44(2):277–288, 2011.Biomedical Text Mining: A Survey of Recent Progress 499
+[28] D. T.-H. Chang, Y.-Z. Weng, J.-H. Lin, M.-J. Hwang, and Y.-J.
+Oyang. Protemot: Prediction of protein binding sites with au-
+tomatically extracted geometrical templates. Nucleic Acids Re-
+search, 34(suppl 2):W303–W309, 2006.
+[29] W. W. Chapman and K. B. Cohen. Current issues in biomedical
+text mining and natural language processing. Journal of Biomed-
+ical Informatics, 42(5):757–759, 2009.
+[30] E. S. Chen, G. Hripcsak, H. Xu, M. Markatou, and C. Friedman.
+Automated acquisition of disease-drug knowledge from biomedicaland clinical documents: An initial study. Journal of the American
+Medical Informatics Association , 15(1):87–98, 2008.
+[31] H. W. Chun, Y. Tsuruoka, J. D. Kim, R. Shiba, N. Nagata,
+T. Hishiki, and J. Tsujii. Extraction of gene-disease relations fromMEDLINE using domain dictionaries and machine learning. InPaciﬁc Symposium on Biocomputing , pages 4–15, 2006.
+[32] A.M.CohenandW.R.Hersh. Asurveyofcurrentworkinbiomed-
+ical text mining. Brieﬁngs in Bioinformatics, 6(1):57–71, 2005.
+[33] K. B. Cohen and L. Hunter. Getting started in text mining. PLoS
+Computational Biology , 4(1):e20, 2008.
+[34] K. B. Cohen, K. Verspoor, H. L. Johnson, C. Roeder, P. V. Ogren,
+W. A. Baumgartner, Jr., E. White, H. Tipney, and L. Hunter.High-precision biological event extraction with a concept recog-nizer. In Proceedings of the Workshop on Current Trends in
+Biomedical Natural Language Processing: Shared Task , pages 50–
+58, 2009.
+[35] T. Cohen, G. K. Whitﬁeld, R. W. Schvaneveldt, K. Mukund, and
+T. Rindﬂesch. EpiphaNet: An interactive tool to support biomedi-caldiscoveries. Journal of Biomedical Discovery and Collaboration ,
+5:21–49, 2010.
+[36] N. Collier, C. Nobata, and J.-i. Tsujii. Extracting the names of
+genes and gene products with a hidden Markov model. In Pro-
+ceedings of the 18th Conference on Computational Linguistics -
+Volume 1 , pages 201–207, 2000.
+[37] P. Corbett and A. Copestake. Cascaded classiﬁers for conﬁdence-
+based chemical named entity recognition. BMC Bioinformatics ,
+9(Suppl 11):S4, 2008.
+[38] CRAFT: The colorado richly annotated full text corpus. http:
+//bionlp-corpora.sourceforge.net/CRAFT/index.shtml .
+[39] H. Cunningham, D. Maynard, K. Bontcheva, V. Tablan,
+N. Aswani, I. Roberts, G. Gorrell, A. Funk, A. Roberts, D. Daml-500 MINING TEXT DATA
+janovic, T. Heitz, M. A. Greenwood, H. Saggion, J. Petrak, Y. Li,
+and W. Peters. Text Processing with GATE (Version 6) .G A T E ,
+2011.
+[40] T. Delbecque, P. Jacquemart, and P. Zweigenbaum. Indexing
+UMLS semantic types for medical question-answering. In R. En-gelbrecht, A. Geissbuhler, C. Lovis, and G. Mihalas, editors, Con-
+necting Medical Informatics and Bio-Informatics: Proceedings of
+MIE2005 - The XIXth International Congress of the European
+Federation for Medical Informatics , pages 805–810. IOS Press,
+2005.
+[41] D. Demner-Fushman, W. W. Chapman, and C. J. McDonald.
+What can natural language processing do for clinical decision sup-port?Journal of Biomedical Informatics , 42(5):760–772, 2009.
+[42] D. Demner-Fushman, B. Few, S. E. Hauser, and G. Thoma. Au-
+tomatically identifying health outcome information in MEDLINE
+records.Journal of the American Medical Informatics Association ,
+13(1):52–60, 2006.
+[43] D. Demner-Fushman and J. Lin. Knowledge exraction for clini-
+cal question answering: Preliminary results. In Proceedings of the
+AAAI 2005 Workshop on Question Ansering in Restricted Do-
+mains, 2005.
+[44] D.Demner-FushmanandJ.Lin. Answerextraction,semanticclus-
+tering, and extractive summarization for clinical question answer-
+ing. InProceedings of the 21st I nternational Conference on Com-
+putational Linguistics and the 44th Annual Meeting of the Associ-
+ation for Computational Linguistics , pages 841–848, 2006.
+[45] D. Demner-Fushman and J. Lin. Answering clinical questions with
+knowledge-based and statistical techniques. Computational Lin-
+guistics, 33(1):63–103, 2007.
+[46] D.Demner-Fushman,C.Seckman,C.Fisher,S.E.Hauser,J.Clay-
+ton, and G. R. . Thoma. A prototype system to support evidence-based practice. In AMIA Annual Symposium Proceedings , pages
+151–155, 2008.
+[47] S. Dipper, M. G¨ otze, and M. Stede. Simple annotation tools for
+complex annotation tasks: An evaluation. In Proceedings of the
+LREC Workshop on XML-Based Richly Annotated Corpora , pages
+54–62, 2004.
+[48] eHOST:Theextensiblehumanoraclesuiteoftools. http://code.
+google.com/p/ehost/.Biomedical Text Mining: A Survey of Recent Progress 501
+[49] N. Elhadad, M.-Y. Kan, J. L. Klavans, and K. R. McKeown. Cus-
+tomization in a uniﬁed framework for summarizing medical liter-
+ature.Artiﬁcial Intelligence in Medicine , 33(2):179–198, 2005.
+[50] J. W. Ely, J. A. Osheroﬀ, M. H. Ebell, M. L. Chambliss, D. C.
+Vinson, J. J. Stevermer, and E. A. Pifer. Obstacles to answeringdoctors’ questions about patient care with evidence: qualitativestudy.British Medical Journal , 324(7339):710, 2002.
+[51] Electronic medical records and genomics. https://www.mc.
+vanderbilt.edu/victr/dcc/projects/acc/index.php/Main_Page.
+[52] European bioinformatics institute. http://www.ebi.ac.uk/.
+[53] D. Ferrucci, E. Brown, J. Chu-Carroll, J. Fan, D. Gondek, A. A.
+Kalyanpur, A. Lally, J. W. Murdock, E. Nyberg, J. Prager,N. Schlaefer, and C. Welty. Building Watson: An overview of theDeepQA project. AI Magazine, 31(3):59–79, 2010.
+[54] D. Ferrucci and A. Lally. UIMA: An architectural approach to
+unstructured information processing in the corporate research en-vironment. Natural Language Engineering, 10(3-4):327–348, 2004.
+[55] J. Finkel, S. Dingare, H. Nguyen, M. Nissim, C. Manning, and
+G. Sinclair. Exploiting context for biomedical entity recognition:
+From syntax to the web. In Proceedings of the International Joint
+Workshop on Natural Language Processing in Biomedicine and its
+Applications, pages 88–91, 2004.
+[56] M. Fiszman, D. Demner-Fushman, H. Kilicoglu, and T. C. Rind-
+ﬂesch. Automatic summarization of MEDLINE citations forevidence-based medical treatment: A topic-oriented evaluation.Journal of Biomedical Informatics , 42(5):801–813, 2009.
+[57] K. Franz´ en, G. Eriksson, F. Olsson, L. Asker, P. Lid´ en, and
+J. C¨oster. Protein names and how to ﬁnd them. International
+Journal of Medical Informatics , 67(1-3):49–61, 2002.
+[58] C. Friedman, G. Hripcsak, L. Shagina, and H. Liu. Arepresenting
+information in patient reports using natural language processingand the extensible markup language. Journal of the American
+Medical Informatics Association , 6:76–87, 1999.
+[59] K. Fukuda, A. Tamura, T. Tsunoda, and T. Takagi. Toward infor-
+mation extraction: Identifying protein names from biological pa-pers. InPaciﬁc Symposium on Biocomputing ,pages707–718,1998.
+[60] K. Fundel, R. K¨ uﬀner, and R. Zimmer. RelEx—relation extrac-
+tion using dependency parse trees. Bioinformatics, 23(3):365–371,
+2007.502 MINING TEXT DATA
+[61] R. Gaizauskas, G. Demetriou, P. J. Artymiuk, and P. Willett. Pro-
+tein structures and information extraction from biological texts:
+The PASTA system. Bioinformatics , 19(1):135–143, 2003.
+[62] B. Gu. Recognizing nested named entities in GENIA corpus. In
+Proceedings of the Workshop on Linking Natural Language Pro-
+cessing and Biology: Towards Deeper Biological Literature Analy-
+sis, pages 112–113, 2006.
+[63] J.Hakenberg,S.Bickel,C.Plake,U.Brefeld,H.Zahn,L.Faulstich,
+U. Leser, and T. Scheﬀer. Systematic feature evaluation for gene
+name recognition. BMC Bioinformatics , 6(Suppl 1):S9, 2005.
+[64] J. Hakenberg, C. Plake, and U. Leser. LLL’05 challenge: Genic
+interaction extraction - identiﬁcation of language patterns based
+on alignment and ﬁnite state automata. In In Proceedings of the
+ICML 2005 Workshop on Learning Language in Logic , pages 38–
+45, 2005.
+[65] W. Hersh. Information Retrieval: A Health and Biomedical Per-
+spective. Health Informatics. Springer, third edition, 2005.
+[66] HighWire press. http://highwire.org/ .
+[67] L. Hirschman, M. Colosimo, A. Morgan, and A. Yeh. Overview of
+BioCreAtIvEtask1B:Normalizedgenelists. BMC Bioinformatics ,
+6(Suppl 1):S11, 2005.
+[68] L. Hirschman, A. A. Morgan, and A. S. Yeh. Rutabaga by any
+other name: Extracting biological names. Journal of Biomedical
+Informatics , 35(4):247–259, 2002.
+[69] L. Hirschman, A. Yeh, C. Blaschke, and A. Valencia. Overview
+of BioCreAtIvE: Critical assessment of information extraction for
+biology. BMC Bioinformatics , 6(Suppl 1):S1, 2005.
+[70] W.-J. Hou and H.-H. Chen. Enhancing performance of protein
+name recognizers using collocation. In Proceedings of the ACL
+2003 Workshop on Natural Language Processing in Biomedicine -
+Volume 13 , pages 25–32, 2003.
+[71] D. Hristovski, C. Friedman, T. C. Rindﬂesch, and B. Peterlin.
+Exploiting semantic relations for literature-based discovery. In
+AMIA Anual Symposium Pr oceedings , pages 349–353, 2006.
+[72] D. Hristovski, B. Peterlin, S. Dˇ zeroski, and J. Stare. Literature-
+based discovery support system and its application to disease gene
+identiﬁcation. In S. Dˇ zeroski and L. Todorovski, editors, Compu-
+tational Discovery of Scientiﬁc Knowledge , volume 4660 of Lecture
+Notes in Computer Science , pages 307–326. Springer Berlin / Hei-
+delberg, 2007.Biomedical Text Mining: A Survey of Recent Progress 503
+[73] D. Hristovski, B. Peterlin, J. A. Mitchell, and S. M. Humphrey.
+Improvingliterature-baseddiscoverysupportbygeneticknowledge
+integration. Studies in Health Technogy and Informatics , 95:68–73,
+2003.
+[74] D.Hristovski,B.Peterlin,J.A.Mitchell,andS.M.Humphrey. Us-
+ing literature-based discovery to identify disease candidate genes.International Journal of Medical Informatics, 74(2-4):289–298,
+2005.
+[75] D. Hristovski, J. Stare, B. Peterlin, and S. Dˇ zeroski. Supporting
+discovery in medicine by association rule mining in MEDLINE
+and UMLS. In V. L. Patel, R. Rogers, and R. Haux, editors,Proceedings of the 10th World Congress on Medical Informatics ,
+volume 84/2001 of Studies in Health Technology and Informatics,
+pages 1344–1348. IOS Press, 2001.
+[76] X. Hu, X. Zhang, I. Yoo, X. Wang, and J. Feng. Mining hidden
+connections among biomedical concepts from disjoint biomedicalliterature sets through semantic-based association rule. Interna-
+tional Journal of Intelligent Systems , 25(2):207–223, 2010.
+[77] X. Huang, J. Lin, and D. Demner-Fushman. Evaluation of PICO
+as a knowledge representation for clinical questions. In AMIA
+Annual Symposium Pr oceedings , pages 359–363, 2006.
+[78] K. Humphreys, G. Demetriou, and R. Gaizauskas. Two applica-
+tions of information extraction to biological science yournal arti-cles: Enzyme interactions and protein structures. In Paciﬁc Sym-
+posium on Biocomputing , pages 502–513, 2000.
+[79] L.Hunter,Z.Lu,J.Firby,W.Baumgartner,H.Johnson,P.Ogren,
+and K. B. Cohen. OpenDMAP: An open source, ontology-drivenconcept analysis engine, with applications to capturing knowledge
+regarding protein transport, protein interactions and cell-type-
+speciﬁc gene expression. BMC Bioinformatics , 9(1):78, 2008.
+[80] Informaticsforintegratingbiology andthebedside. https://www.
+i2b2.org/resrcs/hive.html.
+[81] P. Jacqumart and P. Zweigenbaum. Towards a medical question-
+answeringsystem:Afeasibilitystudy. Studies in Health Technology
+and Informatics , 95:463–468, 2003.
+[82] R. Jelier, G. Jenster, L. Dorssers, B. Wouters, P. Hendriksen,
+B. Mons, R. Delwel, and J. Kors. Text-derived concept proﬁlessupport assessment of DNA microarray data for acute myeloidleukemia and for androgen receptor stimulation. BMC Bioinfor-
+matics, 8(1):14, 2007.504 MINING TEXT DATA
+[83] R. Kabiljo, A. B. Clegg, and A. J. Shepherd. A realistic assessment
+of methods for extracting gene/protein interactions from free text.BMC Bioinformatics , 10:233, 2008.
+[84] J. Kalpathy-Cramer, H. M¨ uler, S. Bedrick, I. Eggel, A. de Herrera,
+and T. Tsikrika. The CLEF 2011 medical image retrieval andclassiﬁcation tasks. In CLEF 2011 Working Notes , 2011.
+[85] H. Karsten and H. Suominen. Mining of clinical and biomedi-
+cal text and data. International Journal of Medical Informatics ,
+78(12):786–787, 2009.
+[86] J. Kazama, T. Makino, Y. Ohta, and J. Tsujii. Tuning support
+vector machines for biomedical named entity recognition. In Pro-
+ceedings of the ACL-02 Workshop on Natural Language Processingin the Biomedical Domain - Volume 3 , pages 1–8, 2002.
+[87] H. Kilicoglu and S. Bergler. Syntactic dependency based heuristics
+for biological event extraction. In Proceedings of the Workshop
+on Current Trends in Biomedical Natural Language Processing:Shared Task , pages 119–127, 2009.
+[88] J.-D. Kim, T. Ohta, N. Nguyen, S. Pyysalo, R. Bossy, and J. Tsu-
+jii. Overview of BioNLP shared task 2011. In Proceedings of the
+BioNLP Shared Task 2011 Workshop , pages 1–6, 2011.
+[89] J.-D. Kim, T. Ohta, S. Pyysalo, Y. Kano, and J. Tsujii. Overview
+of BioNLP’09 shared task on event extraction. In Proceedings of
+the Workshop on Current Trends in Biomedical Natural LanguageProcessing: Shared Task , pages 1–9, 2009.
+[90] J.-D. Kim, T. Ohta, Y. Tateisi, and J. Tsujii. GENIA corpus—a
+semantically annotated corpus for bio-textmining. Bioinformatics ,
+19(Suppl 1):i180–i182, 2003.
+[91] J.-D. Kim, T. Ohta, Y. Tsuruoka, Y. Tateisi, and N. Collier. In-
+troduction to the bio-entity recognition task at JNLPBA. In Pro-
+ceedings of the International Joint Workshop on Natural Language
+Processing in Biomedicine and its Applications , pages 70–75, 2004.
+[92] S. Kim, J. Yoon, and J. Yang. Kernel approaches for genic inter-
+action extraction. Bioinformatics , 24(1):118–126, 2008.
+[93] S. Kinoshita, K. B. Cohen, P. Ogren, and L. Hunter. BioCreAtIvE
+task1A:Entityidentiﬁcationwithastochastictagger. BMC Bioin-
+formatics , 6(Suppl 1):S4, 2005.
+[94] J. Kontos, J. Lekakis, I. Malagardi, and J. Peros. Grammars for
+question answering systems based on intelligent text mining inbiomedicine. In Proceedings of the 7th Hellenic Europeoan Con-
+ference on Computer Mathematics and its Applications , 2005.Biomedical Text Mining: A Survey of Recent Progress 505
+[95] J. Kontos, I. Malagardi, and J. Peros. Question answering and
+rhetoric analysis of biomedical texts in the AROMA system. InProceedings of the 7th Hellenic Europeoan Conference on Com-puter Mathematics and its Applications , 2005.
+[96] M. Krallinger, F. Leitner, C. Rodriguez-Penagos, and A. Valencia.
+Overview of the protein-protein interaction annotation extractiontask of BioCreAtIve II. Genome Biology , 9(Suppl 2):S4, 2008.
+[97] M. Krallinger, A. Morgan, L. Smith, F. Leitner, L. Tanabe,
+J. Wilbur, L. Hirschman, and A. Valencia. Evaluation of text-mining systems for biology: Overview of the second BioCreAtIvEcommunity challenge. Genome Biology , 9(Suppl 2):S1, 2008.
+[98] M. Krallinger, A. Valencia, and L. Hirschman. Linking genes to
+literature: text mining, information extraction, and retrieval ap-plications for biology. Genome biology , 9(Suppl 2):S8, 2008.
+[99] M. Krauthammer and G. Nenadic. Term identiﬁcation in
+the biomedical literature. Journal of Biomedical Informatics ,
+37(6):512–526, 2004.
+[100] M. Krauthammer, A. Rzhetsky, P. Morozov, and C. Friedman.
+Using BLAST for identifying gene and protein names in journalarticles. Gene, 259(1-2):245–252, 2000.
+[101] R. Leaman and G. Gonzalez. BANNER: An executable survey
+of advances in biomedical named entity recognition. In Paciﬁc
+Symposium on Biocomputing , pages 652–663, 2008.
+[102] L. C. Lee, F. Horn, and F. E. Cohen. Automatic extraction of
+protein point mutations using a graph bigram association. PLoS
+Computational Biology , 3(2):e16, 2007.
+[103] G. Leech. Adding linguistic annotation. In M. Wynne, editor,
+Developing Linguistic Corpora: A Guide to Good Practice , pages
+17–29. Oxbow Books, 2005.
+[104] U. Leser and J. Hakenberg. What makes a gene name? named
+entity recognition in the biomedical literature. Brieﬁngs in Bioin-
+formatics , 6(4):357–369, 2005.
+[105] M. Liberman, M. Mandel, and GlaxoSmithKline Pharmaceuticals
+R&D. PennBioIE CYP 1.0, 2008.
+[106] M. Liberman, M. Mandel, and P. White. PennBioIE Oncology 1.0,
+2008.
+[107] C.-Y. Lin. ROUGE: A package for automatic evaluation of sum-
+maries. In Proceedings of the Workshop on Text Summarization
+Branches Out , 2004.506 MINING TEXT DATA
+[108] C.-Y. Lin, G. Cao, J. Gao, and J.-Y. Nie. An information-theoretic
+approach to automatic evaluation of summaries. In Proceedings of
+the Human Language Technology Conference of the North Amer-
+ican Chapter of the Association of Computational Linguistics ,
+pages 463–470, 2006.
+[109] J. Lin and D. Demner-Fushman. The role of knowledge in con-
+ceptual retrieval: A study in the domain of clinical medicine. InProceedings of the 29th Annual International ACM SIGIR Con-
+ference on Research and Development in Information Retrieval,pages 99–106, 2006.
+[110] R. T. K. Lin, J. Liang-Te Chiu, H.-J. Dai, M.-Y. Day, R. T.-H.
+Tsai, and W.-L. Hsu. Biological question answering with syntacticand semantic feature matching and an improved mean reciprocalranking measurement. In Proceedings of the 2008 IEEE Inter-
+national Conference on Information Reuse and Integration, pages184–189, 2008.
+[111] D. A. Lindberg, B. L. Humphreys, and A. T. McCray. The uniﬁed
+medical language system. Methods of Information in Medicine,
+32(4):281–291, 1993.
+[112] X. Ling, J. Jiang, X. He, Q. Mei, C. Zhai, and B. Schatz. Gen-
+erating gene summaries from biomedical literature: A study ofsemi-structured summarization. Information Processing & Man-
+agement, 43(6):1777–1791, 2007.
+[113] Y. Lussier, T. Borlawsky, D. Rappaport, Y. Liu, and C. Friedman.
+PheneGo: Assigning phenotypic context to gene ontology annota-tions with natural language processing. In Paciﬁc Symposium on
+Biocomputing , pages 64–75, 2006.
+[114] Y. Lussier, T. Borlawsky, D. Rappaport, Y. Liu, and C. Friedman.
+PhenoGo: Assigning phenotypic context to Gene Ontology anno-tations with natural language processing. In Paciﬁc Symposium
+on Biocomputing, pages 64–75, 2006.
+[115] D. Maynard. D1.2.2.1.3 benchmarking of annotation tools, 2007.
+http://knowledgeweb.semanticweb.org/semanticportal/deliverables/D1.2.2.1.3.pdf.
+[116] K. R. McKeown, S.-F. Chang, J. Cimino, S. K. Feiner, C. Fried-
+man, L. Gravano, V. Hatzivassiloglou, S. Johnson, D. A. Jordan,J.L.Klavans,A.Kushniruk,V.Patel,andS.Teufel. PERSIVAL,asystemforpersonalizedsearchandsummarizationovermultimediahealthcare information. In Proceedings of the 1st ACM/IEEE-CS
+Joint Conference on Digital Libraries, pages 331–340, 2001.Biomedical Text Mining: A Survey of Recent Progress 507
+[117] S. Mika and B. Rost. Protein names precisely peeled oﬀ free text.
+Bioinformatics , 20(suppl 1):i241–i247, 2004.
+[118] T. Mitsumori, S. Fation, M. Murata, K. Doi, and H. Doi.
+Gene/protein name recognition based on support vector machine
+using dictionary as features. BMC Bioinformatics , 6(Suppl 1):S8,
+2005.
+[119] M. Miwa, R. Sætre, and J.-D. Kim. Event extraction with complex
+event classiﬁcation using rich features. Journal of Bioinformatics
+and Computational Biology , 8(1):131–146, 2010.
+[120] M. Miwa, R. Sætre, Y. Miyao, and J. Tsujii. Protein-protein inter-
+action extraction by leveraging multiple kernels and parsers. In-
+ternational Journal of Medical Informatics , 78(12):e39–e46, 2009.
+[121] Y. Miyao, T. Ohta, K. Masuda, Y. Tsuruoka, K. Yoshida, T. Ni-
+nomiya, and J. Tsujii. Semantic retrieval for the accurate identiﬁ-
+cation of relational concepts in massive textbases. In Proceedings
+of the 21st International Conference on Computational Linguisticsand the 44th Annual Meeting of the Association for ComputationalLinguistics , pages 1017–1024, 2006.
+[122] Y. Miyao, K. Sagae, R. Sætre, T. Matsuzaki, and J. Tsujii. Evalu-
+ating contributions of natural language parsers to protein-proteininteraction extraction. Bioinformatics , 25(3):394–400, 2009.
+[123] L. P. Morales, A. D. Esteban, and P. Gerv´ as. Concept-graph based
+biomedical automatic summarization using ontologies. In Proceed-
+ings of the 3rd Textgraphs Workshop on Graph-Based Algorithmsfor Natural Language Processing , pages 53–56, 2008.
+[124] A. Morgan, L. Hirschman, A. Yeh, and M. Colosimo. Gene name
+extraction using FlyBase resources. In Proceedings of the ACL
+2003 Workshop on Natural Language Processing in Biomedicine -
+Volume 13 , pages 1–8, 2003.
+[125] A. A. Morgan, L. Hirschman, M. Colosimo, A. S. Yeh, and J. B.
+Colombe. Gene name identiﬁcation and normalization using amodel organism database. Journal of Biomedical Informatics ,
+37(6):396–410, 2004.
+[126] A. A. Morgan, Z. Lu, X. Want, A. M. Cohen, J. Fluck, P. Ruch,
+A. Divoli, K. Fundel, R. Leaman, J. Hakenberg, C. Sun, H.-h.Liu, R. Torres, M. Krauthammer, W. W. Lau, H. Liu, C.-N. Hsu,M.Scheumie,K.B.Cohen,andL.Hirschman. OverviewofBioCre-AtIvE II: Gene normalization. Genome Biology , 9(Suppl 2):S3,
+2008.508 MINING TEXT DATA
+[127] H. M¨ uller, J. Kalpathy-Cramer, I. Eggel, S. Bedrick, C. E. Charles
+E. Kahn, Jr., and W. Hersh. Overview of the clef 2010 medical
+image retrieval track. In Working Notes of CLEF 2010, 2010.
+[128] M. Narayanaswamy, K. E. Ravikumar, and K. Vijay-Shanker. A
+biological named entity recognizer. In Paciﬁc Symposium on Bio-
+computing , pages 427–438, 2003.
+[129] National center for biomedical ontology. http://www.
+bioontology.org/.
+[130] NCBO BioPortal. http://bioportal.bioontology.org/ .
+[131] National Center for Biotechnology Information. Entrez Pro-
+gramming Utilities Help, 2010. http://www.ncbi.nlm.nih.gov/
+books/NBK25501/.
+[132] National centre for text mining. http://www.nactem.ac.uk/.
+[133] C. N´ edellec. Learning language in logic - genic interaction extrac-
+tion challenge. In In Proceedings of the ICML 2005 Workshop on
+Learning Language in Logic , pages 31–37, 2005.
+[134] Neuroscience information framework. http://neuinfo.org/.
+[135] Y. Niu and G. Hirst. Analysis and semantic classes in medical text
+for question answering. In Proceedings of the ACL 2004 Workshop
+on Question Answering in Restricted Domains , 2004.
+[136] Y. Niu, G. Hirst, G. McArthur, and R.-G. P. Answering clinical
+questions with role identiﬁcation. In Proceedings of the ACL 2003
+Workshop on Natural Language Processing in Biomedicine , pages
+73–80, 2003.
+[137] Y. Niu, X. Zhu, and G. Hirst. Using outcome polarity in sen-
+tence extraction for medical question-answering. In AMIA Anual
+Symposium Pr oceedings , pages 599–603, 2006.
+[138] Y. Niu, X. Zhu, J. Li, and G. Hirst. Analysis of polarity infor-
+mation in medical text. In AMIA Anual Symposium Pr oceedings ,
+pages 570–574, 2005.
+[139] C. Nobata, N. Collier, and J.-i. Tsujii. Automatic term identi-
+ﬁcation and classiﬁcation in biology texts. In Proceedings of the
+Natural Language Paciﬁc Rim Symposium , pages 369–374, 1999.
+[140] P. V. Ogren. Knowtator: A prot´ eg´e plug-in for annotated corpus
+construction. In Proceedings of the 2006 Conference of the North
+American Chapter of the Association for Computational Linguis-tics on Human Language Technology , pages 273–275, 2006.
+[141] D. Okanohara, Y. Miyao, Y. Tsuruoka, and J. Tsujii. Improving
+the scalability of semi-Markov conditional random ﬁelds for namedBiomedical Text Mining: A Survey of Recent Progress 509
+entityrecognition. In Proceedings of the 21st I nternational Confer-
+ence on Computational Linguistics and the 44th Annual Meeting
+of the Association for Computational Linguistics , pages 465–472,
+2006.
+[142] F. Olsson, G. Eriksson, K. Franz´ en, L. Asker, and P. Lid´ en. No-
+tions of correctness when evaluating protein name taggers. In Pro-
+ceedings of the 19th International Conference on Computational
+Linguistics - Volume 1 , pages 1–7, 2002.
+[143] Open biological and biomedical ontologies. http://www.
+obofoundry.org/.
+[144] ORBIT project. http://orbit.nlm.nih.gov/.
+[145] A. ¨Ozg¨ur, T. Vu, G. Erkan, and D. R. Radev. Identifying gene-
+disease associations using centrality on a literature mined gene-interaction network. Bioinformatics, 24(13):i277–i285, 2008.
+[146] A. ¨Ozg¨ur, Z. Xiang, D. R. Radev, and Y. He. Literature-based dis-
+covery of IFN- γand vaccine-mediated gene interaction networks.
+Journal of Biomedicine & Biotechnology , page 426479, 2010.
+[147] E.Paﬁlis,S.O’Donoghue,L.Jensen,H.Horn,M.Kuhn,N.Brown,
+and R. Schneider. Reﬂect - augmented browsing for the life scien-tist.Nature Biotechnology, 27:508–510, 2009.
+[148] S. Pakhomov. Semi-supervised maximum entropy based approach
+to acronym and abbreviation normalization in medical texts. InProceedings of the 40th Annual Meeting on Association for Com-
+putational Linguistics , pages 160–167, 2002.
+[149] M. Palakal, J. Bright, T. Sebastian, and S. Hartanto. A compara-
+tive study of cells in inﬂammation, EAE and MS using biomedical
+literature data mining. Journal of Biomedical Science , 14(1):67–
+85, 2007.
+[150] V. Petri, M. Shimoyama, G. Hayman, J. Smith, M. Tutaj,
+J. de Pons, M. Dwinell, D. Munzenmaier, S. Twigger, and H. Ja-
+cob. The rat genome database pathway portal. Database, 2011.
+[151] I. Petriˇ c, U. Tanja, B. Cestnik, and M. Macedoni-Lukˇ siˇc. Lit-
+erature mining method RaJoLink for uncovering relations be-tween biomedical concepts. Journal of Biomedical Informatics ,
+42(2):219–227, 2009.
+[152] Pharmacogenomicsknowledgebase. http://www.pharmgkb.org/.
+[153] H. Poon and L. Vanderwende. Joint inference for knowledge ex-
+tractionfrombiomedicalliterature. In Human Language Technolo-
+gies: The 2010 Annual Conference of the North American Chapter510 MINING TEXT DATA
+of the Association for Computational Linguistics, pages 813–821,
+2010.
+[154] PubMed central open access subset. http://www.ncbi.nlm.nih.
+gov/pmc/tools/openftlist/.
+[155] S. Pyysalo, A. Airola, J. Heimonen, J. Bjorne, F. Ginter, and
+T. Salakoski. Comparative analysis of ﬁve protein-protein interac-tion corpora. BMC Bioinformatics , 9(Suppl 3):S6, 2008.
+[156] S. Pyysalo, F. Ginter, J. Heimonen, J. Bjorne, J. Boberg, J. Jarvi-
+nen, and T. Salakoski. BioInfer: A corpus for information ex-traction in the biomedical domain. BMC Bioinformatics , 8(1):50,
+2007.
+[157] L. A. Ramshaw and M. P. Marcus. Text chunking using
+transformation-based learning. In 3rd ACL SIGDAT Workshop
+on Very Large Corpora , pages 82–94, 1995.
+[158] L. H. Reeve, H. Han, and A. D. Brooks. The use of domain-
+speciﬁc concepts in biomedical text summarization. Information
+Processing & Management, 43(6):1765–1776, 2007.
+[159] W. S. Richardson, M. C. Wilson, J. Nishikawa, and R. S. Hayward.
+The well-built clinical question: A key to evidence-based decisions.ACP Journal Club , 123(3):A12–A13, 1995.
+[160] S. Riedel, H.-W. Chun, T. Takagi, and J. Tsujii. A Markov logic
+approach to bio-molecular event extraction. In Proceedings of the
+Workshop on Current Trends in Biomedical Natural Language Pro-cessing: Shared Task , pages 41–49, 2009.
+[161] S. Riedel and A. McCallum. Fast and robust joint models for
+biomedicaleventextraction. In Proceedings of the 2011 Conference
+on Emperical Methods in Natural Language Processing, pages 1–12, 2011.
+[162] F. Rinaldi, J. Dowdall, G. Schneider, and A. Persidis. Answering
+questions in the genomics domain. In Proceedings of the ACL 2004
+Workshop on Question Answering in Restricted Domains , 2005.
+[163] F. Rinaldi, K. Kaljurand, and R. Saetre. Terminological resources
+for text mining over biomedical scientiﬁc literature. Artiﬁcial In-
+telligence in Medicine , 52(2):107–114, 2011.
+[164] F. Rinaldi, G. Schneider, K. Kaljurand, M. Hess, C. Andronis,
+O. Konstandi, and A. Persidis. Mining of relations between pro-teins over biomedical scientiﬁc literature using a deep-linguistic
+approach. Artiﬁcial Intelligence in Medicine , 39(2):127–136, 2007.
+[165] T. C. Rindﬂesch and M. Fiszman. The interaction of domain
+knowledge and linguistic structure in natural language processing:Biomedical Text Mining: A Survey of Recent Progress 511
+Interpreting hypernymic propositions in biomedical text. Journal
+of Biomedical Informatics , 36(6):462–477, 2003.
+[166] T. C. Rindﬂesch, H. Kilicoglu, M. Fiszman, G. Rosemblat, and
+D. Shin. Semantic MEDLINE: An advanced information manage-ment application for biomedicine. Information Services & Use ,
+31:15–21, 2011.
+[167] B. Rink, S. Harabagiu, and K. Roberts. Automatic extraction of
+relations between medical concepts in clinical texts. Journal of the
+American Medical Informatics Association , 18(5):594–600, 2011.
+[168] A.Roberts,R.Gaizauskas,andM.Hepple. Extractingclinicalrela-
+tionships from patient narratives. In Proceedings of the Workshop
+on Current Trends in Biomedical Natural Language Processing ,
+pages 10–18, 2008.
+[169] P. Ruch, C. Boyer, C. Chichester, I. Tbahriti, A. Geissb¨ uhler,
+P. Fabry, J. Gobeill, V. Pillet, D. Rebholz-Schuhmann, C. Lovis,and A.-L. Veuthey. Using argumentation to extract key sentences
+from biomedical abstracts. International Journal of Medical In-
+formatics , 76(2-3):195–200, 2007.
+[170] D. L. Sackett, W. M. C. Rosenberg, J. A. M. Gray, and R. B.
+Haynes. Evidence based medicine: What it is and what it isn’t.British Medical Journal , 312(7023):71–72, 1996.
+[171] M. Saeed, M. Villarroel, A. Reisner, G. Cliﬀord, L. Lehman,
+G. Moody, T. Heldt, T. Kyaw, B. Moody, and R. Mark. Mul-tiparameter intelligent monitoring in intensive care II (MIMIC-II): A public-access intensive care unit database. Crit Care Med ,
+39(5):952–960, 2011.
+[172] J.ˇSari´c,L.J.Jensen,R.Ouzounova,I.Rojas,andP.Bork. Extrac-
+tion of regulatory gene/protein networks from MEDLINE. Bioin-
+formatics , 22(6):645–650, 2006.
+[173] Y. Sasaki, Y. Tsuruoka, J. McNaught, and S. Ananiadou. How
+to make the most of NE dictionaries in statistical NER. BMC
+Bioinformatics , 9(Suppl 11):S5, 2008.
+[174] J. Seki, K. Mostafa. Discovering implicit associations between
+genes and hereditary diseases. In Paciﬁc Symposium on Biocom-
+puting, pages 316–327, 2007.
+[175] B. Settles. Biomedical named entity recognition using conditional
+random ﬁelds and rich feature sets. In Proceedings of the In-
+ternational Joint Workshop on Natural Language Processing in
+Biomedicine and its Applications , pages 104–107, 2004.512 MINING TEXT DATA
+[176] B. Settles. ABNER: an open source tool for automatically tagging
+genes, proteins and other entity names in text. Bioinformatics,
+21(4):3191–3192, 2005.
+[177] H. Shatkay, F. Pan, A. Rzhetsky, and W. Wilbur. Multi-
+dimensional classiﬁcation of biomedical text: toward automated,
+practical provision of high-utility text to diverse users. Bioinfor-
+matics, 24(18):2086–2093, 2008.
+[178] H. Shatkay, J. W. Wilbur, and A. Rzhetsky. Annotation
+guidelines, 2005. http://www.ncbi.nlm.nih.gov/CBBresearch/
+Wilbur/AnnotationGuidelines.pdf .
+[179] D. Shen, J. Zhang, G. Zhou, J. Su, and C.-L. Tan. Eﬀective adap-
+tationofahiddenmarkovmodel-basednamedentityrecognizerforbiomedical domain. In Proceedings of the ACL 2003 Workshop on
+Natural Language Processing in Biomedicine - Volume 13, pages49–56, 2003.
+[180] Z. Shi, G. Melli, Y. Wang, Y. Liu, B. Gu, M. Kashani, A. Sarkar,
+and F. Popowich. Question answering summarization of multiplebiomedical documents. In Z. Kobti and D. Wu, editors, Advances
+in Artiﬁcial Intelligence , volume 4509 of Lecture Notes in Com-
+puter Science , pages 284–295. Springer Berlin / Heidelberg, 2007.
+[181] M. S. Simpson, D. Demner-Fushman, and G. R. Thoma. Evaluat-
+ing the importance of image-related text for ad-hoc and case-basedbiomedical article retrieval. In AMIA Annual Symposium Proceed-
+ings, pages 752–756, 2010.
+[182] N. Smalheiser. The Arrowsmith project: 2005 status report. In
+A. Hoﬀmann, H. Motoda, and T. Scheﬀer, editors, Discovery Sci-
+ence, volume 3735 of Lecture Notes in Computer Science , pages
+26–43. Springer Berlin / Heidelberg, 2005.
+[183] N. Smalheiser, V. Torvik, A. Bischoﬀ-Grethe, L. Burhans,
+M. Gabriel, R. Homayouni, A. Kashef, M. Martone, G. Perkins,D. Price, A. Talk, and R. West. Collaborative development of thearrowsmith two node search interface designed for laboratory in-vestigators. Journal of Biomedical Discovery and Collaboration ,
+1(1):8, 2006.
+[184] N. Smalheiser, W. Zhou, and V. Torvik. Anne O’Tate: A tool
+to support user-driven summarization, drill-down and browsingof PubMed search results. Journal of Biomedical Discovery and
+Collaboration , 3(1):2, 2008.
+[185] N. R. Smalheiser and D. R. Swanson. Using Arrowsmith: A
+computer-assisted approach to formulating and assessing scien-Biomedical Text Mining: A Survey of Recent Progress 513
+tiﬁchypotheses. Computer Methods and Programs in Biomedicine ,
+57(3):149–153, 1998.
+[186] N.R.Smalheiser,V.I.Torvik,andW.Zhou. Arrowsmithtwo-node
+search interface: A tutorial on ﬁnding meaningful links betweentwo disparate sets of articles in MEDLINE. Computer Methods
+and Programs in Biomedicine , 94(2):190–197, 2009.
+[187] L. Smith, L. Tanabe, R. Johnson nee Ando, C.-J. Kuo, I.-F.
+Chung,C.-N.Hsu,Y.-S.Lin,R.Klinger,C.Friedrich,K.Ganchev,M. Torii, H. Liu, B. Haddow, C. Struble, R. Povinelli, A. Vlachos,W. Baumgartner, L. Hunter, B. Carpenter, R. Tzong-Han Tsai,H.-J. Dai, F. Liu, Y. Chen, C. Sun, S. Katrenko, P. Adriaans,C. Blaschke, R. Torres, M. Neves, P. Nakov, A. Divoli, M. Mana-
+Lopez,J.Mata,andW.Wilbur. OverviewofBioCreAtIveII:Gene
+mention recognition. Genome Biology , 9(Suppl 2):S2, 2008.
+[188] M. Q. Stearns, C. Price, K. A. Spackman, and A. Y. Wang.
+SNOWMED clinical terms: Overview of the development processand project status. In Proceedings of the AMIA Sympo sium, pages
+662–666, 2001.
+[189] D. R. Swanson. Fish oil, Raynaud’s syndrome, and undiscovered
+public knowledge. Perspectives in Biology and Medicine , 30(1):7–
+18, 1986.
+[190] D. R. Swanson. Migraine and magnesium: Eleven neglected con-
+nections. Perspectives in Biology and Medicine , 31(4):526–557,
+1988.
+[191] D.R.Swanson. Somatomedin Candarginine: Implicitconnections
+between mutually isolated literatures. Perspectives in Biology and
+Medicine , 33(2):157–186, 1990.
+[192] D. R. Swanson. Complementary structures in disjoint science lit-
+eratures. In Proceedings of the 14th Annual International ACM
+SIGIR Conference on Research and Development in InformationRetrieval , pages 280–289, 1991.
+[193] D. R. Swanson and N. R. Smalheiser. An interactive system for
+ﬁnding complementary literatures: A stimulus to scientiﬁc discov-
+ery.Artiﬁcial Intelligence , 91(2):183–203, 1997.
+[194] D. R. Swanson, N. R. Smalheiser, and A. Bookstein. Information
+discovery from complementary literatures: Categorizing viruses aspotential weapons. Journal of the American Society for Informa-
+tion Science and Technology , 52(10):797–812, 2001.514 MINING TEXT DATA
+[195] K.Takahashi,A.Koike,andT.Takagi. Questionansweringsystem
+in biomedical domain. In Proceedings of the 15th International
+Conference on Genome Informatics , pages 161–162, 2004.
+[196] K. Takeuchi and N. Collier. Bio-medical entity extraction us-
+ing support vector machines. Artiﬁcial Intelligence in Medicine ,
+33(2):125–137, 2005.
+[197] R. M. Terol, P. Mart´ ınez-Barco, and M. Palomar. A knowledge
+based method for the medical question answering problem. Com-
+puters in Biology and Medicine , 37(10):1511–1521, 2007.
+[198] P. Thompson, S. Iqbal, J. McNaught, and S. Ananiadou. Con-
+struction of an annotated corpus to support biomedical informa-
+tion extraction. BMC Bioinformatics , 10(1):349, 2009.
+[199] V. I. Torvik and N. R. Smalheiser. A quantitative model for link-
+ing two disparate sets of articles in MEDLINE. Bioinformatics,
+23(13):1658–1665, 2007.
+[200] TREC-9ﬁlteringtrackcollections. http://trec.nist.gov/data/
+t9_filtering.html .
+[201] TREC genomics track data. http://ir.ohsu.edu/genomics/
+data.html.
+[202] R. Tsai, W.-C. Chou, Y.-S. Su, Y.-C. Lin, C.-L. Sung, H.-J. Dai,
+I. Yeh, W. Ku, T.-Y. Sung, and W.-L. Hsu. BIOSMILE: A seman-tic role labeling system for biomedical berbs using a maximum-entropy model with automatically generated template features.BMC Bioinformatics, 8(1):325, 2007.
+[203] Y. Tsuruoka, M. Miwa, K. Hamamoto, J. Tsujii, and S. Anani-
+adou. Discovering and visualizing indirect associations betweenbiomedical concepts. Bioinformatics, 27(13):i111–i119, 2011.
+[204] Y. Tsuruoka and J. Tsujii. Boosting precision and recall of
+dictionary-based protein name recognition. In Proceedings of
+the ACL 2003 Workshop on Natural Language Processing inBiomedicine - Volume 13, pages 41–48, 2003.
+[205] Y. Tsuruoka and J. Tsujii. Probabilistic term variant generator
+for biomedical terms. In Proceedings of the 26th Annual Interna-
+tional ACM SIGIR Conference on Research and Development inInformaion Retrieval, pages 167–173, 2003.
+[206] Y. Tsuruoka, J. Tsujii, and S. Ananiadou. FACTA: A text search
+engine for ﬁnding associated biomedical concepts. Bioinformatics,
+24(21):2559–2560, 2008.Biomedical Text Mining: A Survey of Recent Progress 515
+[207] O. Tuason, L. Chen, L. H., and C. Friedman. Biological nomen-
+clatures: A source of lexical knowledge and ambiguity. In Paciﬁc
+Symposium on Biocomputing , pages 238–249, 2004.
+[208] H. Turtle and W. B. Croft. Evaluation of an inference network-
+basedretrievalmodel. ACM Transactions on Information Systems ,
+9:187–222, 1991.
+[209] Orange book: Approved drug products with therapeutic equiv-
+alence evaluations. http://www.accessdata.fda.gov/scripts/
+cder/ob/default.cfm.
+[210] Databases,resources&APIs. http://wwwcf2.nlm.nih.gov/nlm_
+eresources/eresources/search_database.cfm.
+[211] University of Pittsburgh NLP repository. http://www.dbmi.
+pitt.edu/nlpfront.
+[212] Y. Usami, H.-C. Cho, N. Okazaki, and J. Tsujii. Automatic acqui-
+sition of huge training data for bio-medical named entity recog-
+nition. In Proceedings of BioNLP 2011 Workshop , pages 65–73,
+2011.
+[213] O. Uzuner. Recognizing obesity and comorbidities in sparse
+data.Journal of the American Medical Informatics Association ,
+16(5):561–570, 2009.
+[214] O. Uzuner, I. Goldstein, Y. Luo, and I. Kohane. Identifyingn pa-
+tient smoking status from medical discharge records. Journal of
+the American Medical Informatics Association , 15(1):14–24, 2008.
+[215] O. Uzuner, I. Solti, and E. Cadag. Extracting medication infor-
+mation from clinical text. Journal of the American Medical Infor-
+matics Association , 17(5):514–518, 2010.
+[216] O. Uzuner, B. R. South, S. Shen, and S. L. DuVall. 2010
+i2b2/VA challenge on concepts, assertions, and relations in clini-caltext. Journal of the American Medical Informatics Association ,
+18(5):552–556, 2011.
+[217] V. Vincze, G. Szarvas, R. Farkas, G. Mora, and J. Csirik. The Bio-
+Scopecorpus:Biomedicaltextsannotatedforuncertainty,negationand their scopes. BMC Bioinformatics, 9(Suppl 11):S9, 2008.
+[218] A. Vlachos and C. Gasperin. Bootstrapping and evaluating named
+entity recognition in the biomedical domain. In Proceedings of
+the HLT-NAACL BioNLP Workshop on Linking Natural Language
+and Biology, pages 138–145, 2006.
+[219] T. Wattarujeekrit, P. Shah, and N. Collier. PASBio: Predicate-
+argument structures for event extraction in molecular biology.BMC Bioinformatics , 5(1):155, 2004.516 MINING TEXT DATA
+[220] M. Weeber, H. Klein, L. T. W. de Jong-van den Berg, and R. Vos.
+Usingconceptsinliterature-baseddiscovery:SimulatingSwanson’sRaynaud-ﬁsh oil and migraine-magnesium discoveries. Journal
+of the American Society for Information Science and Technology ,
+52(7):548–557, 2001.
+[221] W. Weiming, D. Hu, M. Feng, and L. Wenyin. Automatic clin-
+ical question answering based on UMLS relations. In Third In-
+ternational Conference on Semantics, Knowledge and Grid , pages
+495–498, 2007.
+[222] J. W. Wilbur, A. Rzhetsky, and H. Shatkay. New directions in
+biomedicaltextannotation:Deﬁnitions,guidelinesandcorpuscon-
+struction. BMC Bioinformatics , 7:356, 2006.
+[223] G. Williams, P. Davis, A. Rogers, T. Bieri, P. Ozersky, and J. Spi-
+eth. Methods and strategies for gene structure curation in worm-base.Database , 2011.
+[224] K.Yamamoto,T.Kudo,A.Konagaya,andY.Matsumoto. Protein
+name tagging for biomedical annotation in text. In Proceedings
+of the ACL 2003 Workshop on Natural Language Processing inBiomedicine - Volume 13 , pages 65–72, 2003.
+[225] J.Yang,A.M.Cohen,andW.Hersh. Automaticsummarizationof
+mousegeneinformationbyclusteringandsentenceextractionfromMEDLINE abstracts. In AMIA Annual Symposium Pr oceedings ,
+pages 831–835, 2007.
+[226] A. Yeh, A. Morgan, M. Colosimo, and L. Hirschman. BioCreAtIvE
+task 1A: Gene mention ﬁnding evaluation. BMC Bioinformatics ,
+6(Suppl 1):S2, 2005.
+[227] M. Yetisgen-Yildiz and W. Pratt. Using statistical and knowledge-
+based approaches for literature-based discovery. Journal of
+Biomedical Informatics , 39(6):600–611, 2006.
+[228] M. Yetisgen-Yildiz and W. Pratt. A new evaluation methodol-
+ogy for literature-based discovery systems. Journal of Biomedical
+Informatics , 42(4):633–643, 2009.
+[229] I. Yoo, X. Hu, and I.-Y. Song. A coherent graph-based semantic
+clustering and summarization approach for biomedical literatureand a new summarization evaluation method. BMC Bioinformat-
+ics, 8(Suppl 9):S4, 2007.
+[230] H. Yu, S. Agarwal, M. Johnston, and A. Cohen. Are ﬁgure leg-
+ends suﬃcient? Evaluating the contribution of associated text tobiomedical ﬁgure comprehension. Journal of Biomedical Discovery
+and Collaboration , 4(1):1, 2009.Biomedical Text Mining: A Survey of Recent Progress 517
+[231] H. Yu and Y.-G. Cao. Automatically extracting information needs
+from ad hoc clinical questions. In AMIA Annual Symposium Pro-
+ceedings, pages 96–100, 2008.
+[232] H. Yu and M. Lee. Accessing bioscience images from abstract
+sentences. Bioinformatics , 22(14):e547–e556, 2006.
+[233] H. Yu, M. Lee, D. Kaufman, J. Ely, J. A. Osheroﬀ, G. Hripcsak,
+and J. Cimino. Development, implementation, and a cognitiveevaluation of a deﬁnitional question answering system for physi-
+cians.Journal of Biomedical Informatics , 40(3):236–251, 2007.
+[234] H. Yu and C. Sable. Being Erlang Shen: Identifying answerable
+questions. In Proceedings of the Nineteenth International Joint
+Conference on Artiﬁcial Intelligence on Knowledge and Reasoninfor Answering Questions , pages 6–14, 2005.
+[235] H. Yu, C. Sable, and H. Zhu. Classifying medical questions based
+on an evidence taxonomy. In Proceedings of the AAAI 2005 Work-
+shop on Question Answering in Restricted Domains , 2005.
+[236] G. Zhou, D. Shen, J. Zhang, J. Su, and S. Tan. Recognition of pro-
+tein/gene names from text using an ensemble of classiﬁers. BMC
+Bioinformatics , 6(Suppl 1):S7, 2005.
+[237] P. Zweigenbaum and D. Demner-Fushman. Advanced literature-
+mining tools. In D. Edwards, J. Stajich, and D. Hansen, editors,Bioinformatics: Tools and Applications , pages 347–380. Springer,
+2009.
+[238] P. Zweigenbaum, D. Demner-Fushman, H. Yu, and K. B. Cohen.
+Frontiers of biomedical text mining: Current progress. Brieﬁngs
+in Bioinformatics , 8(5):358–375, 2007.Index
+χ2-statistic, 170
+k-Means Clustering, 93
+k-Medoids Clustering, 92
+Agglomerative Clustering, 90
+Aspect Sentiment Classiﬁcation, 433
+Aspect-Based Opinion Summary, 420
+Background Knowledge Base, 404
+Bagging, 210
+Baum=Welch Algorithm, 281
+Bayesian Network Applications, 277
+Bayesian Networks, 276
+Bayesian Topic Models, 53
+Bernoulli Multivariate Model, 183
+Biological Question Answering, 491
+Biomedical Information Extraction, 472
+Biomedical Mining, 465
+Biomedical Relation Extraction, 472
+Biomedical Text Annotation, 469
+Biomedical Text Mining Resources, 467
+BioNLP, 472
+Boosting, 210
+Boosting in Transfer Learning, 233
+BOW Toolkit, 78, 164
+Browsing in Scatter/Gather, 97
+Buckshot, 95
+Bursty Features for Stream Clustering,
+113, 304
+C4.5 Classiﬁcation, 178
+Centroid Summarization, 50
+Chaining, 91
+Chinese Restaurant Process, 269
+Classiﬁcation Improvement with Unla-
+beled Data, 192
+Classifying Text Streams, 312
+CLASSIT, 92, 299
+Cluster Reﬁnement Hypothesis, 97
+Clustering Text in Networks, 115
+Clustering Text Streams, 110
+Clustering with Frequent Phrases, 105
+Co-clustering with Graph Partitioning,
+104Co-clustering Words and Documents, 103
+Co-training, 191
+COBWEB, 92, 299
+Collaborative Question Answering, 395
+Collective Classiﬁcation of Emails, 208
+Community Detection with Edge Con-
+tent, 118
+Community Detection with Node Con-
+tent, 117
+Comparative Opinions, 418, 441
+Complete Linkage Clustering, 92
+Composite Kernels, 28
+Concept Decomposition for Clustering, 85
+Conditional Random Fields, 20, 285
+Constrained Probabilistic Models, 287
+Context in Summarization, 56
+Corpus-based Approach for Opinion Min-
+ing, 430
+Correlated Bursty Topic Patterns, 311
+Cost-Sensitive Classiﬁcation, 212
+CRF Applications, 286
+Cross Domain Text Classiﬁcation, 225
+Cross Text and Visual Content Mining,
+374
+Cross-Domain Ensemble Learning, 232
+Cross-Lingual Information Retrieval, 324
+Cross-Lingual Mining, 324
+Decision Trees, 176
+Dependency Grammar, 441
+Dictionary-based Approach for Opinion
+Mining, 429
+Dimensionality Reduction, 130
+Dirichlet Distribution, 133
+Dirichlet Process, 270
+Dirichlet Process Mixture Model, 271
+Distance-based Clustering Algorithms, 89
+Distance-based Partitioning Algorithms,
+92
+DNF Rules for Classiﬁcation, 179
+Document Sentiment Classiﬁcation, 422
+Dynamic Topic Modeling, 151
+EM Algorithm, 266
+© Springer Science+Business Media, LLC 2012 519  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4,520 MINING TEXT DATA
+EM for Classiﬁcation, 192
+EM for Semi-Supervised Clustering, 119
+Email Network Classiﬁcation, 208
+Email Spam Filtering, 165, 186
+Email Summarization, 59
+EMPathIE, 476
+Ensemble Learning, 209
+Entropy-based Unsupervised Feature Se-
+lection, 83
+Evaluation of Information Extraction
+Methods, 33
+Event Detection in Social Media, 393
+Event Extraction from Biomedical Data,
+482
+Evolution Analysis in Text Streams, 316
+Evolution in Blog Streams, 317
+Extractive Summarization, 44
+Feature Compression with Clustering, 85
+Feature Selection for Text Classiﬁcation,
+167
+Feature Selection for Text Clustering, 81
+Feature Transformation for Text Cluster-
+ing, 81
+Feature-based Transfer Learning, 235
+Fisher’s Linear Discriminant, 173Fractionation, 95
+Frequency-based Feature Selection, 81
+Frequent Word Patterns for Clustering,
+100
+Gaussian Mixture Model, 263
+Generalized Singular Value Decomposi-
+tion, 175
+Generative Process, 133
+Gibbs Sampling, 145, 268
+Gini Index, 168
+Global Summary Selection, 65
+Graph-based Semi-Supervised Clustering,
+119
+Graph-based Summarization, 61
+Graphical Models, 275
+Group Spam Detection in Opinions, 450
+Group-Average Linkage Clustering, 91
+Heterogeneous Label Space, 243
+Heterogeneous Transfer Learning, 239
+Hidden Markov Models, 278
+Hidden Markov Models in Named Entity
+Recognition, 18
+Hierarchical Classiﬁcation, 186
+Hierarchical Clustering, 90
+HMM Applications, 281
+HMRF for Semi-Supervised Clustering,
+119
+Hyperlinks for Translingual Mining, 351
+Incremental LSI, 137Indicator Representation for Summariza-
+tion, 60
+Information Extraction, 11
+Information Gain, 169Information-Theoretic Co-clustering, 105Instance-based Transfer, 231
+Inverse Document Frequency, 80
+iTopicModel, 118
+Joint Visual and Text Mining, 370Kernel Methods, 26
+Lagrangian Optimization in NMF, 87
+LAIR2, 98Latent Dirichlet Allocation, 108, 130, 142,
+264
+Latent Semantic Analysis, 52
+Latent Semantic Indexing, 52, 84, 130,
+133
+LDA, 108, 130, 142, 264LDA Model Training, 144Lemur Toolkit, 78
+Lexical Chains for Summarization, 50
+Lexical Translation Model, 327Linear Classiﬁers, 176, 193Linear Discriminant Analysis, 173
+Link and Text Analytics in Social Media,
+400
+Linked Data Classiﬁcation, 203
+Literature-based Discovery from Biomed-
+ical Text, 492
+LLL Genic Extraction Challenge, 479LLSF Method, 196
+Local Feature Selection, 104
+Locality Sensitive Hashing, 311LSH, 311LSI, 84, 130, 133
+LSI and PCA Relationship, 85
+LSI and PLSI Relationships, 139, 140LSI Implementation Issues, 135
+Machine Learning for Summarization, 60
+Machine Translation in Translingual Min-
+ing, 325
+Map Reduce in Text Mining, 289
+Markov Logic Network, 286
+Markov Random Fields, 282Matching Parallel Pages, 339Matrix Factorization, 86
+Matrix Factorization for Linked Text
+Classiﬁcation, 209
+Maximal Margin Relevance for Summa-
+rization, 64
+Maximum Entropy Markov Models, 19
+Medical Question Answering, 489
+MetaMap, 471INDEX 521
+Microblogging, 388
+Mixture Modeling for Classiﬁcation, 191
+Mixture Modeling for Text Classiﬁcation,
+190
+Mixture Models, 261
+Mixture of Unigrams, 263MRF Applications, 284
+MRF for Linked Text Clustering, 116
+Multimedia Text Mining, 362
+Multinomial Distribution, 132, 188
+Mutual Information for Clustering, 105
+Mutual Information for Feature Selection,
+169
+Naive Bayes Classiﬁer, 181
+Naive Bayes for Linked Text Classiﬁca-
+tion, 205
+Named Entity Recognition, 11, 15, 473
+Nearest Neighbor Classiﬁer, 201
+NetPLSA, 118
+Neural Network Classiﬁers, 197, 315
+NeuralnetworksforStreamClassiﬁcation,
+315
+News Filtering, 164NMF, 86
+Non-negative Matrix Factorization, 86
+Objective-Centered Classiﬁcation, 212
+OCFS, 175One-Class Stream Classiﬁcation, 314
+OnlineSpherical k-MeansAlgorithm, 110,
+299
+Open Information Extraction, 32
+Opinion Lexicon Expansion, 429Opinion Mining, 416
+Opinion Orientations, 418
+Opinion Spam Detection, 447Opinion Spam Learning, 448
+Opinion Utility, 451
+Optimal Orthogonal Centroid Feature Se-
+lection, 175
+ORBIT, 472
+OSKM, 110, 299
+Pachinko Machine, 187
+Parallel Learning Algorithms, 288
+PASTA, 476
+PCA, 84Perceptron Algorithm, 198
+PERSIVAL, 487
+Phrase-based Models for Translingual
+Mining, 329
+Pitman-Yor Process, 274PLSI, 108, 140, 264
+Polarities, 418
+Principal Component Analysis, 84Probabilistic Document Clustering, 107Probabilistic Latent Semantic Indexing,
+108, 140, 264
+Probabilistic Models with Constraints,
+287
+Probabilistic Techniques for Text Mining,
+259
+Projected Clustering, 103Projections for Document Clustering, 98Prototype Hierarchies for Supervision,
+120
+Proximity-based Classiﬁers, 200
+Query-Focused Summarization, 58
+Question Answering for Biomedical Data,
+488
+Question Answering in Social Media, 395
+Random Walks for Linked Text Classiﬁ-
+cation, 206
+Regular Opinions, 417Regularization of Linked Text, 207Relation Discovery and Template Induc-
+tion, 31
+Relation Extraction, 11, 22
+Relational Topic Models, 153Relaxation Labeling for Linked Text Clas-
+siﬁcation, 204
+Review Utility, 451RIPPER, 181
+Rocchio Method, 202
+Rule-based Approach in Named Entity
+Recognition, 16
+Rule-based Classiﬁers, 178
+Scatter/Gather, 94
+Scientiﬁc Article Summarization, 58Seed Phrase Extraction, 402Semantic Feature Generation, 404, 405Semantic Gap in Social Media, 398Semi-Supervised Clustering, 118Sentence Clustering for Summarization,
+55
+Sentence Subjectivity in Sentiment Clas-
+siﬁcation, 426
+Sentiment Analysis, 416Sentiment Classiﬁcation, 422Sentiment Consistency, 430Sentiment Orientations, 418Sequence-based Kernels, 26Side Information in Text Clustering, 116Single Linkage Clustering, 91Singular Value Decomposition, 84, 133
+Sleeping Experts, 181, 315
+Social Media, 386Social Streams, 310, 394Social Tagging, 397Spam Filtering, 165, 186, 313

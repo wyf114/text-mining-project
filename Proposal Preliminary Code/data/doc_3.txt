@@ -1,0 +1,922 @@
+Chapter 3
+A SURVEY OF TEXT SUMMARIZATION
+TECHNIQUES
+Ani Nenkova
+University of Pennsylvania
+nenkova@seas.upenn.edu
+Kathleen McKeown
+Columbia University
+kathy@cs.columbia.edu
+Abstract Numerous approaches for identifying important content for automatic
+text summarization have been developed to date. Topic representation
+approaches ﬁrst derive an intermediate representation of the text that
+captures the topics discussed in the input. Based on these representa-
+tions of topics, sentences in the input document are scored for impor-
+tance. In contrast, in indicator representation approaches, the text is
+represented by a diverse set of possible indicators of importance which
+do not aim at discovering topicality. These indicators are combined,
+very often using machine learning techniques, to score the importance
+of each sentence. Finally, a summary is produced by selecting sentences
+inagreedyapproach, choosingthesentencesthatwillgointhesummary
+one by one, or globally optimizing the selection, choosing the best set of
+sentences to form a summary. In this chapter we give a broad overview
+of existing approaches based on these distinctions, with particular at-
+tention on how representation, sentence scoring or summary selection
+strategies alter the overall performance of the summarizer. We also
+point out some of the peculiarities of the task of summarization which
+have posed challenges to machine learning approaches for the problem,
+and some of the suggested solutions1.
+1Portions of this chapter have already appeared in our more detailed overview of summa-
+rization research [67]. The larger manuscript includes sections on generation techniques for
+© Springer Science+Business Media, LLC 2012 43  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_3,44 MINING TEXT DATA
+Keywords: Extractive text summarization, topic representation, machine learning
+for summarization
+1. How do Extractive Summarizers Work?
+Summarizationsystemsneedtoproduceaconciseandﬂuentsummary
+conveying the key information in the input. In this chapter we constrain
+ourdiscussiontoextractivesummarizationsystemsforshort, paragraph-
+length summaries and explain how these systems perform summariza-
+tion. These summarizers identify the most important sentences in the
+input, which can be either a single document or a cluster of related
+documents, and string them together to form a summary. The decision
+about what content is important is driven primarily by the input to the
+summarizer.
+The choice to focus on extractive techniques leaves out the large body
+of text-to-text generation approaches developed for abstractive summa-
+rization, butallowsustofocusonsomeofthemostdominantapproaches
+which are easily adapted to take users’ information need into account
+and work for both single- and multi-document inputs. Moreover, by ex-
+aminingthestagesintheoperationofextractivesummarizersweareable
+to point out commonalities and diﬀerences in summarization approaches
+which relate to critical components of a system and could explain the
+advantages of certain techniques over others.
+In order to better understand the operation of summarization systems
+and to emphasize the design choices system developers need to make, we
+distinguish three relatively independent tasks performed by virtually all
+summarizers: creating an intermediate representation of the input which
+capturesonly thekey aspectsof the text, scoringsentencesbased on that
+representation and selecting a summary consisting of several sentences.
+Intermediate representation Even the simplest systems derive
+some intermediate representation of the text they have to summarize
+and identify important content based on this representation. Topic rep-
+resentation approaches convert the text to an intermediate representa-
+tion interpreted as the topic(s) discussed in the text. Some of the most
+popular summarization methods rely on topic representations and this
+class of approaches exhibits an impressive variation in sophistication and
+representation power. They include frequency, TF.IDF and topic word
+approaches in which the topic representation consists of a simple table
+summarization, evaluation issues and genre speciﬁc summarization which we do not address
+in this chapter. http://dx.doi.org/10.1561/1500000015A Survey of Text Summarization Techniques 45
+of words and their corresponding weights, with more highly weighted
+words being more indicative of the topic; lexical chain approaches inwhich a thesaurus such as WordNet is used to ﬁnd topics or concepts of
+semantically related words and then give weight to the concepts; latent
+semantic analysis in which patterns of word co-occurrence are identiﬁedand roughly construed as topics, as well as weights for each pattern;full blown Bayesian topic models in which the input is represented asa mixture of topics and each topic is given as a table of word prob-abilities (weights) for that topic. Indicator representation approaches
+represent each sentence in the input as a list of indicators of importance
+such as sentence length, location in the document, presence of certain
+phrases, etc. In graph models, such as LexRank, the entire document isrepresented as a network of inter-related sentences.
+Score sentences Once an intermediate representation has been de-
+rived, each sentence is assigned a score which indicates its importance.For topic representation approaches, the score is commonly related tohow well a sentence expresses some of the most important topics in the
+document or to what extent it combines information about diﬀerent top-
+ics. For the majority of indicator representation methods, the weight ofeach sentence is determined by combining the evidence from the diﬀer-ent indicators, most commonly by using machine learning techniques todiscover indicator weights. In LexRank, the weight of each sentence isderived by applying stochastic techniques to the graph representation ofthe text.
+Select summary sentences Finally, the summarizer has to select
+the best combination of important sentences to form a paragraph lengthsummary. In the bestnapproaches, the top nmost important sentences
+which combined have the desired summary length are selected to formthe summary. In maximal marginal relevance approaches, sentences are
+selected in an iterative greedy procedure. At each step of the procedurethe sentence importance score is recomputed as a linear combination
+between the original importance weight of the sentence and its similarity
+with already chosen sentences. Sentences that are similar to alreadychosen sentences are dispreferred. In global selection approaches, the
+optimal collection of sentences is selected subject to constraints that tryto maximize overall importance, minimize redundancy, and, for someapproaches, maximize coherence.
+There are very few inherent dependencies between the three process-
+ing steps described above and a summarizer can incorporate any com-
+bination of speciﬁc choices on how to perform the steps. Changes in theway a speciﬁc step is performed can markedly change the performance46 MINING TEXT DATA
+of the summarizer, and we will discuss some of the known diﬀerences as
+we introduce the traditional methods.
+In ranking the importance of sentences for summaries, other factors
+also come into play. If we have information about the context in which
+the summary is generated, this can help in determining importance.Context can take the form of information about user needs, often pre-sented through a query. Context can include the environment in whichan input document is situated, such as the links which point to a webpage. Another factor which aﬀects sentence ranking is the genre of adocument. Whether the input document is a news article, an email
+thread, a web page or a journal article inﬂuences the strategies used to
+select sentences.
+We begin with a discussion of topic representation approaches in Sec-
+tion 2. In these approaches the independence between the methods forderiving the intermediate representation and those for scoring sentencesis most clear and we emphasize the range of choices for each as we dis-cuss individual approaches. In Section 3 we discuss approaches that
+focus attention on the contextual information necessary for determining
+sentence importance rather than the topic representation itself. We fol-lowwithapresentationofindicatorrepresentationapproachesinSection4. We then discuss approaches to selecting the sentences of a summaryin Section 5 before concluding.
+2. Topic Representation Approaches
+Topic representation approaches vary tremendously in sophistication
+and encompass a family of methods for summarization. Here we present
+some of the most widely applied topic representation approaches, as
+well as those that have been gaining popularity because of their recentsuccesses.
+2.1 Topic Words
+In remarkably early work on text summarization [53], Luhn proposed
+the use of frequency thresholds to identify descriptive words in a docu-ment to be summarized, a simple representation of the document’s topic.The descriptive words in his approach exclude the most frequent words
+in the document, which are likely to be determiners, prepositions, or
+domain speciﬁc words, as well as those occurring only a few times Amodern statistical version of Luhn’s idea applies the log-likelihood ra-tio test [22] for identiﬁcation of words that are highly descriptive of theinput. Such words have been traditionally called “topic signatures” inthe summarization literature [46]. The use of topic signatures wordsA Survey of Text Summarization Techniques 47
+as representation of the input has led to high performance in selecting
+important content for multi-document summarization of news [15, 38].
+Topic signatures are words that occur often in the input but are rare
+in other texts, so their computation requires counts from a large col-
+lection of documents in addition to the input for summarization. Oneof the key strengths of the log-likelihood ratio test approach is that itprovides a way of setting a threshold to divide all words in the input intoeither descriptive or not. The decision is made based on a test for sta-tistical signiﬁcance, to large extent removing the need for the arbitrarythresholds in the original approach.
+Information about the frequency of occurrence of words in a large
+background corpus is necessary to compute the statistic on the basisof which topic signature words are determined. The likelihood of theinputIand the background corpus is computed under two assumptions:
+(H1) that the probability of a word in the input is the same as in thebackground Bor (H2) that the word has a diﬀerent, higher probability,
+in the input than in the background.
+H1:P(w|I)=P(w|B)=p(wis not descriptive)
+H2:P(w|I)=p
+IandP(w|B)=pBandpI>pB(wis descriptive)
+The likelihood of a text with respect to a given word of interest, w,
+is computed via the binomial distribution formula. The input and thebackground corpus are treated as a sequence of words w
+i:w1w2...wN.
+The occurrence of each word is a Bernoulli trial with probability pof
+success, which occurs when wi=w. The overall probability of observing
+the word wappearing ktimes in the Ntrials is given by the binomial
+distribution
+b(k,N,p)=/parenleftbiggN
+k/parenrightbigg
+pk(1−p)N−k(3.1)
+For H1, the probability pis computed from the input and the back-
+groundcollectiontakentogether. ForH2, p1iscomputedfromtheinput,
+p2from the background, and the likelihood of the entire data is equal to
+the product of the binomial for the input and that for the background.More speciﬁcally, the likelihood ratio is deﬁned as
+λ=b(k,N,p)
+b(kI,NI,pI).b(kB,NB,pB)(3.2)
+where the counts with subscript Iare computed only from the input to
+the summarizer and those with index Bare computed over the back-
+ground corpus.
+The statistic equal to −2logλhas a known statistical distribution
+(χ2), which can be used to determine which words are topic signatures.48 MINING TEXT DATA
+Topic signature words are those that have a likelihood statistic greater
+than what one would expect by chance. The probability of obtaininga given value of the statistic purely by chance can be looked up in a
+χ
+2distribution table; for instance a value of 10.83 can be obtained by
+chance with probability of 0.001.
+The importance of a sentence is computed as the number of topic
+signatures it contains or as the proportion of topic signatures in thesentence. Both of these sentence scoring functions are based on thesame topic representation, the scores they assign to sentences may berather diﬀerent. The ﬁrst approach is likely to score longer sentences
+higher, simply because they contain more words. The second approach
+favors density of topic words.
+2.2 Frequency-driven Approaches
+There are two potential modiﬁcations that naturally come to mind
+when considering the topic words approach. The weights of words intopic representations need not be binary (either 1 or 0) as in the topicword approaches. In principle it would even be beneﬁcial to be able tocompare the continuous weights of words and determine which ones are
+more related to the topic. The approaches we present in this section—
+word probability and TF.IDF—indeed assign non-binary weights relatedonthenumberofoccurrencesofawordorconcept. Researchhasalreadyshown that the binary weights give more stable indicators of sentenceimportance than word probability and TF.IDF [34]. Nonetheless weoverview these approaches because of their conceptual simplicity andreasonable performance. We also describe the lexical chains approach to
+determining sentence importance. In contrast to most other approaches,
+it makes use of WordNet, a lexical database which records semantic rela-tions between words. Based on the information derived from WordNet,lexical chain approaches are able to track the prominence, indicated byfrequency, of diﬀerent topics discussed in the input.
+Word probability is the simplest form of using frequency in the
+input as an indicator of importance
+2. The probability of a word w,p(w)
+is computed from the input, which can be a cluster of related documents
+or a single document. It is calculated as the number of occurrences of aword,c(w) divided by the number of all words in the input, N:
+2Raw frequency would be even simpler, but this measure is too strongly inﬂuenced by doc-
+ument length. A word appearing twice in a 10 word document may be important, but not
+necessarily so in a 1000 word document. Computing word probability makes an adjustment
+for document length.A Survey of Text Summarization Techniques 49
+p(w)=c(w)
+N(3.3)
+SumBasic is one system developed to operationalize the idea of using
+frequency for sentence selection. It relies only on word probability tocalculate importance [94]. For each sentence S
+jin the input it assigns
+a weight equal to the average probability p(wi) of the content words in
+the sentence3, estimated from the input for summarization:
+Weight(Sj)=/summationtext
+wi∈Sjp(wi)
+|{wi|wi∈Sj}|(3.4)
+Then, in a greedy fashion, SumBasic picks the best scoring sentence
+that contains the word that currently has the highest probability. This
+selection strategy assumes that at each point when a sentenceis selected,a single word—that with highest probability—represents the most im-portant topic in the document and the goal is to select the best sentencethat covers this word. After the best sentence is selected, the probabilityof each word that appears in the chosen sentence is adjusted. It is setto a smaller value, equal to the square of the probability of the word
+at the beginning of the current selection step, to reﬂect the fact that
+the probability of a word occurring twice in a summary is lower thanthe probability of the word occurring only once. This selection loop isrepeated until the desired summary length is achieved.
+With continuous weights, there are even greater number of possibil-
+ities for deﬁning the sentence scoring function compared to the topicwords method: the weights can be summed, multiplied, averaged, etc.
+In each case the scoring is derived by the same representation but the re-
+sulting summarizer performance can vary considerably depending on thechoice [68]. The sentence selection strategy of SumBasic is a variation
+of the maximal marginal relevance strategy, but an approach that opti-mizes the occurrence of important words globally over the entire sum-mary instead of greedy selection perform better [89]. Word probabilitiescan serve as the basis for increasingly complex views of summarization
+[50].
+TF*IDF weighting (TermFrequency*InverseDocumentFrequency)
+The word probability approach relies on a stop word list to eliminate
+too common words from consideration. Deciding which words to in-clude in a stop list, however, is not a trivial task and assigning TF*IDFweights to words [79, 87] provides a better alternative. This weighting
+3Sentences that have fewer than 15 content words are assigned weight zero and a stop word
+list is used to eliminate very common words from consideration.50 MINING TEXT DATA
+exploits counts from a background corpus, which is a large collection of
+documents, normally from the same genre as the document that is to besummarized; the background corpus serves as indication of how often a
+word may be expected to appear in an arbitrary text.
+The only additional information besides the term frequency c(w) that
+we need in order to compute the weight of a word wwhich appears c(w)
+times in the input for summarization is the number of documents, d(w),
+in a background corpus of Ddocuments that contain the word. This
+allows us to compute the inverse document frequency:
+TF∗IDF
+w=c(w).logD
+d(w)(3.5)
+In many cases c(w) is divided by the maximum number of occurrences
+of any word in the document, which normalizes for document length.Descriptive topic words are those that appear often in a document, butare not very common in other documents. Words that appear in mostdocuments will have an IDF close to zero. The TF*IDF weights ofwords are good indicators of importance, and they are easy and fast tocompute. These properties explain why TF*IDF is incorporated in one
+form or another in most current systems [25, 26, 28–30, 40].
+Centroid summarization [73], which has become a popular baseline
+system, is also built on TF.IDF topic representation. In this approach,an empirically determined threshold is set, and all words with TF.IDFbelow that threshold are considered to have a weight of zero. In thisway the centroid approach is similar to the topic word approach be-cause words with low weight are treated as noise and completely ignored
+when computing sentence importance. It also resembles the word prob-
+ability approach because it keeps diﬀerential weights (TF.IDF) for allword above the threshold. The sentence scoring function in the centroidmethod is the sum of weights of the words in it.
+Lexical chains [3, 86, 31]andsomerelatedapproachesrepresenttopics
+that are discussed throughout a text by exploiting relations betweenwords. They capture semantic similarity between nouns to determine
+the importance of sentences. The lexical chains approach captures the
+intuition that topics are expressed using not a single word but insteaddiﬀerent related words. For example, the occurrence of the words “car”,“wheel”, “seat”, “passenger” indicates a clear topic, even if each of thewords is not by itself very frequent. The approach heavily relies onWordNet [63], a manually compiled thesaurus which lists the diﬀerentsenses of each word, as well as word relationships such as synonymy,
+antonymy, part-whole and general-speciﬁc.A Survey of Text Summarization Techniques 51
+A large part of Barzilay and Elhadad’s original work on applying
+lexical chains for summarization [3] is on new methods for construct-ing good lexical chains, with emphasis on word sense disambiguation of
+wordswithmultiplemeanings(i.e. theword“bank”canmeanaﬁnancial
+institution or the land near a river or lake). They develop an algorithmthat improves on previous work by waiting to disambiguate polysemouswords until all possible chains for a text have been constructed; wordsenses are disambiguated by selecting the interpretations with the mostconnections in the text. Later research further improved both the run-time of the algorithms for building of lexical chains, and the accuracy of
+word sense disambiguation [86, 31].
+Barzilay and Elhadad claim that the most prevalent discourse topic
+will play an important role in the summary and argue that lexical chainsprovide a better indication of discourse topic than does word frequencysimply because diﬀerent words may refer to the same topic. They deﬁnethe strength of a lexical chain by its length, which is equal to the numberof words found to be members of the same chain, and its homogeneity,
+where homogeneity captures the number of distinct lexical items in the
+chain divided by its length. They build the summary by extracting onesentence for each highly scored chain, choosing the ﬁrst sentence in thedocument containing a representative word for the chain.
+This strategy for summary selection—one sentence per important
+topic—is easy to implement but possibly too restrictive. The questionthat stands out, and which Barzilay and Elhadad raise but do not ad-
+dress, is that maybe for some topics more than one sentence should be
+included in the summary. Other sentence scoring techniques for lexicalchain summarization have not been explored, i.e. sentences that includeseveral of the highly scoring chains may be even more informative aboutthe connection between the discussed topics.
+Inlaterwork, researcherschosetoavoidtheproblemofwordsensedis-
+ambiguation altogether but still used WordNet to track the frequency of
+all members of a concept set [82, 102]. Even without sense disambigua-
+tion, these approaches were able to derive concepts like {war, campaign,
+warfare, eﬀort, cause, operation, conﬂict },{concern, carrier, worry, fear,
+scare}or{home, base, source, support, backing }. Each of the individual
+words in the concept could appear only once or twice in the input, butthe concept itself appeared in the document frequently.
+The heavy reliance on WordNet is clearly a bottleneck for the ap-
+proaches above, because success is constrained by the coverage of Word-
+Net. Because of this, robust methods such as latent semantic analysisthat do not use a speciﬁc static hand-crafted resource have much appeal.52 MINING TEXT DATA
+2.3 Latent Semantic Analysis
+Latent semantic analysis (LSA) [19] is a robust unsupervised tech-
+nique for deriving an implicit representation of text semantics based onobserved co-occurrence of words. Gong and Liu [33] proposed the use ofLSA for single and multi-document generic summarization of news, asa way of identifying important topics in documents without the use of
+lexical resources such as WordNet.
+Building the topic representation starts by ﬁlling in a nbymmatrix
+A: each row corresponds to a word from the input ( nwords) and each
+column corresponds to a sentence in the input ( msentences). Entry
+a
+ijof the matrix corresponds to the weight of word iin sentence j.I f
+the sentence does not contain the word, the weight is zero, otherwisethe weight is equal to the TF*IDF weight of the word. Standard tech-
+niques for singular value decomposition (SVD) from linear algebra are
+applied to the matrix A, to represent it as the product of three matrices:
+A=UΣV
+T. Every matrix has a representation of this kind and many
+standard libraries provide a built-in implementation of the decomposi-tion.
+MatrixUis anbymmatrix of real numbers. Each column can
+be interpreted as a topic, i.e. a speciﬁc combination of words from the
+input with the weight of each word in the topic given by the real number.
+Matrix Σ is diagonal mbymmatrix. The single entry in row iof the
+matrix corresponds to the weight of the “topic”, which is the ith column
+ofU. Topics with low weight can be ignored, by deleting the last k
+rows ofU, the last krows and columns of Σ and the last krows of
+V
+T. This procedure is called dimensionality reduction. It corresponds
+to the thresholds employed in the centroid and topic words approaches,
+and topics with low weight are treated as noise. Matrix VTis a new
+representation of the sentences, one sentence per row, each of which isexpressed not in terms of words that occur in the sentence but ratherin terms of the topics given in U. The matrix D=ΣV
+Tcombines the
+topic weights and the sentence representation to indicate to what extentthe sentence conveys the topic, with d
+ijindicating the weight for topic
+iin sentence j.
+The original proposal of Gong and Liu was to select one sentence for
+each of the most important topics. They perform dimensionality reduc-tion, retaining only as many topics as the number of sentences they wanttoincludeinthesummary. Thesentencewiththehighestweightforeachof the retained topics is selected to form the summary. This strategy suf-fersfromthesamedrawbackasthelexicalchainsapproachbecausemorethan one sentence may be required to convey all information pertinentA Survey of Text Summarization Techniques 53
+to that topic. Later researchers have proposed alternative procedures
+which have led to improved performance of the summarizer in contentselection. One improvement is to use the weight of each topic in order
+to determine the relative proportion of the summary that should cover
+the topic, thus allowing for a variable number of sentences per topic.Another improvement was to notice that often sentences that discussseveral of the important topics are good candidates for summaries [88].To identify such sentences, the weight of sentence s
+iis set to equal
+Weight(si)=/radicaltp/radicalvertex/radicalvertex/radicalbtm/summationdisplay
+j=1d2
+i,j (3.6)
+Further variations of the LSA approach have also been explored [72,
+35]. The systems that rely on LSA best exemplify the signiﬁcance of theprocedure for sentence scoring. In the many variants of the algorithm,the topic representation remains the same while the way sentences arescored and chosen varies, directly inﬂuencing the performance of the
+summarizer when selecting important content.
+2.4 Bayesian Topic Models
+Bayesian models are the most sophisticated approach for topic repre-
+sentation proposed for summarization which has been steadily gainingpopularity [18, 36, 97, 11].
+The original Bayesian model for multi-document summarization [18,
+36], derives several distinct probabilistic distributions of words that ap-pear in the input. One distribution is for general English ( G), one for
+the entire cluster to be summarized ( C) and one for each individual doc-
+umentiin that cluster ( D
+i). Each of G,CandDconsist of tables of
+words and their probabilities, or weights, much like the word probabilityapproach, but the weights are very diﬀerent in G,CandD: a word with
+high probability in general English is likely to have (almost) zero weightin the cluster table C. The tables (probability distributions) are derived
+as a part of a hierarchical topic model [8]. It is an unsupervised model
+and the only data it requires are several multi-document clusters; the
+general English weights reﬂect occurrence of words across most of theinput clusters.
+Thetopicmodelrepresentationsarequiteappealingbecausetheycap-
+ture information that is lost in most of the other approaches. They, forexample, have an explicit representation of the individual documentsthat make up the cluster that is to be summarized, while it is customary
+in other approaches to treat the input to a multi-document summarizer54 MINING TEXT DATA
+as one long text, without distinguishing document boundaries. The
+detailed representation would likely enable the development of bettersummarizers which conveys the similarities and diﬀerences among the
+diﬀerent documents that make up the input for multi-document sum-
+marization [55, 24, 54]. It is also ﬂexible in the manner in which itderives the general English weights of words, without the need for apre-determined stop word list, or IDF values from a background corpus.
+In addition to the improved representation, the topic models highlight
+the use of a diﬀerent sentence scoring procedure: Kullback-Lieber (KL)divergence. The KL divergence between two probability distributions
+captures the mismatch in probabilities assigned to the same events by
+the two distributions. In summarization, the events are the occurrenceof words. The probability of words in the summary can be computeddirectly, as the number of times the word occurs divided by the totalnumber of words.
+IngeneraltheKLdivergenceofprobabilitydistribution Qwithrespect
+to distribution Pover words wis deﬁned as
+KL(P||Q)=/summationdisplay
+wP(w)logP(w)
+Q(w)(3.7)
+P(w)a n dQ(w) are the probabilities of winPandQrespectively.
+Sentences are scored and selected in a greedy iterative procedure [36].
+In each iteration the best sentence ito be selected in the summary
+is determined as the one for which the KL divergence between C, the
+probabilities of words in the cluster to be summarized, and the summaryso far, including i, is smallest.
+KL divergence is appealing as a way of scoring and selecting sentence
+in summarization because it truly captures an intuitive notion that good
+summaries are similar to the input. Thinking about a good summaryin this way is not new in summarization [21, 74] but KL provides a wayof measuring how the importance of words, given by their probabilities,changes in the summary compared to the input. A good summary wouldreﬂect the importance of words according to the input, so the divergencebetween the two will be low. This intuition has been studied extensively
+in work on automatic evaluation of content selection in summarization,
+whereanotherindicatorofdivergence—JensenShannondivergence—hasproven superior to KL [45, 52].
+Given all this, information theoretic measures for scoring sentences
+are likely to gain popularity even outside the domain on Bayesian topicmodel representations. All that is necessary in order to apply a diver-gence to score the summary is a table with word probabilities. The word
+probability approaches in the spirit of SumBasic [68] can directly ap-A Survey of Text Summarization Techniques 55
+ply divergence measures to score sentences rather than sum, multiply
+or average the probabilities of words; other methods that assign weightsto words can normalize the weights to get a probability distribution of
+words. In the next section we will also discuss an approach for summa-
+rizing academic articles which uses KL divergence to score sentences.
+2.5 Sentence Clustering and Domain-dependent
+Topics
+In multi-document summarization of news, the input by deﬁnition
+consists of several articles, possibly from diﬀerent sources, on the sametopic. Across the diﬀerent articles there will be sentences that containsimilar information. Information that occurs in many of the input docu-ments is likely important and worth selecting in a summary. Of course,verbatim repetition on the sentence level is not that common across
+sources. Rather, similar sentences can be clustered together [59, 39, 85].
+In summarization, cosine similarity is standardly used to measure thesimilarity between the vector representations of sentences [78].
+Inthisapproach, clustersofsimilarsentencesaretreatedasproxiesfor
+topics; clusters with many sentences represent important topic themes inthe input. Selecting one representative sentence from each main clusteris one way to produce an extractive summary, while minimizing possible
+redundancy in the summary.
+The sentence clustering approach to multi-document summarization
+exploits repetition at the sentence level. The more sentences there are inacluster,themoreimportanttheinformationintheclusterisconsidered.Below is an example of a sentence cluster from diﬀerent documents inthe input to a multi-document summarizer. All four sentences sharecommon content that should be conveyed in the summary.
+S1PAL was devastated by a pilots’ strike in June and by the region’s currency crisis.
+S2In June, PAL was embroiled in a crippling three-week pilots’ strike.
+S3Tan wants to retain the 200 pilots because they stood by him when the majority
+of PAL’s pilots staged a devastating strike in June.
+S4In June, PAL was embroiled in a crippling three-week pilots’ strike.
+Constraining each sentence to belong to only one cluster is a distinct
+disadvantage of the sentence clustering approach, and graph methodsfor summarization which we discuss in the next section, have proven toexploit the same ideas in a more ﬂexible way.
+For domain-speciﬁc summarization, however, clustering of sentences
+from many samples from the domain can give a good indication about
+the topics that are usually discussed in the domain, and the type of56 MINING TEXT DATA
+information that a summary would need to convey. In this case, Hid-
+den Markov Models (HMM) that capture “story ﬂow”—what topics arediscussed in what order in the domain— can be trained [5, 28]. These
+models capitalize on the fact that within a speciﬁc domain, information
+in diﬀerent texts is presented following a common presentation ﬂow. Forexample, newsarticlesaboutearthquakesoftenﬁrsttalkaboutwheretheearthquake happened, what its magnitude was, then mention human ca-sualties or damage, and ﬁnally discuss rescue eﬀorts. Such “story ﬂow”can be learned from multiple articles from the same domain. Statesin the HMM correspond to topics in the domain, which are discovered
+via iterative clustering of similar sentences from many articles from the
+domain of interest. Each state (topic) is characterized by a probabilitydistributionwhichindicateshowlikelyagivenwordistoappearinasen-tence that discusses the topic. Transitions between states in the modelcorrespond to topic transitions in typical texts. These HMM models donot require any labelled data for training and allow for both content se-lection and ordering in summarization. The sentences that have highest
+probability of conveying important topics are selected in the summary.
+Even simpler approach to discovering the topics in a speciﬁc domain
+can be applied when there are available samples from the domain thatare more structured and contain human-written headings. For exam-ple, there are plenty of Wikipedia articles about actors and diseases.Clustering similar section headings, where similarity is deﬁned by cosinesimilarity for example, will identify the topics discussed in each type of
+article [80]. The clusters with most headings represent the most com-
+mon topics, and the most common string in the cluster is used to labelit. This procedure discovers for example that when talking about actors,writers most often include information about their biography, early life,career and personal life. Then to summarize web pages returned by asearch for a speciﬁc actor, the system can create a Wikipedia-like webpage on the ﬂy, selecting sentences from the returned results that convey
+these topics.
+3. Inﬂuence of Context
+In many cases, the summarizer has available additional materials that
+can help determine the most important topics in the document to besummarized. For example in web page summarization, the augmentedinput consists of other web pages that have links to the pages that wewant to summarize. In blog summarization, the discussion following theblog post is easily available and highly indicative of what parts of the
+blog post are interesting and important. In summarization of scholarlyA Survey of Text Summarization Techniques 57
+papers, later papers that cite the paper to be summarized and the ci-
+tation sentences in particular, provide a rich context that indicate whatsentences in the original paper are important. User interests are often
+takenintoaccountinquery-focusedsummarization,wherethequerypro-
+vides additional context. All of these approaches relying on augmentedinput have been exploited for summarization.
+3.1 Web Summarization
+One type of web page context to consider is the text in pages that link
+to the one that has to be summarized, in particular the text surroundedby the hyperlink tag pointing to the page. This text often provides adescriptive summary of a web page (e.g., “Access to papers published
+within the last year by members of the NLP group”). Proponents of us-
+ing context to provide summary sentences argue that a web site includesmultimedia, may cover diverse topics, and it may be hard for a summa-rizer to distinguish good summary content from bad [20]. The earliestwork on this approach was carried out to provide snippets for each resultfrom a search engine [2]. To determine a summary, their system issueda search for a URL, selected all sentences containing a link to that URL
+and the best sentence was identiﬁed using heuristics. Later work has
+extended this approach through an algorithm that allows selection of asentence that covers as many aspects of the web page as possible andthat is on the same topic [20] . For coverage, Delort et al. used wordoverlap, normalized by sentence length, to determine which sentencesare entirely covered by others and thus can be removed from consider-ation for the summary. To ensure topicality, Delort’s system selects a
+sentence that is a reference to the page (e.g., “CNN is a news site”) as
+opposed to content (e.g., “The top story for today...”). He computestopicality by measuring overlap between each context sentence and thetext within the web page, normalizing by the number of words in theweb page. When the web page does not have many words, instead heclusters all sentences in the context and chooses the sentence that ismost similar to all others using cosine distance.
+In summarization of blog posts, important sentences are identiﬁed
+based on word frequency [41]. The critical diﬀerence from other ap-proaches is that here frequency is computed over the comments on thepost rather then the original blog entry. The extracted sentences arethose that elicited discussion.58 MINING TEXT DATA
+3.2 Summarization of Scientiﬁc Articles
+Impact summarization [60] is deﬁned as the task of extracting sen-
+tences from a paper that represent the most inﬂuential content of thatpaper. Language models provide a natural way for solving the task.For each paper to be summarized, impact summarization methods ﬁndother papers in a large collection that cite that paper and extract the
+areas in which the references occur. A language model is built using the
+collection of all reference areas to a paper, giving the probability of eachword to occur in a reference area. This language model gives a way ofscoring the importance of sentences in the original article: importantsentences are those that convey information similar to that which laterpapers discussed when referring to the original paper. The measure ofsimilarity between a sentence and the language model is measured by
+KL divergence. In order to account for the importance of each sentence
+within the summarized article alone, the approach uses word probabil-ities estimated from the article. The ﬁnal score of a sentence is a lin-ear combination of impact importance coming from KL divergence andintrinsic importance coming from the word probabilities in the inputarticle.
+3.3 Query-focused Summarization
+In query-focused summarization, the importance of each sentence will
+be determined by a combination of two factors: how relevant is that sen-
+tence to the user question and how important is the sentence in the con-textoftheinputinwhichitappears. Therearetwoclassesofapproachesto this problem. The ﬁrst adapts techniques for generic summarizationof news. For example, an approach using topic signature words [15] isextended for query-focused summarization by assuming that the wordsthat should appear in a summary have the following probability: a word
+has probability zero of appearing in a summary for a user deﬁned topic if
+it neither appears in the user query nor is a topic signature word for theinput; the probability of the word to appear in the summary is 0.5 if iteitherappearsintheuserqueryorisatopicsignature, butnotboth; andthe probability of a word to appear in a summary is 1 if it is both in theuser query and in the list of topic signature words for the input. Theseprobabilities are arbitrarily chosen, but in fact work well when used to
+assign weights to sentences equal to the average probability of words in
+the sentence. Graph-based approaches [71] have also been adapted forquery-focused summarization with minor modiﬁcations.
+Otherapproacheshavebeendevelopedthatusenewmethodsforiden-
+tifying relevant and salient sentences. These approaches have usuallyA Survey of Text Summarization Techniques 59
+been developed for speciﬁc types of queries. For example, many people
+have worked on generation of biographical summaries, where the queryis the name of the person for whom a biography should be generated.
+Mostpeopleusesomebalanceoftop-downdrivenapproachesthatsearch
+for patterns of information that might be found in a biography, oftenusing machine learning to identify the patterns, combined with bottom-up approaches that sift through all available material to ﬁnd sentencesthat are biographical in nature [7, 98, 81, 105, 6]. The most recentof these approaches uses language modeling of biographical texts foundon Wikipedia and non-biographical texts in a news corpus to identify
+biographical sentences in input documents.
+Producing snippets for search engines is a particularly useful query
+focused application [92, 95].
+3.4 Email Summarization
+Summarizationmustbesensitivetotheuniquecharacteristicsofemail,
+a distinct linguistic genre that exhibits characteristics of both writtentext and spoken conversation. A thread or a mailbox contains one ormore conversations between two or more participants over time. As
+in summarization of spoken dialog, therefore, summarization needs to
+take the interactive nature of dialog into account; a response is oftenonly meaningful in relation to the utterance it addresses. Unlike spo-ken dialog, however, the summarizer need not concern itself with speechrecognition errors, the impact of pronunciation, or the availability ofspeech features such as prosody. Furthermore, responses and reactionsare not immediate and due to the asynchronous nature of email, they
+may explicitly mark the previous email passages to which they are rele-
+vant.
+In early research on summarization of email threads, [66] used an ex-
+tractive summarizer to generate a summary for the ﬁrst two levels ofthe discussion thread tree, producing relatively short “overview sum-maries.” They extracted a sentence for each of the two levels, usingoverlap with preceding context. Later work on summarization of email
+threads [75] zeroed in on the dialogic nature of email. Their summarizer
+used machine learning and relied on email speciﬁc features in additionto traditional features, including features related to the thread and fea-tures related to email structure such as the number of responders to amessage, similarity of a sentence with the subject, etc. Email conversa-tions are a natural means of getting answers to one’s questions and theasynchronous nature of email makes it possible for one to pursue sev-
+eral questions in parallel. As a consequence, question-answer exchanges60 MINING TEXT DATA
+ﬁgure as one of the dominant uses of email conversations. These obser-
+vations led to research on identiﬁcation of question and answer pairs inemail [84, 64] and the integration of such pairs in extractive summaries
+of email [58].
+Email summarizers have also been developed for a full mailbox or
+archive instead of just a thread. [69] present a system that can be usedfor browsing an email mailbox and that builds upon multi-documentsummarization techniques. They ﬁrst cluster all email in topically re-lated threads. Both an overview and a full-length summary are thengenerated for each cluster.A more recent approach to summarization of
+email within a folder uses a novel graph-based analysis of quotations
+within email [10]. Using this analysis, Carenini et al.’s system computesa graph representing how each individual email directly mentions otheremails, at the granularity of fragments and sentences.
+4. Indicator Representations and Machine
+Learning for Summarization
+Indicator representation approaches do not attempt to interpret or
+represent the topics discussed in the input. Instead they come up with arepresentation of the text that can be used to directly rank sentences byimportance. Graph methods are unique because in their most popular
+formulations they base summarization on a single indicator of impor-
+tance, derived from the centrality of sentences in a graph representationof the input. In contrast other approaches employ a variety of indica-tors and combine them either heuristically or using machine learning todecide which sentences are worthy to be included in the summary.
+4.1 Graph Methods for Sentence Importance
+In the graph models inspired by the PageRank algorithm [25, 61],
+the input is represented as a highly connected graph. Vertices represent
+sentences and edges between sentences are assigned weights equal to the
+similarity between the two sentences. The method most often used tocompute similarity is cosine similarity with TF*IDF weights for words.Sometimes, instead of assigning weights to edges, the connections be-tween vertices can be determined in a binary fashion: the vertices areconnected only if the similarity between the two sentences exceeds a pre-deﬁned threshold. Sentences that are related to many other sentences
+are likely to be central and would have high weight for selection in the
+summary.
+When the weights of the edges are normalized to form a probability
+distribution so that the weight of all outgoing edges from a given vertexA Survey of Text Summarization Techniques 61
+sum up to one, the graph becomes a Markov chain and the edge weights
+correspond to the probability of transitioning from one state to another.Standard algorithms for stochastic processes can be used to compute the
+probability of being in each vertex of the graph at time twhile making
+consecutive transitions from one vertex to next. As more and moretransitions are made, the probability of each vertex converges, giving thestationary distribution of the chain. The stationary distribution givesthe probability of (being at) a given vertex and can be computed usingiterative approximation. Vertices with higher probabilities correspondto more important sentences that should be included in the summary.
+Graph-basedapproacheshavebeenshowntoworkwellforbothsingle-
+document and multi-document summarization [25, 61]. Since the ap-proach does not require language-speciﬁc linguistic processing beyondidentifying sentence and word boundaries, it can also be applied to otherlanguages, for example, Brazilian Portuguese [62]. At the same time, in-corporating syntactic and semantic role information in the building ofthe text graph leads to superior results over plain TF*IDF cosine simi-
+larity [13].
+Using diﬀerent weighting schemes for links between sentences that
+belong to the same article and sentences from diﬀerent articles can helpseparatethenotionsoftopicalitywithinadocumentandrecurrenttopicsacrossdocuments. Thisdistinction can beeasily integratedinthegraph-based models for summarization [96].
+Graph representations for summarization had been explored even be-
+fore the PageRank models became popular. For example, the purpose
+of an older graph-based system for multi-document summarization [55]is to identify salient regions of each story related to a topic given bya user, and compare the stories by summarizing similarities and diﬀer-ences. The vertices in the graph are words,phrasesandnamed entities
+rather than sentences and their initial weight is assigned using TF*IDF.Edges between vertices are deﬁned using synonym and hypernym links
+in WordNet, as well as coreference links. Spreading activation is used to
+assign weights to non-query terms as a function of the weight of theirneighbors in the graph and the type of relation connecting the nodes.
+In order to avoid problems with coherence that may arise with the
+selection of single sentences, the authors of another approach [78] arguethat a summarizer should select full paragraphs to provide adequatecontext. Their algorithm constructs a text graph for a document using
+cosine similarity between each pair of paragraphs in the document. The
+shape of the text graph determines which paragraphs to extract. Intheir experiments, they show that two strategies, selecting paragraphs62 MINING TEXT DATA
+that are well connected to other paragraphs or ﬁrst paragraphs of topical
+text segments within the graph, both produce good summaries.
+Acombinationofthesubsententialgranularityofanalysiswherenodes
+are words and phrases rather than sentences and edges are syntactic
+dependencies has also been explored [44]. Using machine learning tech-niques, the authors attempt to learn what portions of the input graphwould be included in a summary. In their experiments on single doc-ument summarization of news articles, properties of the graph such asincoming and outgoing links, connectivity and PageRank weights areidentiﬁed as the best class of features that can be used for content selec-
+tion. This work provides an excellent example of how machine learning
+can be used to combine a range of indicators of importance rather thancommitting to a single one.
+4.2 Machine Learning for Summarization
+Edmundson’s early work [23] set the direction for later investigation
+of applying machine learning techniques for summarization [43]. Heproposed that rather than relying on a single representation of topicsin the input, many diﬀerent indicators of importance can be combined.
+Then a corpus of inputs and summaries written by people can be used
+to determine the weight of each indicator.
+In supervised methods for summarization, the task of selecting im-
+portant sentences is represented as a binary classiﬁcation problem, par-titioning all sentences in the input into summary and non-summary sen-tences. A corpus with human annotations of sentences that should beincludedinthesummaryisusedtotrainastatisticalclassiﬁerforthedis-
+tinction, with each sentences represented as a list of potential indicators
+of importance. The likelihood of a sentence to belong to the summaryclass, or the conﬁdence of the classiﬁer that the sentence should be inthe summary, is the score of the sentence. The chosen classiﬁer plays therole of a sentence scoring function, taking as an input the intermediaterepresentation of the sentence and outputting the score of the sentence.The most highly scoring sentences are selected to form the summary,
+possibly after skipping some because of high similarity to already cho-
+sen sentences.
+Machine learning approaches to summarization oﬀer great freedom
+because the number of indicators of importance is practically endless[40, 70, 104, 44, 27, 37, 99, 51]. Any of the topic representation ap-proaches discussed above can serve as the basis of indicators. Somecommon features include the position of the sentence in the document
+(ﬁrst sentences of news are almost always informative), position in theA Survey of Text Summarization Techniques 63
+paragraph(ﬁrstandlastsentencesareoftenimportant), sentencelength,
+similarity of the sentence with the document title or headings, weightsof the words in a sentence determined by any topic representation ap-proach, presence of named entities or cue phrases from a predeterminedlist, etc.
+It is hardly an exaggeration to say that every existing machine learn-
+ing method has been applied for summarization. One important diﬀer-
+enceiswhethertheclassiﬁerassumesthatthedecisionaboutinclusioninthe summary is independently done for each sentence. This assumptionisapparentlynotrealistic, andmethodsthatexplicitlyencodedependen-cies between sentences such as Hidden Markov Models and ConditionalRandom Fields outperform other learning methods [14, 30, 83].
+A problem inherent in the supervised learning paradigm is the neces-
+sity of labeled data on which classiﬁers can be trained. Asking annota-
+tors to select summary-worthy sentences is a reasonable solution [93] butit is time consuming and even more importantly, annotator agreement islow and diﬀerent people tend to choose diﬀerent sentences when askedto construct an extractive summary of a text [76]. Partly motivated bythis issue and partly because of their interest in ultimately developingabstractive methods for summarization many researchers have instead
+worked with abstracts written by people (often professional writers).
+Researchers concentrated their eﬀorts on developing methods for auto-matic alignment of the human abstracts and the input [56, 42, 104, 4,17] in order to provide labeled data of summary and non-summary sen-tences for machine learning. Some researchers have also proposed waysto leverage the information from manual evaluation of content selectionin summarization in which multiple sentences can be marked as express-
+ing the same fact that should be in the summary [16, 27]. Alternatively,
+one could compute similarity between sentences in human abstracts andthose in the input in order to ﬁnd very similar sentences, not necessarilydoing full alignment [12].
+Another option for training a classiﬁer is to employ a semi-supervised
+approach. In this paradigm, a small number of examples of summaryand non-summary sentences are annotated by people. Then two classi-
+ﬁers are trained on that data, using diﬀerent sets of features which are
+independent given the class [100] or two diﬀerent classiﬁcation methods[99]. After that one of the classiﬁers is run on unannotated data, and itsmost conﬁdent predictions are added to the annotated examples to trainthe other classiﬁer, repeating the process until some predeﬁned haltingcondition is met.
+Several modiﬁcations to standard machine learning approaches are
+appropriate for summarization. In eﬀect formulating summarization as64 MINING TEXT DATA
+a binary classiﬁcation problem, which scores individual sentences, is not
+equivalent to ﬁnding the best summary, which consists of several sen-tences. This is exactly the issue of selecting a summary that we discuss
+in the next section. In training a supervised model, the parameters may
+be optimized to lead to a summary that has the best score against ahuman model [1, 49].
+For generic multi-document summarization of news, supervised meth-
+ods have not been shown to outperform competitive unsupervised meth-ods based on a single feature such as the presence of topic words andgraph methods. Machine learning approaches have proved to be much
+more successful in single document or domain or genre speciﬁc sum-
+marization, where classiﬁers can be trained to identify speciﬁc types ofinformation such as sentences describing literature background in sci-entiﬁc article summarization [90], utterances expressing agreement ordisagreement in meetings [30], biographical information [105, 6, 80], etc.
+5. Selecting Summary Sentences
+Most summarization approaches choose content sentence by sentence:
+they ﬁrst include the most informative sentence, and then if space con-
+straints permit, the next most informative sentence is included in the
+summary and so on. Some process of checking for similarity between thechosen sentences is also usually employed in order to avoid the inclusionof repetitive sentences.
+5.1 Greedy Approaches: Maximal Marginal
+Relevance
+indexGreedy Approach to Summarization One of the early summa-
+rization approaches for both generic and query focused summarizationthat has been widely adopted is Maximal Marginal Relevance (MMR)
+[9]. In this approach, summaries are created using greedy, sentence-
+by-sentence selection. At each selection step, the greedy algorithm is
+constrained to select the sentence that is maximally relevant to the userquery(orhashighestimportancescorewhenaqueryisnotavailable)andminimally redundant with sentences already included in the summary.MMR measures relevance and novelty separately and then uses a linearcombination of the two to produce a single score for the importance ofa sentence in a given stage of the selection process. To quantify both
+properties of a sentence, Carbonell and Goldstein use cosine similarity.
+For relevance, similarity is measured to the query, while for novelty,similarity is measured against sentences selected so far. The MMR ap-proach was originally proposed for query-focused summarization in theA Survey of Text Summarization Techniques 65
+context of information retrieval, but could easily be adapted for generic
+summarization, for example by using the entire input as a user [33]. Infact any of the previously discussed approaches for sentence scoring can
+be used to calculate the importance of a sentence. Many have adopted
+this seminal approach, mostly in its generic version, sometimes usingdiﬀerent measures of novelty to select new sentences [91, 101, 65].
+This greedy approach of sequential sentence selection might not be
+that eﬀective for optimal content selection of the entire summary. Onetypical problematic scenario for greedy sentence selection (discussed in[57]) is when a very long and highly relevant sentence happens to be
+evaluated as the most informative early on. Such a sentence may contain
+several pieces of relevant information, alongside some not so relevantfacts which could be considered noise. Including such a sentence in thesummary will help maximize content relevance at the time of selection,butatthecostoflimitingtheamountofspaceinthesummaryremainingfor other sentences. In such cases it is often more desirable to includeseveral shorter sentences, which are individually less informative than
+the long one, but which taken together do not express any unnecessary
+information.
+5.2 Global Summary Selection
+Global optimization algorithms can be used to solve the new formu-
+lation of the summarization task, in which the best overall summaryis selected. Given some constraints imposed on the summary, such asmaximizing informativeness, minimizing repetition, and conforming torequired summary length, the task would be to select the best sum-
+mary. Finding an exact solution to this problem is NP-hard [26], but
+approximate solutions can be found using a dynamic programming al-gorithm [57, 103, 102]. Exact solutions can be found quickly via searchtechniques when the sentence scoring function is local, computable onlyfrom the given sentence [1].
+Even in global optimization methods, informativeness is still deﬁned
+and measured using features well-explored in the sentence selection lit-
+erature. These include word frequency and position in the document
+[103], TF*IDF [26], similarity with the input [57], and concept frequency[102, 32]. Global optimization approaches to content selection have beenshown to outperform greedy selection algorithms in several evaluationsusing news data as input, and have proved to be especially eﬀective forextractive summarization of meetings [77, 32].
+In a detailed study of global inference algorithms [57], it has been
+demonstrated that it is possible to ﬁnd an exact solution for the op-66 MINING TEXT DATA
+timization problem for content selection using Integer Linear Program-
+ming. The performance of the approximate algorithm based on dynamicprogramming was lower, but comparable to that of the exact solutions.
+In terms of running time, the greedy algorithm is very eﬃcient, almost
+constant in the size of the input. The approximate algorithm scaleslinearly with the size of the input and is thus indeed practical to use.The running time for the exact algorithm grows steeply with the size ofthe input and is unlikely to be useful in practice [57]. However, when amonotone submodular function is used to evaluate the informativenessof the summary, optimal or near optimal solution can be found quickly
+[48, 47].
+6. Conclusion
+In this chapter we have attempted to give a comprehensive overview
+of the most prominent recent methods for automatic text summariza-tion. We have outlined the connection to early approaches and havecontrasted approaches in terms of how they represent the input, scoresentences and select the summary. We have highlighted the success ofKL divergence as a method for scoring sentences which directly incorpo-
+rates an intuition about the characteristics of a good summary, as well
+as the growing interest in the development of methods that globally op-timize the selection of the summary. We have shown how summarizationstrategies must be adapted to diﬀerent genres, such as web pages andjournal articles, taking into account contextual information that guidessentence selection. These three recent developments in summarizationcomplement traditional topics in the ﬁeld that concern intermediate rep-
+resentations and the application of appropriate machine learning meth-
+ods for summarization.
+References
+[1] A. Aker, T. Cohn, and R. Gaizauskas. Multi-document summa-
+rizationusinga*searchanddiscriminativetraining. In Proceedings
+of the 2010 Conference on Empirical Methods in Natural LanguageProcessing , EMNLP’10, pages 482–491, 2010.
+[2] E. Amitay and C. Paris. Automatically summarizing web sites - is
+there a way around it? In Proceedings of the ACM Conference on
+Information and Knowledge Management , pages 173–179, 2000.
+[3] R. Barzilay and M. Elhadad. Text summarizations with lexical
+chains. In Inderjeet Mani and Mark Maybury, editors, Advances in
+Automatic Text Summarization , pages 111–121. MIT Press, 1999.A Survey of Text Summarization Techniques 67
+[4] R. Barzilay and N. Elhadad. Sentence alignment for monolingual
+comparable corpora. In Proceedings of the Conference on Emp iri-
+cal Methods in Natural Language Processing , pages 25–32, 2003.
+[5] R. Barzilay and L. Lee. Catching the drift: Probabilistic content
+models, with applications to generation and summarization. InHuman Language Technology Conference of the North AmericanChapter of the Association for Computational Linguistics , pages
+113–120, 2004.
+[6] F. Biadsy, J. Hirschberg, and E. Filatova. An unsupervised ap-
+proach to biography production using wikipedia. In Proceedings
+of the Annual Meeting of the Association for Computational Lin-
+guistics, pages 807–815, 2008.
+[7] S. Blair-Goldensohn, K. McKeown, and A. Schlaikjer. Defscriber:
+a hybrid system for deﬁnitional qa. In Proceedings of the Annual
+International ACM SIGIR Conference on Research and Develop-ment in Information Retrieval , pages 462–462, 2003.
+[8] D. Blei, T. Griﬃths, M. Jordan, and J. Tenenbaum. Hierarchi-
+cal topic models and the nested chinese restaurant process. InAdvances in Neural Information Processing Systems , page 2003,
+2004.
+[9] J. Carbonell and J. Goldstein. The use of mmr, diversity-based
+rerunning for reordering documents and producing summaries.InProceedings of the Annual I nternational ACM SIGIR Confer-
+ence on Research and Development in Information Retrieval ,pages
+335–336, 1998.
+[10] G.Carenini,R.Ng,andX.Zhou. Summarizingemailconversations
+with clue words. In Proceedings of the i nternational conference on
+World Wide Web , pages 91–100, 2007.
+[11] A. Celikyilmaz and D. Hakkani-Tur. A hybrid hierarchical model
+for multi-document summarization. In Proceedings of the 48th
+Annual Meeting of the Association for Computational Linguistics ,
+pages 815–824, 2010.
+[12] Y. Chali, S. Hasan, and S. Joty. Do automatic annotation tech-
+niques have any impact on supervised complex question answer-ing? InProceedings of the Joint Conference of the Annual Meeting
+of the ACL and the International Joint Conference on Natural
+Language Processing of the AFNLP , pages 329–332, 2009.
+[13] Y. Chali and S. Joty. Improving the performance of the random
+walk model for answering complex questions. In Proceedings of the68 MINING TEXT DATA
+Annual Meeting of the Association for Computational Linguistics,
+Short Papers , pages 9–12, 2008.
+[14] J. Conroy and D. O’Leary. Text summarization via hidden markov
+models. In Proceedings of the Annual I nternational ACM SI-
+GIR Conference on Research and Development in Information Re-trieval, pages 406–407, 2001.
+[15] J. Conroy, J. Schlesinger, and D. O’Leary. Topic-focused multi-
+document summarization using an approximate oracle score. InProceedings of the I nternational Conference on Computational
+Linguistics and the annual meeting of the Association for Com-
+putational Linguistics , pages 152–159, 2006.
+[16] T.CopeckandS.Szpakowicz. Leveragingpyramids. In Proceedings
+of the Document Understanding Conference , 2005.
+[17] H. Daum´ e III and D. Marcu. A phrase-based HMM approach to
+document/abstract alignment. In Proceedings of the Conference
+on Empirical Methods in Natural Language Processing , pages 119–
+126, 2004.
+[18] H. Daum´ e III and D. Marcu. Bayesian query-focused summariza-
+tion. In Proceedings of the I nternational Conference on Compu-
+tational Linguistics and the annual meeting of the Association forComputational Linguistics , pages 305–312, 2006.
+[19] S. Deerwester, S. Dumais, G. Furnas, T. Landauer, and R. Harsh-
+man. Indexing by latent semantic analysis. Journal of the Ameri-
+can Society for Information Science , pages 391–407, 1990.
+[20] J.-Y. Delort, B. Bouchon-Meunier, and M. Rifqi. Enhanced web
+document summarization using hyperlinks. In Proceedings of the
+ACM conference on Hypertext and hypermedia , pages 208–215,
+2003.
+[21] R. Donaway, K. Drummey, and L. Mather. A comparison of rank-
+ings produced by summarization evaluation measures. In Proceed-
+ings of the 2000 NAACL-ANLPWorkshop on Automatic summa-rization - Volume 4 , pages 69–78, 2000.
+[22] T. Dunning. Accurate methods for the statistics of surprise and
+coincidence. Computational Linguistics , 19(1):61–74, 1994.
+[23] H. Edmundson. New methods in automatic extracting. Journal of
+the ACM , 16(2):264–285, 1969.
+[24] N. Elhadad, M.-Y. Kan, J. Klavans, and K. McKeown. Customiza-
+tion in a uniﬁed framework for summarizing medical literature.
+Journal of Artiﬁcial Intelligence in Medicine , 33:179–198, 2005.A Survey of Text Summarization Techniques 69
+[25] G. Erkan and D. Radev. Lexrank: Graph-based centrality as
+salience in text summarization. Journal of Artiﬁcial Intelligence
+Research , 2004.
+[26] E. Filatova and V. Hatzivassiloglou. A formal model for informa-
+tion selection in multi-sentence text extraction. In Proceedings of
+the International Conference on Computational Linguistic , pages
+397–403, 2004.
+[27] M. Fuentes, E. Alfonseca, and H. Rodr´ ıguez. Support vector ma-
+chines for query-focused summarization trained and evaluated onpyramid data. In Proceedings of the Annual Meeting of the Asso-
+ciation for Computational Linguistics, Companion Volume: Pro-
+ceedings of the Demo and Poster Se ssions, pages 57–60, 2007.
+[28] P. Fung and G. Ngai. One story, one ﬂow: Hidden markov story
+models for multilingual multidocument summarization. ACM
+Transactions on Speech and Language Processing , 3(2):1–16, 2006.
+[29] S. Furui, M. Hirohata, Y. Shinnaka, and K. Iwano. Sentence
+extraction-based automatic speech summarization and evalua-tion techniques. In Proceedings of the Symposium on Large-scale
+Knowledge Resources , pages 33–38, 2005.
+[30] M. Galley. A skip-chain conditional random ﬁeld for ranking meet-
+ing utterances by importance. In Proceedings of the Conference
+on Empirical Methods in Natural Language Processing , pages 364–
+372, 2006.
+[31] M. Galley and K. McKeown. Improving word sense disambigua-
+tion in lexical chaining. In Proceedings of the i nternational joint
+conference on Artiﬁcial intelligence , pages 1486–1488, 2003.
+[32] D. Gillick, K. Riedhammer, B. Favre, and D. Hakkani-Tur. A
+global optimization framework for meeting summarization. In
+Proceedings of the IEEE I nternational Conference on Acoustics,
+Speech and Si gnal Processing , pages 4769–4772, 2009.
+[33] Y. Gong and X. Liu. Generic text summarization using relevance
+measureandlatentsemanticanalysis. In Proceedings of the Annual
+International ACM SIGIR Conference on Research and Develop-ment in Information Retrieval , pages 19–25, 2001.
+[34] S.Gupta,A.Nenkova,andD.Jurafsky. Measuringimportanceand
+query relevance in topic-focused multi-document summarization.InProceedings of the Annual Meeting of the Association for Com-
+putational Linguistics, Demo and Poster Sessions , pages 193–196,
+2007.70 MINING TEXT DATA
+[35] B. Hachey, G. Murray, and D. Reitter. Dimensionality reduction
+aids term co-occurrence based multi-document summarization. InSumQA ’06: Pr oceedings of the Workshop on Task-Focused Sum-
+marization and Question Answering , pages 1–7, 2006.
+[36] A. Haghighi and L. Vanderwende. Exploring content models for
+multi-document summarization. In Proceedings of Human Lan-
+guage Technologies: The 2009 Annual Conference of the NorthAmerican Chapter of the Association for Computational Linguis-
+tics, pages 362–370, 2009.
+[37] D. Hakkani-Tur and G. Tur. Statistical sentence extraction for
+information distillation. In Proceedings of the IEEE I nternational
+Conference on Acoustics, Speech and Signal Processing , volume 4,
+pages IV–1 –IV–4, 2007.
+[38] S. Harabagiu and F. Lacatusu. Topic themes for multi-document
+summarization. In Proceedings of the 28th annual international
+ACM SIGIR conference on Research and development in informa-tion retrieval , SIGIR’05, pages 202–209, 2005.
+[39] V. Hatzivassiloglou, J. Klavans, M. Holcombe, R. Barzilay, M.
+Kan, and K. McKeown. Simﬁnder: A ﬂexible clustering tool forsummarization. In Proceedings of the NAACL Workshop on Au-
+tomatic Summarization , pages 41–49, 2001.
+[40] E. Hovy and C.-Y. Lin. Automated text summarization in sum-
+marist. In Advances in Automatic Text Summarization , pages 82–
+94, 1999.
+[41] M. Hu, A. Sun, and E.-P. Lim. Comments-oriented blog summa-
+rizationbysentenceextraction. In Proceedings of the ACM Confer-
+ence on Information and Knowledge Management , pages 901–904,
+2007.
+[42] H. Jing. Using hidden markov modeling to decompose human-
+written summaries. Computational linguistics , 28(4):527–543,
+2002.
+[43] J. Kupiec, J. Pedersen, and F. Chen. A trainable document sum-
+marizer. In Proceedings of the Annual I nternational ACM SI-
+GIR Conference on Research and Development in Information Re-trieval, pages 68–73, 1995.
+[44] J. Leskovec, N. Milic-frayling, and M. Grobelnik. Impact of lin-
+guistic analysis on the semantic graph coverage and learning ofdocument extracts. In Proceedings of the national conference on
+Artiﬁcial intelligence , pages 1069–1074, 2005.A Survey of Text Summarization Techniques 71
+[45] C.-Y. Lin, G. Cao, J. Gao, and J.-Y. Nie. An information-theoretic
+approach to automatic evaluation of summaries. In Proceedings of
+the main conference on Human Language Technology Conferenceof the North American Chapter of the Association of Computa-tional Linguistics (HLT-NAACL’06) , pages 463–470, 2006.
+[46] C.-Y. Lin and E. Hovy. The automated acquisition of topic signa-
+tures for text summarization. In Proceedings of the I nternational
+Conference on Computational Linguistic , pages 495–501, 2000.
+[47] H. Lin and J. Bilmes. Multi-document summarization via bud-
+geted maximization of submodular functions. In North American
+chapter of the Association for Computational Linguistics/Human
+Language Technology Conference (NAACL/HLT-2010) , 2010.
+[48] H. Lin, J. Bilmes, and S. Xie. Graph-based submodular selection
+for extractive summarization. In Proc. IEEE Automatic Speech
+Recognition and Understanding (ASRU) , 2009.
+[49] S.-H.Lin,Y.-M.Chang,J.-W.Liu,andB.Chen. Leveragingevalu-
+ation metric-related training criteria for speech summarization. In
+Proceedings of the IEEE I nternational Conference on Acoustics,
+Speech, and Signal Processing, ICASSP 2010 , pages 5314–5317,
+2010.
+[50] S.-H. Lin and B. Chen. A risk minimization framework for ex-
+tractive speech summarization. In Proceedings of the 48th Annual
+Meeting of the Association for Computational Linguistics , pages
+79–87, 2010.
+[51] A. Louis, A. Joshi, and A. Nenkova. Discourse indicators for con-
+tent selection in summarization. In Proceedings of the Annual
+Meeting of the Special Interest Group on Discourse and Dialogue ,
+pages 147–156, 2010.
+[52] A. Louis and A. Nenkova. Automatically evaluating content selec-
+tion in summarization without human models. In Proceedings of
+the 2009 Conference on Empirical Methods in Natural LanguageProcessing (EMNLP) , pages 306–314, 2009.
+[53] H. P. Luhn. The automatic creation of literature abstracts. IBM
+Journal of Research and Development , 2(2):159–165, 1958.
+[54] M. Mana-L´ opez, M. De Buenaga, and J. G´ omez-Hidalgo. Mul-
+tidocument summarization: An added value to clustering in in-teractive retrieval. ACM Transactions on Informations Systems ,
+22(2):215–241, 2004.72 MINING TEXT DATA
+[55] I. Mani and E. Bloedorn. Summarizing similarities and diﬀerences
+among related documents. Information Retrieval , 1(1-2):35–67,
+April 1999.
+[56] D. Marcu. The automatic construction of large-scale corpora for
+summarization research. In Proceedings of the Annual I nterna-
+tional ACM SIGIR Conference on Research and Development inInformation Retrieval , pages 137–144, 1999.
+[57] R. McDonald. A study of global inference algorithms in multi-
+document summarization. In Proceedings of the European Confer-
+ence on IR Research , pages 557–564, 2007.
+[58] K.McKeown,L.Shrestha,andO.Rambow. Usingquestion-answer
+pairs in extractive summarization of email conversations. In Pro-
+ceedings of the International Conference on Computational Lin-guistics and Intelligent Text Processing , pages 542–550, 2007.
+[59] K. McKeown, J. Klavans, V. Hatzivassiloglou, R. Barzilay, and E.
+Eskin. Towards multidocument summarization by reformulation:progress and prospects. In Proceedings of the national conference
+on Artiﬁcial intelligence , pages 453–460, 1999.
+[60] Q. Mei and C. Zhai. Generating impact-based summaries for sci-
+entiﬁc literature. In Proceedings of the Annual Meeting of the
+Association for Computational Linguistics , pages 816–824, 2008.
+[61] R. Mihalcea and P. Tarau. Textrank: Bringing order into texts.
+InProceedings of the Conference on Emp irical Methods in Natural
+Language Processing , pages 404–411, 2004.
+[62] R. Mihalcea and P. Tarau. An algorithm for language independent
+singleandmultipledocumentsummarization. In Proceedings of the
+International Joint Conference on Natural Language Processing ,
+pages 19–24, 2005.
+[63] G.A. Miller, R. Beckwith, C. Fellbaum, D. Gross, and K. J. Miller.
+Introductiontowordnet:Anon-linelexicaldatabase. International
+Journal of Lexicography (special issue) , 3(4):235–312, 1990.
+[64] H. Murakoshi, A. Shimazu, and K. Ochimizu. Construction of de-
+liberation structure in email conversation. In Proceedings of the
+Conference of the Paciﬁc Association for Computational Linguis-tics, pages 570–577, 2004.
+[65] G. Murray, S. Renals, and J. Carletta. Extractive summarization
+ofmeetingrecordings. In Proc. 9th European Conference on Speech
+Communication and Technology , pages 593–596, 2005.A Survey of Text Summarization Techniques 73
+[66] A. Nenkova and A. Bagga. Facilitating email thread access by
+extractive summary generation. In Proceedings of the Recent Ad-
+vances in Natural Language Processing Conference , 2003.
+[67] A. Nenkova and K. McKeown. Automatic Summarization. In
+Foundations and Trends in Information Retrieval 5(2–3), pages
+103–233, 2011.
+[68] A. Nenkova, L. Vanderwende, and K. McKeown. A compositional
+context sensitive multi-document summarizer: exploring the fac-tors that inﬂuence summarization. In Proceedings of the Annual
+International ACM SIGIR Conference on Research and Develop-
+ment in Information Retrieval , pages 573–580, 2006.
+[69] P. Newman and J. Blitzer. Summarizing archived discussions: a
+beginning. In Proceedings of the international conference on Intel-
+ligent user interfaces , pages 273–276, 2003.
+[70] M. Osborne. Using maximum entropy for sentence extraction. In
+Proceedings of the ACL Workshop on Automatic S ummarization ,
+pages 1–8, 2002.
+[71] J. Otterbacher, G. Erkan, and D. Radev. Biased lexrank: Passage
+retrieval using random walks with question-based priors. Informa-
+tion Processing and Management , 45:42–54, January 2009.
+[72] M. Ozsoy, I. Cicekli, and F. Alpaslan. Text summarization of
+turkish texts using latent semantic analysis. In Proceedings of
+the 23rd International Conference on Computational Linguistics(COLING 2010) , pages 869–876, August 2010.
+[73] D. Radev, H. Jing, M. Sty, and D. Tam. Centroid-based sum-
+marization of multiple documents. Information Processing and
+Management , 40:919–938, 2004.
+[74] D. Radev, S. Teufel, H. Saggion, W. Lam, J. Blitzer, H. Qi, A.
+C¸elebi, D. Liu, and E. Drabek. Evaluation challenges in large-
+scale document summarization. In Proceedings of the 41st Annual
+Meeting on Association for Computational Linguistics (ACL’03) ,
+pages 375–382, 2003.
+[75] O. Rambow, L. Shrestha, J. Chen, and C. Lauridsen. Summariz-
+ing email threads. In Human Language Technology Conference of
+the North American Chapter of the Association for ComputationalLinguistics , 2004.
+[76] G. Rath, A. Resnick, and R. Savage. The formation of abstracts
+by the selection of sentences: Part 1: sentence selection by man
+and machines. American Documentation , 2(12):139–208, 1961.74 MINING TEXT DATA
+[77] K.Riedhammer,D.Gillick,B.Favre,andD.Hakkani-Tur. Packing
+the meeting summarization knapsack. In Proceedings of the An-
+nual Conference of the International Speech Communication As-sociation , pages 2434–2437, 2008.
+[78] G. Salton, A. Singhal, M. Mitra, and C. Buckley. Automatic text
+structuring and summarization. Information Processing and Man-
+agement, 33(2):193–208, 1997.
+[79] G. Salton and C. Buckley. Term-weighting approaches in auto-
+matic text retrieval. Information Processing and Management ,
+24:513–523, 1988.
+[80] C. Sauper and R. Barzilay. Automatically generating wikipedia
+articles: A structure-aware approach. In Proceedings of the Joint
+Conference of the 47th Annual Meeting of the ACL and the 4th
+International Joint Conference on Natural Language Processing ofthe AFNLP , pages 208–216, 2009.
+[81] B. Schiﬀman, I. Mani, and K. Concepcion. Producing biographical
+summaries: Combining linguistic knowledge with corpus statistics.InProceedings of the Annual Meeting of the Association for Com-
+putational Linguistics , pages 458–465, 2001.
+[82] B. Schiﬀman, A. Nenkova, and K. McKeown. Experiments in mul-
+tidocument summarization. In Proceedings of the international
+conference on Human Language Technology Research , pages 52–
+58, 2002.
+[83] D. Shen, J.-T. Sun, H. Li, Q. Yang, and Z. Chen. Document
+summarization using conditional random ﬁelds. In Proceedings
+of the 20th international joint conference on Artiﬁcal intelligence ,
+pages 2862–2867, 2007.
+[84] L. Shrestha and K. McKeown. Detection of question-answer pairs
+in email conversations. In Proceedings of the International Con-
+ference on Computational Linguistic , 2004.
+[85] A. Siddharthan, A. Nenkova, and K. McKeown. Syntactic simpliﬁ-
+cation for improving content selection in multi-document summa-rization. In Proceedings of the I nternational Conference on Com-
+putational Linguistic , pages 896–902, 2004.
+[86] H. Silber and K. McCoy. Eﬃciently computed lexical chains as
+an intermediate representation for automatic text summarization.Computational Linguistics , 28(4):487–496, 2002.
+[87] K.SparckJones. Astatisticalinterpretationoftermspeciﬁcityand
+its application in retrieval. Journal of Documentation , 28:11–21,
+1972.A Survey of Text Summarization Techniques 75
+[88] J. Steinberger, M. Poesio, M. A. Kabadjov, and K. Jeek. Two uses
+of anaphora resolution in summarization. Information Processing
+and Management , 43(6):1663–1680, 2007.
+[89] W. Yih, J. Goodman, L. Vanderwende, and H. Suzuki. Multi-
+document summarization by maximizing informative content-words. In Proceedings of the i nternational joint conference on
+Artiﬁcial intelligence , pages 1776–1782, 2007.
+[90] S. Teufel and M. Moens. Summarizing scientiﬁc articles: exper-
+iments with relevance and rhetorical status. Computational Lin-
+guisics., 28(4):409–445, 2002.
+[91] D. Radev, T. Allison, S. Blair-goldensohn, J. Blitzer, A. Celebi, S.
+Dimitrov, E. Drabek, A. Hakim, W. Lam, D. Liu, J. Otterbacher,H. Qi, H. Saggion, S. Teufel, A. Winkel, and Z. Zhang. Mead- a platform for multidocument multilingual text summarization.
+InProceedings of the International Conference on Language Re-
+sources and Evaluation , 2004.
+[92] A. Turpin, Y. Tsegay, D. Hawking, and H. Williams. Fast genera-
+tion of result snippets in web search. In Proceedings of the Annual
+International ACM SIGIR Conference on Research and Develop-ment in Information Retrieval , pages 127–134, 2007.
+[93] J. Ulrich, G. Murray, and G. Carenini. A publicly available anno-
+tated corpus for supervised email summarization. In Proceedings
+of the AAAI EMAIL Workshop , pages 77–87, 2008.
+[94] L. Vanderwende, H. Suzuki, C. Brockett, and A. Nenkova. Be-
+yond sumbasic: Task-focused summarization with sentence simpli-ﬁcation and lexical expansion. Information Processing and Man-
+agment, 43:1606–1618, 2007.
+[95] R. Varadarajan and V. Hristidis. A system for query-speciﬁc doc-
+ument summarization. In Proceedings of the ACM Conference on
+Information and Knowledge Management , 2006.
+[96] X. Wan and J. Yang. Improved aﬃnity graph based multi-
+document summarization. In Human Language Technology Con-
+ference of the North American Chapter of the Association for Com-putational Linguistics, Companion Volume: Short Papers , pages
+181–184, 2006.
+[97] D. Wang, S. Zhu, T. Li, and Y. Gong. Multi-document summa-
+rization using sentence-based topic models. In Proceedings of the
+ACL-IJCNLP 2009 Conference Short Papers ,pages297–300,2009.76 MINING TEXT DATA
+[98] R. Weischedel, J. Xu, and A. Licuanan. A hybrid approach to
+answering biographical questions. In Mark Maybury, editor, New
+Directions In Question Answering , pages 59–70, 2004.
+[99] K. Wong, M. Wu, and W. Li. Extractive summarization using
+supervised and semi-supervised learning. In Proceedings of the
+22nd International Conference on Computational Linguistics (Col-ing 2008) , pages 985–992, 2008.
+[100] S. Xie, H. Lin, and Y. Liu. Semi-supervised extractive speech
+summarization via co-training algorithm. In INTERSPEECH, the
+11th Annual Conference of the International Speech Communica-tion Association , pages 2522–2525, 2010.
+[101] S. Xie and Y. Liu. Using corpus and knowledge-based similar-
+ity measure in maximum marginal relevance for meeting summa-rization. In Proceedings of the IEEE I nternational Conference on
+Acoustics, Speech and Signal Processing , pages 4985–4988, 2008.
+[102] S. Ye, T.-S. Chua, M.-Y. Kan, and L. Qiu. Document concept
+lattice for text understanding and summarization. Information
+Processing and Management , 43(6):1643 – 1662, 2007.
+[103] W. Yih, J. Goodman, L. Vanderwende, and H. Suzuki. Multi-
+document summarization by maximizing informative content-words. In Proceedings of the i nternational joint conference on
+Artiﬁcial intelligence , pages 1776–1782, 2007.
+[104] L. Zhou and E. Hovy. A web-trained extraction summarization
+system. In Proceedings of the Conference of the North American
+Chapter of the Association for Computational Linguistics on Hu-
+man Language Technology , pages 205–211, 2003.
+[105] L. Zhou, M. Ticrea, and E. Hovy. Multi-document biography sum-
+marization. In Proceedings of the Conference on Emp irical Methods
+in Natural Language Processing , pages 434–441, 2004.Chapter 4
+A SURVEY OF TEXT CLUSTERING
+ALGORITHMS
+Charu C. Aggarwal
+IBM T. J. Watson Research Center
+Yorktown Heights, NY
+charu@us.ibm.com
+ChengXiang Zhai
+University of Illinois at Urbana-Champaign
+Urbana, IL
+czhai@cs.uiuc.edu
+Abstract Clustering is a widely studied data mining problem in the text domains.
+The problem ﬁnds numerous applications in customer segmentation,
+classiﬁcation, collaborative ﬁltering, visualization, document organiza-
+tion, and indexing. In this chapter, we will provide a detailed survey of
+the problem of text clustering. We will study the key challenges of the
+clustering problem, as it applies to the text domain. We will discuss the
+key methods used for text clustering, and their relative advantages. We
+will also discuss a number of recent advances in the area in the context
+of social network and linked data.
+Keywords: Text Clustering
+1. Introduction
+The problem of clustering has been studied widely in the database
+and statistics literature in the context of a wide variety of data mining
+tasks [50, 54]. The clustering problem is deﬁned to be that of ﬁnding
+groups of similar objects in the data. The similarity between the ob-
+© Springer Science+Business Media, LLC 2012 77  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_4,

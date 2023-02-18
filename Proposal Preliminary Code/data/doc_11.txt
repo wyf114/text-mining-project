@@ -1,0 +1,553 @@
+Chapter 11
+TEXT MINING IN MULTIMEDIA
+Zheng-Jun Zha
+School of Computing, National University of Singapore
+zhazj@comp.nus.edu.sg
+Meng Wang
+School of Computing, National University of Singapore
+wangm@comp.nus.edu.sg
+Jialie Shen
+Singapore Management University
+jlshen@smu.edu.sg
+Tat-Seng Chua
+School of Computing, National University of Singapore
+chuats@comp.nus.edu.sg
+Abstract A large amount of multimedia data (e.g., image and video) is now avail-
+able on the Web. A multimedia entity does not appear in isolation,
+but is accompanied by various forms of metadata, such as surround-
+ing text, user tags, ratings, and comments etc. Mining these textual
+metadata has been found to be eﬀective in facilitating multimedia in-
+formation processing and management. A wealth of research eﬀorts has
+been dedicated to text mining in multimedia. This chapter provides a
+comprehensive survey of recent research eﬀorts. Speciﬁcally, the survey
+focuses on four aspects: (a) surrounding text mining; (b) tag mining;
+(c) joint text and visual content mining; and (d) cross text and visual
+content mining. Furthermore, open research issues are identiﬁed based
+on the current research eﬀorts.
+Keywords: Text Mining, Multimedia, Surrounding Text, Tagging, Social Network
+© Springer Science+Business Media, LLC 2012 361  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_11,362 MINING TEXT DATA
+фŝŵŐƐƌĐсΗŚƚƚƉ͗ͬͬ
+ǁǁǁ͘ĐĂƌƐŵĂŐǌ͘ĐŽŵͬǁƉͲĐŽŶƚĞŶƚͬƵƉůŽĂĚƐͬϮϬϭϭͬϬϭͬϮϬϭϭͲ>ĂŵďŽƌŐŚŝŶŝͲ'ĂůůĂƌĚŽͲ>WϱϲϬͲϰͲŝĐŽůŽƌĞͲ&ƌŽŶƚͲ^ŝĚĞͲsŝĞǁͲϱϳϬǆϰϬϱ͘ũƉŐΗĂůƚсΗϮϬϭϭ>ĂŵďŽƌŐŚŝŶŝ'ĂůůĂƌĚŽ>WϱϲϬͲϰŝĐŽůŽƌĞΗĐůĂƐƐсΗĂůŝŐŶƌŝŐŚƚΗхWĂŐĞdŝƚůĞ
+^ƵƌƌŽƵŶĚŝŶŐdĞǆƚ
+^ƵƌƌŽƵŶĚŝŶŐdĞǆƚůƚƚĞǆƚ
+Figure 11.1. Illustration of textual metadata of an embedded image in a Web page.
+1. Introduction
+Lower cost hardware and growing communications infrastructure (e.g.
+Web, cell Phones, etc.) have led to an explosion in the availability of
+ubiquitous devices to produce, store, view and exchange multimedia en-tities (images, videos). A large amount of image and video data are nowavailable. Take one of the most popular photo sharing services Flickr
+1
+as example, it has accumulated several billions of images. Another ex-ample is Youtube
+2, which is a video sharing Web site that is hosting
+billions of videos. As the largest photo sharing site, Facebook3currently
+stores hundreds of hundreds of billions of photos.
+On the other hand, a multimedia entity does not appear in isola-
+tion but is accompanied by various forms of textual metadata. One ofthe most typical examples is the surrounding text appearing around theembedded images or videos in the Web page (See Figure 11.1). Withrecent proliferation of social media sharing services, the newly emerg-
+ing textual meatadata include user tags, ratings, comments, as well as
+1http://www.ﬂickr.com/
+2http://www.youtube.com/
+3http://www.facebook.com/Text Mining in Multimedia 363
+hƉůŽĂĚĞƌ
+'ƌŽƵƉƐ
+dĂŐƐ
+^ƵƌƌŽƵŶĚŝŶŐdĞǆƚ
+ŽŵŵĞŶƚƐ
+Figure 11.2. Illustration of textual metadata of an image on a photo sharing Web
+site.
+the information about the uploaders and their social network (See Fig-
+ure 11.2). These metadata, in particular the tags, have been found to be
+an important resource for facilitating multimedia information process-ing and management. Given the wealth of research eﬀorts that has beendone, there have been various studies in multimedia community on themining of textual metadata. In this chapter, a multimedia entity refersto an image or a video. For the sake of simplicity and without lost of
+generality, we use the term image to refer to multimedia entity for the
+rest of this chapter.
+In this chapter, we ﬁrst review the related works on mining surround-
+ing text for image retrieval as well as the recent research eﬀorts thatexplore surrounding text for image annotation and clustering in Sec-tion 2. In Section 3, we provide a literature review on tag mining andshow that the main focus of existing tag mining works includes three as-
+pects: tag ranking, tag reﬁnement, and tag information enrichment. In364 MINING TEXT DATA
+
+Figure 11.3. A taxonomy consisting of the research works reviewed in this chapter.
+Section 4, we survey the recent progress in integrating textual metadata
+and visual content. We categorize the exiting works into two categories:the fusion of text and visual content as well as visual re-ranking. InSection 5, we provide a detailed discussion on recent research on crosstext and visual content mining. We organize all the works reviewed inthis chapter into a taxonomy as shown in Figure 11.3. The taxonomy
+provides an overview of state-of-the-art research and helps us to identify
+open research issues to be presented in Section 6.
+2. Surrounding Text Mining
+In order to enhance the content quality and improve user experience,
+many hosting Web pages include diﬀerent kinds of multimedia entities,like image or video. These multimedia entities are frequently embeddedas part of the text descriptions which we called the surrounding text.While there is no standard deﬁnition, surrounding text generally refers
+to the text consisting of words, phrases or sentences that surrounds or
+close to the embedded images, such as those that appear at the top,below, left or right region of images or connected via Web links. Theeﬀective use of surrounding texts is becoming increasingly importantfor multimedia retrieval. However, developing eﬀective extraction algo-rithm for the comprehensive analysis of surrounding text has been a verychallenging task. In many cases, automatically determining which page
+region is more relevant to the image than the others could be diﬃcult.
+Moreover, how large the region nearby should be considered is still anopen question. Further, the quality of surrounding texts could be lowand inconsistent. These problems make it very hard to directly applythe surrounding text information to facilitate accurate retrieval. Thus,reﬁnement process or combining it with other cues is essential.
+The earliest eﬀorts on modeling and analyzing surrounding texts to
+facilitate multimedia retrieval occurred in the 1990s. AltaVista’s A/VText Mining in Multimedia 365
+Photo Finder applies textual and visual cues to index image collec-
+tions [1]. The indexing terms are precomputed based on the HTMLdocuments containing the Web images. With a similar approach, the
+WebSeer system harvests the information for indexing Web images from
+two diﬀerent sources: the related HTML text and the embedded im-age itself [12]. It extracts keywords from page title, ﬁle name, caption,alternative text, image hyperlinks, and body text titles. A weight iscalculated for each keyword based on its location inside a page. InPICITION system [40], an interesting approach is developed to exploitboth textual and visual information to index a pictorial database. Image
+captions are used as an important cue to identify faces appearing in a
+related newspaper photograph. The empirical study based on a data setcontaining 50 pictures and captions obtained from the Buffalo News
+and theNew York Times is used to demonstrate the eﬀectiveness of the
+PICITION system. While the system can be successfully adopted for ac-cessing photographs in newspaper or magazine, it is not straightforwardto apply it for Web image retrieval.
+In [39], Smith and Chang proposed the WebSeek framework designed
+to search images from the Web. The key idea is to analyze and classifythe Web multimedia objects into a predeﬁned taxonomy of categories.Thus, an initial search can be performed to explore a catalog associatedwith the query terms. The image attribute (e.g., color histogram forimages) is then computed for similarity matching within the category.
+Besides its eﬃcacy in image retrieval, surrounding text has been ex-
+plored for image annotation recently. Feng et al. presented a boot-
+strapping framework to label and search Web images based on a setof predeﬁned semantic concepts [9]. To achieve better annotation ef-fectiveness, a co-training scheme is designed to explore the associationbetween the text features computed using corresponding HTML docu-ments and visual features extracted from image content. Observing thatthe links between the visual content and the surrounding texts can be
+modeled via Web page analysis, a novel method called Iterative Simi-
+larity Propagation is proposed to reﬁne the closeness between the Webimages and their annotations [50]. On the other hand, it is not hard toﬁnd that images from the same cluster may share many similar char-acteristics or patterns with respect to relevance to information needs.Consequently, accurate clustering is a very crucial technique to facili-tate Web multimedia search and many algorithms have recently been
+proposed based on the analysis of surrounding texts and low level visual
+features [3][13][34]. For example, Cai et al. [3] proposed a hierarchicalclustering method that exploits visual, textual, and link analysis. Awebpage is partitioned into blocks, and the textual and link information366 MINING TEXT DATA
+of an image are extracted from the block containing that image. By us-
+ing block-level link analysis techniques, an image graph is constructed.They then applied spectral techniques to ﬁnd a Euclidean embedding of
+the images. As a result, each image has three types of representations:
+visual feature, textual feature, and graph-based representation. Spectralclustering techniques are employed to cluster search results into variousclusters. Gao et al. [13] and Rege et al. [34] used a tripartite graph tomodel the relations among visual features, images and their surroundingtext. The clustering is performed by partitioning this tripartite graph.
+3. Tag Mining
+In newly emerging social media sharing services, such as the Flickr
+and Youtube, users are encouraged to share multimedia data on the
+Web and annotate content with tags. Here a tag is referred to as adescriptive keyword that describes the multimedia content at semanticor syntactic level. These tags have been found to be an important re-source for multimedia management and have triggered many innovativeresearch topics [61][51][38][36]. For example, with accurate tags, the re-trieval of multimedia content can be easily accomplished. The tags can
+be used to index multimedia data and support eﬃcient tag-based search.
+Nowadays, many online media repositories, such as Flickr and Youtube,support tag-based multimedia search. However, since the tags are pro-vided by grassroots Internet users, they are often noisy and incompleteand there is still a gap between these tags and the actual content ofthe images[20][26][48]. This deﬁciency has limited the eﬀectiveness oftag-based applications.
+Recently, a wealth of research has been proposed to enhance the qual-
+ity of human-provided tags. The existing works mainly focus on the fol-lowingthreeaspects: (a)tagranking, whichaimstodiﬀerentiatethetagsassociated with the images with various levels of relevance; (b) tag re-ﬁnement with the purpose to reﬁne the unreliable human-provided tags;and (c) tag information enrichment, which aims to supplement tags withadditional information [26]. In this section, we present a comprehensive
+review of existing tag ranking, tag reﬁnement, and tag information en-
+richment methods.
+3.1 Tag Ranking
+As shown in [25], the relevance level of the tags cannot be distin-
+guished from the tag list of an image. The lack of relevance informationin the tag list has limited the application of tags. Recently, tag rankinghas been studied to infer the relevance levels of tags associated with anText Mining in Multimedia 367
+
+
+
+
+
+
+
+Figure 11.4. Examples of of tag reﬁnement. The left side of the ﬁgure shows the
+original tags while the right side shows the reﬁned tags. The technique is able toremoveirrelevanttagsandaddrelevanttagstoobtainbetterdescriptionofmultimediacontents.
+image. As a pioneering work, Liu et al. [25] proposed to estimate tag
+relevance scores using kernel density estimation, and then employ ran-dom walk to boost this primary estimation. Li et al. [22] proposed adata driven method for tag ranking. They learned the relevance scores
+of tags by a neighborhood voting approach. Given an image and one
+of its associated tag, the relevance score is learned by accumulating thevotes from the visual neighbors of the image. They then extended thework to multiple visual spaces [23]. They learned the relevance scoresof tags and ranked them by neighborhood voting in diﬀerent featurespaces, and the results are aggregated with a score fusion or rank fusionmethod. Diﬀerent aggregation methods have been investigated, such as
+the average score fusion, Borda count and RankBoost. The results show
+that a simple average fusion of scores is already able to perform closedto supervised fusion methods like RankBoost.
+3.2 Tag Reﬁnement
+User-provided tags are often noisy and incomplete. The study in [20]
+shows that when a tag appears in a Flickr image, there is only about a50% chance that the tag is really relevant, and the study in [38] showsthat more than half of Flickr images are associated with less than three
+tags. Tagreﬁnementtechnologiesareproposedaimingatobtainingmore368 MINING TEXT DATA
+accurate and complete tags for multimedia description, as shown in Fig-
+ure 11.4.
+A lot of tag reﬁnement approaches have been developed based on
+various statistical learning techniques. Most of them are based on the
+following three assumptions.
+The reﬁned tags should not change too much from those providedby the users. This assumption is usually used to regularize the tagreﬁnement.
+The tags of visually similar images should be closely related. Thisis a natural assumption that most automatic tagging methods arealso built upon.
+Semantically close or correlative tags should appear with high cor-relation. For example, when a tag “sea” exists for an image, thetags “beach” and “water” should be assigned with higher conﬁ-dence while the tag “street” should have low conﬁdence.
+For example, Chen et al. [6] ﬁrst trained a SVM classiﬁer for each tag
+withthelooselylabeledpositiveandnegativesamples. Theclassiﬁersareused to estimate the initial relevance scores of tags. They then reﬁned
+the scores with a graph-based method that simultaneously considers the
+similarity between images and semantic correlation among tags. Xuet al. [52] proposed a tag reﬁnement algorithm from topic modelingpoint of view. A new graphical model named regularized latent Dirichletallocation (rLDA) is presented to jointly model the tag similarity andtag relevance. Zhu et al. [64] proposed a matrix decomposition method.They used a matrix to represent the image-tag relationship: the ( i,j)-
+th element is 1 if the i-th image is associated with the j-th tag, and 0
+otherwise. The matrix is then decomposed into a reﬁned matrix plus anerrormatrix. Theyenforcedtheerrormatrixtobesparseandthereﬁnedmatrix to follow three principles: (a) let the matrix be low-rank; (b) iftwo images are visually similar, the corresponding rows are with highcorrelation; and (c) if two tags are semantically close, the correspondingvectors are with high correlation. Fan et al. [8] grouped images with
+a target tag into clusters. Each cluster is regarded as a unit. The
+initial relevance scores of the clusters are estimated and then reﬁned bya random walk process. Liu et al. [24] adopted a three-step approach.The ﬁrst step ﬁlters out tags that are intrinsically content-unrelatedbased on the ontology in WordNet. The second step reﬁnes the tagsbased on the consistency of visual similarity and semantic similarity ofimages. The last step performs tag enrichment, which expands the tags
+with their appropriate synonyms and hypericum.Text Mining in Multimedia 369
+DQLPDOFDW WLJHU
+WLJHUWLJHU
+/RFDWLRQ
+&RORU6KDSH7H[WXUH6L]H'RPLQDQFH6DOLHQF\ZĞŐŝŽŶŶĂůǇƐŝƐ
+;ďͿ
+ZDWHUELUGURDG
+ELUG
+URDGZDWHU
+;ĂͿ
+Figure 11.5. (a) An example of tag localization, which ﬁnds the regions that the
+tags describe. (b) An illustration of tag information enrichment. It ﬁrst ﬁnds the
+corresponding region of the target tag and then analyze the properties of the region.
+3.3 Tag Information Enrichment
+In the manual tagging process, generally human labelers will only
+assign appropriate tags to multimedia entities without any additional
+information, such as the image regions depicted by the correspondingtags. But by employing computer vision and machine learning tech-
+nologies, certain information of the tags, such as the descriptive regions
+and saliency, can be automatically obtained. We refer to these as taginformation enrichment.
+Mostexistingworksemploythefollowingtwostepsfortaginformation
+enrichment. First, tags are localized into regions of images or sub-clipsof videos. Second, the characteristics of the regions or sub-clips areanalyzed, and the information about the tags is enriched accordingly.
+Figure 11.5 (a) illustrates the examples of tag localization for image
+and video data. Liu et al. [28] proposed a method to locate image tagsto corresponding regions. They ﬁrst performed over-segmentation todecompose each image into patches and then discovered the relationshipbetween patches and tags via sparse coding. The over-segmented regionsare then merged to accomplish the tag-to-region process. Liu et al.extended the approach based on image search [29]. For a tag of the
+target image, they collected a set of images by using the tag as query370 MINING TEXT DATA
+withanimagesearchengine. Theythenlearnedtherelationshipbetween
+the tag and the patches in this image set. The selected patches areused to reconstruct each candidate region, and the candidate regions are
+ranked based on the reconstruction error. Liu et al. [27] accomplished
+the tag-to-region task by regarding an image as a bag of regions andthen performed tag propagation on a graph, in which vertices are imagesand edges are constructed based on the visual link of regions. Feng etal. [10] proposed a tag saliency learning scheme, which is able to ranktags according to their saliency levels to an image’s content. They ﬁrstlocated tags to images’ regions with a multi-instance learning approach.
+In multi-instance learning, an image is regarded as a bag of multiple
+instances, i.e., regions [58]. They then analyzed the saliency values ofthese regions. It can provide more comprehensive information whenan image is relevant to multiple tags, such as those describing diﬀerentobjects in the image. Yang et al. [55] proposed a method to associatea tag with a set of properties, including location, color, texture, shape,size and dominance. They employed a multi-instance learning method
+to establish the region that each tag is corresponding to, and the region
+is then analyzed to establish the properties, as shown in Figure 11.5 (b).Sun and Bhowmick [41] deﬁned a tag’s visual representativeness basedon a large image set and the subset that is associated with the tag. Theyemployed two distance metrics, cohesion and separation, to estimate thevisual representativeness measure.
+Ulges et al. [43] proposed an approach to localize video-level tags to
+keyframes. Given a tag, it regards whether a keyframe is relevant as alatentrandomvariable. AnEM-styleprocessisthenadoptedtoestimatethe variables. Li et al. [21] employed a multi-instance learning approachto accomplish the video tag localization, in which video and shot areregarded as bag and shot, respectively.
+By supplementing tags with additional information, a lot of tag-based
+applications can be facilitated, such as tag-based image/video retrieval
+and intelligent video browsing etc.
+4. Joint Text and Visual Content Mining
+Beyond mining pure textual metadata, researchers in multimedia
+community have started making progress in integrating text and con-
+tent for multimedia retrieval via joint text and content mining. The in-tegration of text and visual content has been found to be more eﬀectivethan exploiting purely text or visual content separately. The joint textand content mining in multimedia retrieval often comes down to ﬁnding
+eﬀective mechanisms for fusing multi-modality information from textualText Mining in Multimedia 371
+metadata and visual content. Existing research eﬀorts can generally be
+categorized into four paradigms: (a) linear fusion; (b) latent-space-basedfusion; (c) graph-based fusion; and (d) visual re-ranking that exploits
+visual information to reﬁne text-based retrieval results. In this section,
+we ﬁrst brieﬂy review linear, latent space based, and graph based fusionmethods and then provide comprehensive literature review on visual re-ranking technology.
+Linear fusion combines the retrieval results from various modalities
+linearly [18][4][31]. In [18], visual content and text are combined in bothonline learning stage with relevance feedback and oﬄine keyword propa-
+gation. In[31],linear,max,andaveragefusionstrategiesareemployedto
+aggregate the search results from visual and textual modalities. Changet al. [4] adopted a query-class-dependent fusion approach. The criti-cal task in linear fusion is the estimation of fusion weights of diﬀerentmodalities. A certain amount of training data is usually required forestimating these weights. The latent space based fusion assumes thatthere is a latent space shared by diﬀerent modalities and thus unify dif-
+ferent modalities by transferring the features of these modalities into the
+shared latent space [63][62]. For example, Zhao et al. [63] adopted theLatent Semantic Indexing (LSI) method to fuse text and visual content.Zhang et al. [62] proposed a probabilistic context model to explicitlyexploit the synergy between text and visual content. The synergy is rep-resented as a hidden layer between the image and text modalities. Thishidden layer constitutes the semantic concepts to be annotated through
+a probabilistic framework. An Expectation-Maximization (EM) based
+iterative learning procedure is developed to determine the conditionalprobabilities of the visual features and the words given a hidden conceptclass. Latent space based methods usually require a large amount oftraining samples for learning the feature mapping from each modalityinto the uniﬁed latent space. Graph based approach [49] ﬁrst builds therelations between diﬀerent modalities, such as relations between images
+and text using the Web page structure. The relations are then utilized to
+iteratively update the similarity graphs computed from diﬀerent modal-ities. The diﬃculty of creating similarity graphs for billions of imageson the Web makes this approach insuﬃciently scalable.
+4.1 Visual Re-ranking
+Visual re-ranking is emerging as one of the promising technique for
+automated boosting of retrieval precision [42] [30] [55]. The basic func-tionality is to reorder the retrieved multimedia entities to achieve the
+optimal rank list by exploiting visual content in a second step. In par-372 MINING TEXT DATA
+ticular, given a textual query, an initial list of multimedia entities is
+returned using the text-based retrieval scheme. Subsequently, the mostrelevant results are moved to the top of the result list while the less rel-
+evant ones are reordered to the lower ranks. As such, the overall search
+precision at the top ranks can be enhanced dramatically. According tothe statistical analysis model used, the existing re-ranking approachescan roughly be categorized into three categories including the clusteringbased, classiﬁcation based and graph based methods.
+Cluster analysis is very useful to estimate the inter-entity similarity.
+The clustering based re-ranking methods stem from the key observation
+that a lot of visual characteristics can be shared by relevant images or
+video clips. With intelligent clustering algorithms (e.g., mean-shift, K-means, and K-medoids), initial search results from text-based retrievalcan be grouped by visual closeness. One good example of clusteringbased re-ranking algorithms is an Information Bottle based scheme de-veloped by Hsu et al. [16]. Its main objective is to identify optimalclusters of images that can minimize the loss of mutual information.
+The cluster number is manually conﬁgurated to ensure the each clus-
+ter contains the same number of multimedia entities (about 25). Thismethod was evaluated using the TRECVID 2003-2005 data and signif-icant improvements were observed in terms of MAP measures. In [19],a fast and accurate scheme is proposed for grouping Web image searchresults into semantic clusters. For a given query, a few related semanticclusters are identiﬁed in the ﬁrst step. Then, the cluster names relating
+toqueryarederivedandusedastextkeywordsforqueryingimagesearch
+engine. The empirical results from a set of user studies demonstrate animprovement in performance over Google image search results. It is nothard to show that the clustering based re-ranking methods can work wellwhen the initial search results contain many near-duplicate media docu-ments. However, for queries that return highly diverse results or withoutclear visual patterns, the performance of the clustering-based methods
+is not guaranteed. Furthermore, the number of clusters has large impact
+on the ﬁnal eﬀectiveness of the algorithms. However, determining theoptimal cluster number automatically is still an open research problem.
+In the classiﬁcation based methods, visual re-ranking is formulated as
+a binary classiﬁcation problem aiming to identify whether each searchresult is relevant or not. The major process for result list reorderingconsists of three major steps: (a) the selection of pseudo-positive and
+pseudo-negative samples; (b) use the samples obtained in step (a) to
+train a classiﬁcation scheme; and (c) reorder the samples according totheir relevance scores given by the trained classiﬁer. For existing classiﬁ-cationmethods, pseudorelevancefeedback(PRF)isappliedtoselecttheText Mining in Multimedia 373
+training examples. It assumes that: (a) a limited number of top-ranked
+entities in the initial retrieval results are highly relevant to the searchqueries; and (b) automatic local analysis over the entities can be veryhelpful to reﬁne query representation. In [54], the query images or videoclip examples are used as the pseudo-positive samples. The pseudo-negative samples are selected from either the least relevant samples in
+the initial result list or the databases that contain less samples related
+to the query. The second step of the classiﬁcation based methods aim totrain classiﬁers and a wide range of statistical classiﬁers can be adopted.They include the Support Vector Machine (SVM) [54], Boosting [53] andListNet [57]. The main weakness for the classiﬁcation based methods isthat the number and quality of training data required play a very im-portant role in constructing eﬀective classiﬁers. However, in many real
+scenarios, the training examples obtained via PRF are very noisy and
+might not be adequate for training eﬀective classiﬁer. To address thisissue, Fergus et al. [11] used RANSAC to sample a training subset witha high percentage of relevant images. A generative constellation modelis learned for the query category while a background model is learnedfrom the query “things”. Images are re-ranked based on their likeli-hood ratio. Observing that discriminative learning can lead to superior
+results, Schroﬀ et al. [35] ﬁrst learned a query independent text based
+re-ranker. The top ranked results from the text based re-ranking arethen selected as positive training examples. Negative training examplesare picked randomly from the other queries. A binary SVM classiﬁeris then used to re-rank the results on the basis of visual features. Thisclassiﬁer is found to be robust to label noise in the positive training setas long as the non-relevant images are not visually consistent. Better
+training data can be obtained from online knowledge resources if the set
+of queries restricted. For instance, Wang et al. [44] learned a generativetext model from the query’s Wikipedia
+4page and a discriminative im-
+age model from the Caltech [15] and Flickr data sets. Search results arethen re-ranked on the basis of these learned probability models. Someuser interactions are required to disambiguate the query.
+Graphs provide a natural and comprehensive way to explore complex
+relations between data at diﬀerent levels and have been applied to awide range of applications [59][46][47][60]. With the graph based re-ranking methods, the multimedia entities in top ranks and their associa-tions/dependencies can be represented as a collection of nodes (vertices)and edges. The local patterns or salient features discover using graph
+4http://www.wikipedia.org/374 MINING TEXT DATA
+analysis are very helpful to improve eﬀectiveness of rank lists. In [16],
+Hsuetal. modeledthere-rankingprocessasarandomwalkoverthecon-text graph. In order to eﬀectivelyleveragethe retrievedresults fromtextsearch, each sample corresponds to a “dongle” node containing rankingscore based on text. For the framework, edges between “dongle” nodesare weighted with multi-modal similarities. In many cases, the struc-
+ture of large scale graphs can be very complex and this easily makes
+related analysis process very expensive in terms of computational cost.Thus, Jing and Baluja proposed a VisualRank framework to eﬃcientlymodel similarity of Google image search results with graph [17]. Theframework casts the re-ranking problem as random walk on an aﬃnitygraph and reorders images according to the visual similarities. The ﬁ-nal result list is generated via sorting the images based on graph nodes’
+weights. In[42], Tianetal., presentedaBayesianvideosearchre-ranking
+framework formulating the re-ranking process as an energy minimizationproblem. The main design goal is to optimize the consistency of rank-ing scores over visually similar videos and minimize the disagreementbetween the optimal list and the initial list. The method achieves aconsistently better performance over several earlier proposed schemeson the TRECVID 2006 and 2007 data sets. The graph based re-ranking
+algorithms mentioned above generally do not consider any initial super-
+vision information. Thus, the performance is signiﬁcantly dependenton the statistical properties of top ranked search results. Motivated bythis observation, Wang et al, proposed a semi-supervised framework toreﬁne the text based image retrieval results via leveraging the data dis-tribution and the partial supervision information obtained from the topranked images [45]. Indeed, graph analysis has been shown to be a very
+powerful tool for analyzing and identifying salient structure and useful
+patterns inside the visual search results. With recent progresses in graphmining, this research stream is expected to continue to make importantcontributions to improve visual re-ranking from diﬀerent perspectives.
+5. Cross Text and Visual Content Mining
+Although the joint text and visual content mining approaches de-
+scribed above facilitate image retrieval, they require that the test imageshave associated text modality. However, in some real world applications,
+images may not always have associated text. For example, most surveil-
+lance images/videos in in-house repository are not accompanied withany text. Even on social media Website such as the Flickr, there exista substantial number of images without any tags. In such cases, jointText Mining in Multimedia 375
+
+Figure 11.6. An illustration of diﬀerent types of learning paradigms using image
+classiﬁcation/clustering in the domains of apple and banana. Adapted from [56].
+text and visual content mining cannot be applied due to missing text
+modality.
+Recently, cross text and visual content mining has been studied in the
+context of transfer learning techniques. This class of techniques empha-
+sizes the transferring of knowledge across diﬀerent domains or tasks [32].
+Cross text and visual content mining does not require that a test imagehasanassociatedtextmodality, andisthusbeneﬁcialtodealingwiththeimages without any text by propagating the semantic knowledge fromtext to images
+5. It is also motivated by two observations. First, visual
+contentofimagesismuchmorecomplicatedthanthetextfeature. Whilethetextualwordsareeasiertointerpret, thereexistatremendousseman-
+tic gap between visual content and high-level semantics. Second, image
+understanding becomes particularly challenging when only a few labeledimages are available for training. This is a common challenge, since itis expensive and time-consuming to obtain labeled images. On the con-trary, labeled/unlabeled text data are relatively easier to collect. Forexample, millions of categorized text articles are freely available in Web
+5Cross text and visual content can also facilitate text understanding in special cases by
+propagating knowledge from images to text.376 MINING TEXT DATA
+text collections, such as Wikipedia, covering a wide range of topics from
+culture and arts, geography and places, history and events, to naturaland physical science. A large number of Wikipedia articles are indexed
+by thousands of categories in these topics [33]. This provides abundant
+labeled text data. Thus, it is desirable to propagate semantic knowledgefrom text to images to facilitate image understanding. However, it isnot trivial to transfer knowledge between various domains/tasks due tothe following challenges:
+The target data may be drawn from a distribution diﬀerent fromthe source data.
+The target and source data may be in diﬀerent feature spaces (e.g.,
+image and text) and there may be no correspondence between
+instances in these spaces.
+The target and source tasks may have diﬀerent output spaces.
+While the traditional transfer learning techniques focus on the dis-
+tribution variance problem, the recent proposed heterogenous transferlearning approaches aim to tackle both the distribution variance andheterogenous feature space problems [56][7][65][33], or all the three chal-
+lenges listed above [37]. Figure 11.6 from [56] presents an intuitive illus-
+tration of four learning paradigms, including traditional machine learn-
+ing, transfer learning across diﬀerent distributions, multi-view learningand heterogenous transfer learning. As we can see, heterogenous trans-fer learning is usually much more challenging due to the unknown cor-respondence across the distinct feature spaces. In order to learn theunderlying correspondence for knowledge transformation, a “semantic
+bridge” is required. The “semantic bridge” can be obtained from the
+co-occurrence information between text and images or the linkage in-formation in social media networks. For example, while the traditionalwebpages provide the co-occurrence information between text and im-ages, the social media sites contain a large number of linked informationbetween diﬀerent types of entities, such as the text articles, tags, posts,imagesandvideos. Thislinkageinformationprovidea“semanticbridge”
+to learn the underlying correspondence [2].
+Most existing works exploit the tag information that provide text-to-
+image linking information. As a pioneering work, Dai et al. [7] showed
+that such information can be eﬀectively leveraged for transferring knowl-edge between text and images. The key idea of [7] is to construct acorrespondence between the images and the auxiliary text data withthe use of tags. Probabilistic latent semantic analysis (PLSA) model
+is employed to construct a latent semantic space which can be used forText Mining in Multimedia 377
+transferring knowledge. Chen et al. [56] proposed the concept of hetero-
+geneous transfer learning and applied it to improve image clustering byleveraging auxiliary text data. They collected annotated images fromthe social web, and used them to construct a text to image mapping.The algorithm is referred to as aPLSA (Annotated Probabilistic La-tent Semantic Analysis). The key idea is to unify two diﬀerent kinds
+of latent semantic analysis in order to create a bridge between the text
+and images. The ﬁrst kind of technique performs PLSA analysis on thetarget images, which are converted to an image instance-to-feature co-occurrence matrix. The second kind of PLSA is applied to the annotatedimage data from social Web, which is converted into a text-to-image fea-ture co-occurrence matrix. In order to unify those two separate PLSAmodels, these two steps are done simultaneously with common latent
+variables used as a bridge linking them. It has been shown in [5] that
+such a bridging approach leads to much better clustering results. Zhuet al. [65] discussed how to create the connections between images andtext with the use of tag data. They showed how such links can be usedmore eﬀectively for image classiﬁcation. An advantage of [65] is that itexploits unlabeled text data instead of labeled text as in [7].
+In contrast to these methods that exploit tag information to link im-
+ages and auxiliary text articles, Qi et al. [33] proposed to learn a “trans-
+lator” which can directly establish the semantic correspondence betweentextandimageseveniftheyarenewinstancesoftheimagedatawithun-known correspondence to the text articles. This capability increase theﬂexibility of the approach and makes it more widely applicable. Speciﬁ-cally, theycreatedanewtopicspaceintowhichboththetextandimagesare mapped. A translator is then learned to link the instances across
+heterogeneous text and image spaces. With the resultant translator,
+the semantic labels can be propagated from any labeled text corpus toany new image by a process of cross-domain label propagation. Theyshowed that the learned translator can eﬀectively convert the semanticsfrom text to images.
+6. Summary and Open Issues
+Inthischapter, wehavereviewedtheactiveresearchontextminingin
+multimedia community, including surrounding text mining, tag mining,
+joint text and visual content mining, and cross text and visual content
+mining. Although research eﬀorts in this ﬁled have made great progressin various aspects, there are still many open research issues that need tobe explored. Some examples are listed and discussed as follows.378 MINING TEXT DATA
+Joint text and visual content multimedia ranking
+Despite the success of visual re-ranking in multimedia retrieval, visual
+re-ranking only employs the visual content to reﬁne text-based retrieval
+results; visual content has not been used to assist in learning the rank-ing model of search engine, and sometimes it is only able to bring inlimited performance improvements. In particular, if text-based ranking
+model is biased or over-ﬁtted, re-ranking step will suﬀer from the error
+that is propagated from the initial results, and thus the performanceimprovement will be negatively impacted. Therefore, it is worthwhileto simultaneously exploit textual metadata and visual content to learna uniﬁed ranking model. A preliminary work has been done in [14],where a content-aware ranking model is developed to incorporate visualcontent into text-based ranking model learning. It shows that the in-
+corporation of visual content into ranking model learning can result in a
+more robust and accurate ranking model since noise in textual featurescan be suppressed by visual information.
+Scalable text mining for large-scale multimedia man-
+agement
+Despite of the success of existing text mining in multimedia, most
+existing techniques suﬀer from diﬃculties in handling large-scale multi-
+media data. Huge amount of training data or high computation powersare usually required by existing methods to achieve acceptable perfor-mance. However, it is too diﬃcult, or even impossible, to meet this
+requirement in real-world applications. Thus there is a compelling need
+to develop scalable text mining techniques to facilitate large-scale mul-timedia management.
+Multimedia social network mining
+In recent years, we have witnessed the emergence of multimedia social
+network communities like Napster6, Facebook7, and Youtube, where
+millions of users and billions of multimedia entities form a large-scalemultimedia social network. Multimedia social networking is becoming
+an important part of media consumption for Internet users. It brings
+in new and rich metadata, such as user preferences, interests, behaviors,social relationships, and social network structure etc. These informa-tion present new potential for advancing current multimedia analysis
+6http://music.napster.com/
+7http://www.facebook.com/Text Mining in Multimedia 379
+techniques and also trigger diverse multimedia applications. Numerous
+researchtopicscanbeexplored, including(a)thecombinationofconven-tional techniques with information derived from social network commu-
+nities; (b) fusion analysis of content, text, and social network data; and
+(c) personalized multimedia analysis in social networking environments.
+Acknowledgements
+This work was in part supported by A*Star Research Grant R-252-
+000-437-305 and NRF (National Research Foundation of Singapore) Re-search Grant R-252-300-001-490 under the NExT Center.
+References
+[1] Altavista’s a/v photo ﬁnder. http://www.altavista.com/sites/
+search/simage.
+[2] C. C. Aggarwal, H. Wang. Text Mining in Social Networks.S o c i a l
+Network Data Analytics, Springer, 2011.
+[3] D. Cai, X. He, Z. Li, W.-Y. Ma, and J.-R. Wen. Hierarchical clus-
+tering of www image search results using visual, textual and linkinformation. In Proceedings of the ACM Conference on Multimedia ,
+2004.
+[4] S.-F. Chang, W. Hsu, W. Jiang, L. Kennedy, D. Xu, A. Yanagawa,
+and E. Zavesky. Columbia university trecvid-2006 video search andhigh-level feature extraction. In Proceedings of NIST TRECVID
+workshop, 2006.
+[5] L. Chen and A. Roy. Event detection from Flickr data through
+wavelet-based spatial analysis. In Proceedings of the ACM confer-
+ence on Information and knowledge management , pages 523–532.
+ACM, 2009.
+[6] L. Chen, D. Xu, I. W. Tsang, and J. Luo. Tag-based web photo
+retrieval improved by batch mode re-tagging. In Proceedings of the
+IEEE International Conference on Computer Vision and Pattern
+Recognition , 2010.
+[7] W. Dai, Y. Chen, G.-R. Xue, Q. Yang, and Y. Yu. Translated
+learning:Transferlearningacrossdiﬀerencefeaturespaces. In NIPS,
+pages 353–360, 2008.
+[8] J.Fan,Y.Shen,N.Zhou,andY.Gao. Harvestinglarge-scaleweakly-
+tagged image databases from the web. In Proceedings of the IEEE
+International Conference on Computer Vision and Pattern Recog-nition, 2010.380 MINING TEXT DATA
+[9] H. Feng, R. Shi, and T.-S. Chua. A bootstrapping framework for
+annotating and retrieving www images. In Proceedings of the ACM
+Conference on Multimedia , 2004.
+[10] S. Feng, C. Lang, and D. Xu. Beyond tag relevance: integrating
+visual attention model and multi-instance learning for tag saliency
+ranking. In Proceedings of I nternational Conference on Image and
+Video Retrieval , 2010.
+[11] R. Fergus, P. Perona, and A. Zisserman. A visual category ﬁlter
+for google images. In Proceedings of the European Conference on
+Computer Vision , 2004.
+[12] C. Frankel, M. J. Swain, and V. Athitsos. Webseer: An image
+search engine for the world wide web. Technical report, Univer-sity of Chicago, Computer Science Department, 1996.
+[13] B. Gao, T.-Y. Liu, Q. Tao, X. Zheng, Q. Cheng, and W.-Y. Ma.
+Web image clustering by consistent utilization of visual featuresand surrounding texts. In Proceedings of the ACM Conference on
+Multimedia , 2005.
+[14] B. Geng, L. Yang, C. Xu, and X.-S. Hua. Content-aware ranking
+for visual search. In Proceedings of the I nternational Conference on
+Computer Vision and Pattern R ecognition , 2010.
+[15] G. Griﬃn, A. Holub, and P. Perona. Caltech-256 object category
+dataset. Technical Report 7694, California Institute of Technology,2007.
+[16] W. Hsu, L. Kennedy, , and S.-F. Chang. Reranking methods for
+visual search. IEEE Multimedia , 14:14–22, 2007.
+[17] F. Jing and S. Baluja. Visualrank: Applying pagerank to large-scale
+image search. IEEE Transactions on Pattern Analysis and Machine
+Intelligence , 30:1877–1890, 2008.
+[18] F. Jing, M. Li, H.-J. Zhang, and B. Zhang. A uniﬁed framework for
+image retrieval using keyword and visual features. IEEE Transac-
+tions on Image Processing , 2005.
+[19] F. Jing, C. Wang, Y. Yao, K. Deng, L. Zhang, and W.-Y. Ma.
+Igroup: Web image search results clustering. In Proceedings of the
+ACM Conference on Multimedia , pages 377–384, 2006.
+[20] L. S. Kennedy, S. F. Chang, and I. V. Kozintsev. To search or to
+label? predicting the performance of search-based automatic imageclassiﬁers. In Proceedings of the ACM International Workshop on
+Multimedia Information Retrieval , 2006.Text Mining in Multimedia 381
+[21] G. Li, M. Wang, Y. T. Zheng, Z.-J. Zha, H. Li, and T.-S. Chua.
+Shottagger: Tag location for internet videos. In Proceedings of the
+ACM International Conference on Multimedia Retrieval , 2011.
+[22] X. Li, C. G. Snoek, and M. Worring. Learning social tag relevance
+by neighbor voting. Pattern R ecognition Letters , 11(7), 2009.
+[23] X. Li, C. G. Snoek, and M. Worring. Unsupervised multi-feature
+tag relevance learning for social image retrieval. In Proceedings of
+the International Conference on Image and Video Retrieval , 2010.
+[24] D. Liu, X. C. Hua, M. Wang, and H. Zhang. Image retagging. In
+Proceedings of the ACM Conference on Multimedia , 2010.
+[25] D.Liu,X.-S.Hua,L.Yang,M.Wang,andH.-J.Zhang. Tagranking.
+InProceedings of the I nternational Conference on World Wide Web ,
+2009.
+[26] D. Liu, X.-S. Hua, and H.-J. Zhang. Content-based tag process-
+ing for internet social images. Multimedia Tools and Application ,
+51:723–738, 2010.
+[27] D. Liu, S. Yan, Y. Rui, and H. J. Zhang. Uniﬁed tag analysis
+with multi-edge graph. In Proceedings of the ACM Conference on
+Multimedia , 2010.
+[28] X. Liu, B. Cheng, S. Yan, J. Tang, T. C. Chua, and H. Jin. Label
+to region by bi-layer sparsify priors. In Proceedings of the ACM
+Conference on Multimedia , 2009.
+[29] X. Liu, S. Yan, J. Luo, J. Tang, Z. Huang, and H. Jin. Nonpara-
+metric label-to-region by search. In Proceedings of the IEEE Inter-
+national Conference on Computer Vision and Pattern R ecognition ,
+2010.
+[30] Y. Liu, T. Mei, and X.-S. Hua. Crowdreranking: Exploring multiple
+search engines for visual search reranking. In Proceedings of the
+ACM SIGIR Conference , 2009.
+[31] T. Mei, Z.-J. Zha, Y. Liu, M. Wang, and et al. Msra at trecvid 2008:
+High-level feature extraction and automatic search. In Proceedings
+of NIST TRECVID workshop , 2008.
+[32] S. J. Pan and Q. Yang. A survey on transfer learning. IEEE Trans-
+actions on Knowledge and Data Engineering , 22(10), 2010.
+[33] G.-J. Qi, C. C. Aggarwal, and T. Huang. Towards semantic knowl-
+edge propagation from text corpus to web images. In Proceedings
+of the International Conference on World Wide Web , 2011.
+[34] M. Rege, M. Dong, and J. Hua. Graph theoretical framework for
+simultaneously integrating visual and textual features for eﬃcient382 MINING TEXT DATA
+web image clustering. In Proceedings of the I nternational Confer-
+ence on World Wide Web , 2008.
+[35] F. Schroﬀ, A. Criminisi, and A. Zisserman. Harvesting images
+databases from the web. In Proceedings of the I nternational Con-
+ference on Computer Vision , 2007.
+[36] D. A. Shamma, R. Shaw, P. L. Shafton, and Y. Liu. Watch what
+i watch: using community activeity to understand content. In Pro-
+ceedings of the ACM Workshop on Multimedia Information Re-
+trieval, 2007.
+[37] X. Shi, Q. Liu, W. Fan, P. S. Yu, and R. Zhu. Transfer learn-
+ing on heterogenous feature spaces via spectral tranformation. InProceedings of the I nternational Conference on Data Mining , 2010.
+[38] B.Sigurbj¨ ornssonandR.V.Zwol. Flickrtagrecommendationbased
+on collective knowledge. In Proceedings of I nternational Conference
+on World Wide Web , 2008.
+[39] J. Smith and S.-F. Chang. Visually searching the web for content.
+IEEE Multimedia , 4:12–20, 1995.
+[40] R. Srihari. Automatic indexing and content-based retrieval of cap-
+tioned images. IEEE Computer , 28:49–56, 1995.
+[41] A. Sun and S. S. Bhowmick. Quantifying tag representativeness of
+visual content of social images. In Proceedings of the ACM Confer-
+ence on Multimedia , 2010.
+[42] X. Tian, L. Yang, J. Wang, Y. Yang, X. Wu, and X.-S. Hua.
+Bayesian video search reranking. In Proceedings of the ACM Con-
+ference on Multimedia , 2008.
+[43] A. Ulges, C. Schulze, D. Keysers, and T. M. Breuel. Identifying
+relevant frames in weakly labeled videos for training concept detec-
+tors. InProceedings of the International Conference on Image and
+Video Retrieval , 2008.
+[44] G. Wang and D. A. Forsyth. Object image retrieval by exploiting
+online knowledge resources. In Proceedings of the IEEE Conference
+on Computer Vision and Pattern R ecognition , 2008.
+[45] J.Wang,Y.-G.Jiang,andS.-F.Chang. Labeldiagnosisthroughself
+tuningforwebimagesearch. In Proceedings of the IEEE Conference
+on Computer Vision and Pattern R ecognition .
+[46] M. Wang, X. S. Hua, R. Hong, J. Tang, G. J. Qi, and Y. Song. Uni-
+ﬁed video annotation via multi-graph learning. IEEE Transactions
+on Circuits and Systems for Video Technology , 19(5), 2009.Text Mining in Multimedia 383
+[47] M. Wang, X. S. Hua, J. Tang, and R. Hong. Beyond distance mea-
+surement: Constructing neighborhood similarity for video annota-tion.IEEE Transactions on Multimedia , 11(3), 2009.
+[48] M. Wang, B. Ni, X.-S. Hua, and T.-S. Chua. Assistive multimedia
+tagging:Asurveyofmultimediataggingwithhuman-computerjointexploration. ACM Computing Survey , 2011.
+[49] X.-J. Wang, W.-Y. Ma, G.-R. Xue, and X. Li. Multi-model simi-
+larity propagation and its application for web image retrieval. InProceedings of the ACM Conference on Multimedia , pages 944–951,
+2004.
+[50] X.-J. Wang, W.-Y. Ma, L. Zhang, and X. Li. Iteratively clustering
+web images based on link and attribute reinforcements. In Proceed-
+ings of the ACM Conference on Multimedia , 2005.
+[51] L. Wu, X.-S. Hua, N. Yu, W.-Y. Ma, and S. Li. Flickr distance. In
+Proceedings of the ACM Conference on Multimedia , 2008.
+[52] H.Xu,J.Wang,X.-S.Hua,andS.Li. Tagreﬁnementbyregularized
+LDA. In Proceedings of the ACM Conference on Multimedia , 2009.
+[53] R. Yan and A. G. Hauptmann. Co-retrieval: A boosted reranking
+approach for video retrieval. In Proceedings of the ACM Conference
+on Image and Video Retrieval , 2004.
+[54] R. Yan, A. G. Hauptmann, and R. Jin. Multimedia search with
+pseudo-relevance feedback. In Proceedings of the ACM Conference
+on Image and Video Retrieval , 2003.
+[55] K. Yang, X.-S. Hua, M. Wang, and H. C. Zhang. Tagging tags. In
+Proceedings of the ACM Conference on Multimedia , 2010.
+[56] Q. Yang, Y. Chen, G.-R. Xue, W. Dai, and Y. Yu. Heterogeneous
+transfer learning from image clustering via the social web. In Pro-
+ceedings of the Joint Conference of the Annual Meeting of the ACL ,
+2009.
+[57] Y.-H. Yang, P. Wu, C. W. Lee, K. H. Lin, W. Hsu, and H. H. Chen.
+Contextseer: Context search and recommendation at query time forshared consumer photos. In Proceedings of the ACM Conference on
+Multimedia , 2008.
+[58] Z.-J. Zha, X.-S. Hua, T. Mei, J. Wang, G.-J. Qi, and Z. Wang.
+Joint multi-label multi-instance learning for image classiﬁcation.InProceedings of the IEEE Conference on Computer V ision and
+Pattern Recognition , 2008.
+[59] Z.-J. Zha, T. Mei, J. Wang, X.-S. Hua, and Z. Wang. Graph-based
+semi-supervised learning with multiple labels. Journal of Visual
+Communication and Image Representation , 2009.384 MINING TEXT DATA
+[60] Z.-J. Zha, M. Wang, Y.-T. Zheng, Y. Yang, R. Hong, and T.-S.
+Chua. Interactive video indexing with statistical active learning.IEEE Transactions on Multimedia , 2011.
+[61] Z.-J. Zha, L. Yang, T. Mei, M. Wang, and Z. Wang. Viusal query
+suggestion. In Proceedings of the ACM Conference on Multimedia ,
+2009.
+[62] R. Zhang, Z. M. Zhang, M. Li, W.-Y. Ma, and H.-J. Zhang. A
+probabilistic semantic model for image annotation and multi-modal
+image retrieval. In Proceedings of the I nternational Conference on
+Computer Vision , pages 846–851, 2005.
+[63] R. Zhao and W. I. Grosky. Narrowing the semantic gap - improved
+text-based web document retireval using visual fetures. IEEE
+Transactions on Multimedia , 4, 2002.
+[64] G. Zhu, S. Yan, and Y. Ma. Image tag reﬁnement towards low-
+rank, content-tag prior and error sparsity. In Proceedings of the
+ACM Conference on Multimedia , 2010.
+[65] Y. Zhu, Y. Chen, Z. Lu, S. J. Pan, G.-R. Xue, Y. Yu, and Q. Yang.
+Heterogeneous transfer learning for image classiﬁcation. In Proceed-
+ings of the AAAI Conference on Artiﬁcial Intelligence , 2011.Chapter 12
+TEXT ANALYTICS IN SOCIAL MEDIA
+Xia Hu
+Computer Science and Engineering
+Arizona State University
+xiahu@asu.edu
+Huan Liu
+Computer Science and Engineering
+Arizona State University
+huanliu@asu.edu
+Abstract The rapid growth of online social media in the form of collaboratively-
+created content presents new opportunities and challenges to both pro-
+ducers and consumers of information. With the large amount of data
+produced by various social media services, text analytics provides an
+eﬀective way to meet usres’ diverse information needs. In this chapter,
+we ﬁrst introduce the background of traditional text analytics and the
+distinct aspects of textual data in social media. We next discuss the
+research progress of applying text analytics in social media from diﬀer-
+ent perspectives, and show how to improve existing approaches to text
+representation in social media, using real-world examples.
+Keywords: Text Analytics, Social Media, Text Representation, Time Sensitivity,
+Short Text, Event Detection, Collaborative Question Answering, Social
+Tagging, Semantic Knowledge
+1. Introduction
+Social media such as blogs, microblogs, discussion forums and multi-
+mediasharingsitesareincreasinglyusedforuserstocommunicatebreak-
+ing news, participate in events, and connect to each other anytime, from
+anywhere. The social media sites play a very important role in current
+© Springer Science+Business Media, LLC 2012 385  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_12,

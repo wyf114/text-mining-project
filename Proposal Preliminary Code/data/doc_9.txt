@@ -1,0 +1,657 @@
+Chapter 9
+MINING TEXT STREAMS
+Charu C. Aggarwal
+IBM T. J. Watson Research Center
+Hawthorne, NY 10532, USA
+charu@us.ibm.com
+Abstract The large amount of text data which are continuously produced over
+time in a variety of large scale applications such as social networks re-
+sults in massive streams of data. Typically massive text streams are
+created by very large scale interactions of individuals, or by structured
+creations of particular kinds of content by dedicated organizations. An
+example in the latter category would be the massive text streams cre-
+ated by news-wire services. Such text streams provide unprecedented
+challenges to data mining algorithms from an eﬃciency perspective. In
+this chapter, we review text stream mining algorithms for a wide variety
+of problems in data mining such as clustering, classiﬁcation and topic
+modeling. We also discuss a number of future challenges in this area of
+research.
+Keywords: Text Mining, Data Streams
+1. Introduction
+Text streams have become ubiquitous in recent years because of a
+wide variety of applications in social networks, news collection, and
+other forms of activity which result in the continuous creation of mas-
+sive streams. Some speciﬁc examples of applications which create text
+streams are as follows:
+In social networks, users continuously communicate with one an-
+other with the use of text messages. This results in massive vol-
+umes of text streamswhichcan be leveraged for a varietyof mining
+and search purposes in the social network. This is because the text
+© Springer Science+Business Media, LLC 2012 297  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_9,298 MINING TEXT DATA
+messages are reﬂective of user interests. A similar observation ap-
+plies to chat and email networks.
+Manynewsaggregatorservices1mayreceivelargevolumesofnews
+articles continuously over time. Such articles are often longer andmore well structured than the kinds of messages which are seen insocial, chat, or email networks.
+Many web crawlers may collect a large volume of documents fromnetworks in a small time frame. In many cases, such documentsare restricted to those which have been modiﬁed in a small timeframe. This naturally results in a stream of modiﬁed documents.
+Text streams create a huge challenge from the perspective of a wide
+variety of mining applications, because of the massive volume of thedata which must be processed in online fashion. Data streams havebeen studied extensively in recent years not just in the text domain, butalso in the context of a wide variety of multi-dimensional applicationssuch as numerical and categorical data. A detailed discussion of miningalgorithms for stream data may be found in [1]. While many of the
+techniques proposed for multi-dimensional data [1] can be generalized
+to text data at the high level, the details can be quite diﬀerent becauseof the very diﬀerent format and lack of structure of text data. Sincestream mining techniques are generally dependent upon summarization,it follows that methods for online summarization need to be designedwhich work well for the unstructured nature of text data.
+In the case of multi-dimensional and time-series data, such summa-
+rization often takes the form of methods such as histograms, wavelets,
+and sketches which can be used in order to create a structured sum-mary of the underlying data [1]. However, the unstructured nature oftext makes the use of such summaries quite challenging. While sketcheshave been used to some eﬀect in the text domain [23], it has generallybeen diﬃcult to generalize wavelet and histogram methods to the textdomain. As we will see later in this section, the summarization methods
+designedfor textstreamingproblemsmayvaryalot, andmayoftenneed
+to be tailored to the problem at hand. One of the goals of this chapteris to provide a broad spectrum of the diﬀerent methods which are usedfor text mining, which can provide an overview of the tools which can bemost eﬀectively used for the text stream scenario. We will also presentthe future challenges and research directions associated with text streammining.
+1An example would be the Google News service.Mining Text Streams 299
+This chapter is organized as follows. In section 2, we will present a
+variety of the well known algorithms for clustering text streams. Thisincludespopularmethodsfortopicdetectionandtrackingintextstream.
+This is because the process of event detection is closely related to the
+clustering problem. The methods for classiﬁcation of text streams arereviewed in section 3. Section 4 presents methods for evolution analysisof text stream. The conclusions and summary are presented in section5.
+2. Clustering Text Streams
+The problem of clustering text streams has been widely studied in the
+context of numerical data [1, 4, 12]. Other popular methods which have
+been studied in the machine learning literature include the COBWEB
+andCLASSITmethods[20,25]. TheCOBWEBalgorithmassumesnom-inal attributes, whereas the CLASSIT algorithm assumes real-valued at-tributes. Many of these methods [4, 12] are extensions of the k-means
+method as extended to the stream scenario. This trend has also beenapplied to the case of text streams. One of the earliest methods forstreaming text clustering is discussed in [54]. This technique is referred
+to as the Online Spherical k-Means Algorithm (OSKM) , which reﬂects
+thebroadapproachusedbythemethodology. Thistechniquesdividesupthe incoming stream into small segments, each of which can be processedeﬀectively in main memory. A set of k-means iterations are applied to
+each such data segment in order to cluster them. The advantage of usinga segment-wise approach for clustering is that since each segment canbe held in main memory, we can process each data point multiple times
+as long as it is held in main memory. In addition, the centroids from the
+previous segment are used in the next iteration for clustering purposes.A decay factor is introduced in order to age-out the old documents, sothat the new documents are considered more important from a cluster-ing perspective. This approach has been shown to be extremely eﬀectivein clustering massive text streams in [54].
+The method in [54] is designed as a ﬂat clustering algorithm, in which
+there is a single level to the clustering process. In many applications, it
+is useful to design hierarchical clustering algorithms in which diﬀerentlevels of the clustering can be explored. In the context of text data,this implies that diﬀerent levels of topics and subtopics can be exploredwith the use of a hierarchical clustering process. A distributional model-ing method for hierarchical clustering of streaming documents has beenproposed in [37]. The method extends the COBWEB and CLASSIT
+algorithms [20, 25] to the case of text data. The work in [37] studies the300 MINING TEXT DATA
+diﬀerent kinds of distributional assumptions of words in documents. We
+note that these distributional assumptions are required to adapt thesealgorithms to the case of text data. The approach essentially changes
+the distributional assumption so that the method can work eﬀectively
+for text data.
+A diﬀerent method for clustering massive text and categorical data
+streams is discussed in [3]. The method discussed in [3] uses an approachwhich examines the relationship between outliers, emerging trends, andclusters in the underlying data. Old clusters may become inactive, andeventually get replaced by new clusters. Similarly, when newly arriving
+data points do not naturally ﬁt in any particular cluster, these need
+to be initially classiﬁed as outliers. However, as time progresses, thesenew points may create a distinctive pattern of activity which can berecognized as a new cluster. The temporal locality of the data streamis manifested by these new clusters. For example, the ﬁrst web pagebelonging to a particular category in a crawl may be recognized as anoutlier, but may later form a cluster of documents of its own. On the
+other hand, the new outliers may not necessarily result in the formation
+of new clusters. Such outliers are true short-term abnormalities in thedata since they do not result in the emergence of sustainable patterns.The approach discussed in [3] recognizes new clusters by ﬁrst recognizingthem as outliers.
+This approach works with the use of a summarization methodology,
+which is motivated by the micro-clustering approach proposed in [4].
+While the concept of micro-clustering was designed for numerical data,
+it can also be extended to the case of text and categorical data streams.This methodology essentially creates summaries from the data pointswhich are used in order to estimate the assignment of incoming datapoints to clusters. The concept of micro-clusters is generalized to thatofcondensed droplets in [3].
+In order to ensure greater importance of more recent data, a time-
+sensitive weightage is assigned to each data point. It is assumed that
+each data point has a time-dependent weight deﬁned by the functionf(t). The function f(t) is also referred to as the fading function .T h e
+fadingfunction f(t)isanon-monotonicdecreasingfunctionwhichdecays
+uniformly with time t. In order to formalize this concept, we will deﬁne
+thehalf-lifeof a point in the data stream.
+Definition 9.1 The half life t0of a point is deﬁned as the time at which
+f(t0)=( 1/2)f(0).
+Conceptually, the aim of deﬁning a half life is to quantify the rate of
+decay of the importance of each data point in the stream clusteringMining Text Streams 301
+process. The decay-rate is deﬁned as the inverse of the half life of the
+data stream. We denote the decay rate by λ=1/t0. We denote the
+weight function of each point in the data stream by f(t)=2−λ·t.F r o m
+the perspective of the clustering process, the weight of each data point
+isf(t). It is easy to see that this decay function creates a half life of
+1/λ. It is also evident that by changing the value of λ, it is possible to
+change the rate at which the importance of the historical informationin the data stream decays. The higher the value of λ, the lower the
+importance of the historical information compared to more recent data.For more stable data streams, it is desirable to pick a smaller value of λ,
+whereas for rapidly evolving data streams, it is desirable to pick a larger
+value ofλ.
+When a cluster is created during the streaming process by a newly
+arriving data point, it is allowed to remain as a trend-setting outlierfor at least one half-life. During that period, if at least one more datapoint arrives, then the cluster becomes an active and mature cluster.On the other hand, if no new points arrive during a half-life, then the
+trend-setting outlier is recognized as a true anomaly in the data stream.
+At this point, this anomaly is removed from the list of current clusters.We refer to the process of removal as cluster death . Thus, a new cluster
+containing one data point dies when the (weighted) number of pointsin the cluster is 0 .5. The same criterion is used to deﬁne the death of
+mature clusters. A necessary condition for this criterion to be met isthat the inactivity period in the cluster has exceeded the half life 1 /λ.
+The greater the number of points in the cluster, the greater the level by
+which the inactivity period would need to exceed its half life in orderto meet the criterion. This is a natural solution, since it is intuitivelydesirable to have stronger requirements (a longer inactivity period) forthe death of a cluster containing a larger number of points.
+Next, we describe the process of creation of a condensed-droplet from
+the underlying text stream. An important point to remember is that
+a text data set can be treated as a sparse numeric data set. This is
+because most documents contain only a small fraction of the vocabularywith non-zero frequency. For a cluster of documents Cat timet,w e
+denote the corresponding condensed droplet by D(t,C).
+Definition 9.2 A cluster droplet D(t,C)for a set of text data points
+Cat timetis deﬁned to as a tuple (DF2,DF1,n,w(t),l). Each tuple
+component is deﬁned as follows:
+The vector DF2contains 3·wb·(wb−1)/2entries. Here wbis
+the number of distinct words in the cluster C. For each pair of
+dimensions, we maintain a list of the pairs of word ids with non-302 MINING TEXT DATA
+zero counts. We also maintained the sum of the weighted counts
+for such word pairs.
+The vector DF1contains 2·wbentries. We maintain the identities
+of the words with non-zero counts. In addition, we maintain thesum of the weighted counts for each word occurring in the cluster.
+The entry ncontains the number of data points in the cluster.
+The entry w(t)contains the sum of the weights of the data points
+at timet. We note that the value w(t)is a function of the time
+tand decays with time unless new data points are added to the
+dropletD(t).
+The entry lcontains the time stamp of the last time that a data
+point was added to the cluster.
+The concept of cluster droplet has some interesting properties that will
+be useful during the maintenance process. These properties relate to the
+additivity and decay behavior of the cluster droplet.
+Observation 2.1 Consider the cluster droplets D(t,C1)=
+(DF21,DF11,n1,w(t)1,l1)andD(t,C2)=
+(DF22,DF12,n2,w(t)2,l2). Then the cluster droplet D(t,C1∪C2)is
+deﬁned by the tuple (DF21+DF22,DF11+DF12,n1+n2,w(t)1+
+w(t)2,max{l1,l2}).
+The cluster droplet for the union of two clusters is the sum of individ-
+ual entries. The only exception is the last entry which is the maxima ofthetwolast-updatetimes. Wenotethattheadditivitypropertyprovidesconsiderable convenience for data stream processing since the entries canbe updated eﬃciently using simple additive operations.
+The second observation relates to the rate of decay of the condensed
+droplets. Since the weights of each data point decay with the passageof time, the corresponding entries also decay at the same rate. Corre-spondingly, we make the following observation:
+Observation 2.2 Consider the cluster droplet D(t,C)=
+(DF2,DF1,n,w(t),l). Then the entries of of the same cluster droplet
+Ca tat i m e t/prime>tare given by D(t/prime,C)=(DF2·2−λ·(t/prime−t),DF1·
+2−λ·(t/prime−t),n,w(t)·2−λ·(t/prime−t),l).
+Thesecondobservationiscriticalinregulatingtherateatwhichtheclus-
+ter droplets are updated during the clustering process. Since all clusterdroplets decay at essentially the same rate (unless new data points are
+added), it follows that it is not necessary to update the decay statisticsMining Text Streams 303
+at each time stamp. Rather, each cluster droplet can be updated lazily,
+whenever new data points are added to it.
+The overall algorithm proceeds as follows. At the beginning of algo-
+rithmic execution, we start with an empty set of clusters. As new data
+points arrive, unit clusters containing individual data points are created.Once a maximum number kof such clusters have been created, we can
+begin the process of online cluster maintenance. Thus, we initially startoﬀ with a trivial set of kclusters. These clusters are updated over time
+with the arrival of new data points.
+When a new data point
+Xarrives, its similarity to each cluster droplet
+is computed. In the case of text data sets, the cosine similarity measure
+[17, 40] between DF1a n dXis used. The similarity value S(X,Cj)
+is computed from the incoming document Xto every cluster Cj.T h e
+cluster with the maximum value of S(X,Cj) is chosen as the relevant
+cluster for data insertion. Let us assume that this cluster is Cmindex.
+We use a threshold denoted by threshin order to determine whether
+the incoming data point is an outlier. If the value of S(X,Cmindex)i s
+larger than the threshold thresh, then the point Xis assigned to the
+clusterCmindex. Otherwise, we check if some inactive cluster exists in the
+current set of cluster droplets. If no such inactive cluster exists, then thedata point
+Xis added to Cmindex. On the other hand, when an inactive
+cluster does exist, a new cluster is created containing the solitary datapoint
+X. This newly created cluster replaces the inactive cluster. We
+note that this new cluster is a potential true outlier or the beginning of
+a new trend of data points. Further understanding of this new cluster
+may only be obtained with the progress of the data stream.
+In the event that Xis inserted into the cluster Cmindex, we need to
+perform two steps:
+We update the statistics to reﬂect the decay of the data pointsat the current moment in time. This updating is performed usingthe computation discussed in Observation 2.2. Thus, the relevantupdates are performed in a “lazy” fashion. In other words, thestatistics for a cluster do not decay, until a new point is added to
+it. Let the corresponding time stamp of the moment of addition
+bet. The last update time lis available from the cluster droplet
+statistics. We multiply the entries in the vectors
+DC2,DC1a n d
+w(t) by the factor 2−λ·(t−l)in order to update the corresponding
+statistics. We note that the lazy update mechanism results instale decay characteristics for most of the clusters. This does nothowever aﬀect the afore-discussed computation of the similarity
+measures.304 MINING TEXT DATA
+In the second step, we add the statistics for each newly arriving
+data point to the statistics for Cmindexby using the computation
+discussed in Observation 2.2.
+In the event that the newly arriving data point does not naturally ﬁt
+in any of the cluster droplets and an inactive cluster does exist, then wereplace the most inactive cluster by a new cluster containing the solitary
+data point
+X. In particular, the replaced cluster is the least recently
+updated cluster among all inactive clusters. This process is continuouslyperformed over the life of the data stream, as new documents arrive overtime. The work in [3] also presents a variety of other applications of thestream clustering technique such as evolution and correlation analysis.
+A diﬀerent way of utilizing the temporal evolution of text documents
+in the clustering process is described in [26]. Speciﬁcally, the work in
+[26] uses bursty features as markers of new topic occurrences in the data
+stream. This is because the semantics of an up-and-coming topic areoften reﬂected in the frequent presence of a few distinctive words in thetext stream. A speciﬁc example illustrates the bursty features in twotopics corresponding to the two topics of “US Mid-Term Elections” and
+“Newt Gingrich resigns from House” respectively. The corresponding
+bursty features [26] which occurred frequently in the newsstream during
+the period for these topics were as follows:
+US Mid-term Elections (Nov. 3, 1998 burst):
+election, voters, Gingrich, president, Newt, ...
+Newt Gingrich resigns from house (Nov 6, 1998 burst):
+House, Gingrich, Newt, president, Washington ...
+It is evident that at a given period in time, the nature of relevant topics
+could lead to bursts in speciﬁc features of the data stream. Clearly, suchfeatures are extremely important from a clustering perspective. There-fore, the method discussed in [26] uses a new representation, which is re-ferred to as the bursty feature representation for mining text streams. In
+this representation, a time-varying weight is associated with the features
+depending upon its burstiness. This also reﬂects the varying importance
+of the feature to the clustering process. Thus, it is important to remem-ber that a particular document representation is dependent upon theparticular instant in time at which it is constructed.
+Another issue which is handled eﬀectively in this approach is an im-
+plicit reduction in dimensionality of the underlying collection. Text isinherentlyahighdimensionaldatadomain, andthepre-selectionofsome
+of the features on the basis of their burstiness can be a natural way toMining Text Streams 305
+reduce the dimensionality of document representation. This can help in
+both the eﬀectiveness and eﬃciency of the underlying algorithm.
+The ﬁrst step in the process is to identify the bursty features in the
+data stream. In order to achieve this goal, the approach uses Klein-
+berg’s 2-state ﬁnite automaton model [27]. Once these features havebeen identiﬁed, the bursty features are associated with weights whichdepend upon their level of burstiness. Subsequently, a bursty featurerepresentation is deﬁned in order to reﬂect the underlying weight of thefeature. Both the identiﬁcation and the weight of the bursty feature aredependent upon its underlying frequency. A standard k-means approach
+is applied to the new representation in order to construct the clustering.
+It was shown in [26] that the approach of using burstiness improves thecluster quality. Once criticism of the work in [26] is that it is mostlyfocussed on the issue of improving eﬀectiveness with the use of tempo-ral characteristics of the data stream, and does not address the issue ofeﬃcient clustering of the underlying data stream.
+In general, it is evident that feature extraction is important for all
+clustering algorithms. While the work in [26] focusses on using tem-
+poral characteristics of the stream for feature extraction, the work in[32] focusses on using phrase extraction for eﬀective feature selection.
+This work is also related to the concept of topic-modeling, which willbe discussed somewhat later. This is because the diﬀerent topics in acollection can be related to the clusters in a collection. The work in [32]uses topic-modeling techniques for clustering. The core idea in the work
+of [32] is that individual words are not very eﬀective for a clustering
+algorithm because they miss the context in which the word is used. Forexample, the word “star” may either refer to a celestial body or to anentertainer. On the other hand, when the phrase “ﬁxed star” is used,it becomes evident that the word “star” refers to a celestial body. Thephrases which are extracted from the collection are also referred to astopic signatures .
+The use of such phrasal clariﬁcation for improving the quality of the
+clustering is referred to as semantic smoothing because it reduces the
+noise which is associated with semantic ambiguity. Therefore, a key partof the approach is to extract phrases from the underlying data stream.After phrase extraction, the training process determines a translationprobability of the phrase to terms in the vocabulary. For example, theword “planet” may have high probability of association with the phrase
+“ﬁxed star”, because both refer to celestial bodies. Therefore, for a given
+document, arationalprobabilitycountmayalsobeassigned toallterms.For each document, it is assumed that all terms in it are generated eitherby a topic-signature model, or a background collection model.306 MINING TEXT DATA
+The approach in [32] works by modeling the soft probability p(w|Cj)
+forword wandcluster Cj. Theprobability p(w|Cj)ismodeledasalinear
+combinationoftwofactors; (a)Amaximumlikelihoodmodelwhichcom-putes the probabilities of generating speciﬁc words for each cluster (b)An indirect (translated) word-membership probability which ﬁrst deter-mines the maximum likelihood probability for each topic-signature, and
+then multiplyingwith the conditional probability of each word, given the
+topic-signature. We note that we can use p(w|C
+j) in order to estimate
+p(d|Cj) by using the product of the constituent words in the document.
+For this purpose, we use the frequency f(w,d) of word win document
+d.
+p(d|Cj)=/productdisplay
+w∈dp(w|Cj)f(w,d)(9.1)
+We note that in the static case, it is also possible to add a background
+model in order to improve the robustness of the estimation process. Thisishowevernotpossibleinadatastreambecauseofthefactthattheback-ground collection model may require multiple passes in order to buildeﬀectively. The work in [32] maintains these probabilities in online fash-ion with the use of a cluster proﬁle , that weights the probabilities with
+the use of a fading function. We note that the concept of cluster pro-
+ﬁle is analogous to the concept of condensed droplet introduced in [3].
+The key algorithm (denoted by OCTS) is to maintain a dynamic set ofclusters into which documents are progressively assigned with the use ofsimilarity computations. It has been shown in [32] how the cluster pro-ﬁle can be used in order to eﬃciently compute p(d|C
+j) for each incoming
+document. This value is then used in order to determine the similarityof the documents to the diﬀerent clusters. This is used in order to as-
+sign the documents to their closest cluster. We note that the methods
+in [3, 32] share a number of similarities in terms of (a) maintenance ofcluster proﬁles, and (b) use of cluster proﬁles (or condensed droplets) tocompute similarity and assignment of documents to most similar clus-ters. (c) The rules used to decide when a new singleton cluster shouldbe created, or one of the older clusters should be replaced.
+Themaindiﬀerencebetweenthetwoalgorithmsisthetechniquewhich
+is used in order to compute cluster similarity. The OCTS algorithm
+uses the probabilistic computation p(d|C
+j) to compute cluster similarity,
+whichtakesthephrasalinformationintoaccountduringthecomputationprocess. One observation about OCTS is that it may allow for verysimilar clusters to co-exist in the current set. This reduces the spaceavailable for distinct cluster proﬁles. A second algorithm called OCTSMis also proposed in [32], which allows for merging of very similar clusters.
+Before each assignment, it checks whether pairs of similar clusters canMining Text Streams 307
+be merged on the basis of similarity. If this is the case, then we allow the
+merging of the similar clusters and their corresponding cluster proﬁles.Detailed experimental results on the diﬀerent clustering algorithms and
+their eﬀectiveness are presented in [32].
+Another method [42] uses a combination of a spectral partitioning and
+probabilistic modeling method for novelty detection and topic tracking.This approach uses a HITS-like spectral technique within a probabilisticframework. The probabilistic part is an unsupervised boosting method,which is closer to semi-parametric maximum likelihood methods.
+A closely related area to clustering is that of topic modeling, which is
+a problem closely related to that of clustering. In the problem of topic
+modeling, we perform a softclustering of the data in which each docu-
+ment has a membership probability to one of a universe of topics ratherthan a deterministic membership. A variety of mixture modeling tech-niques can be used in order to determine the topics from the underlyingdata. Recently, the method has also been extended to the dynamic case
+which is helpful for topic modeling of text streams [10]. A closely related
+topic is that of topic detection andtracking, which is discussed below.
+Recently, a variety of methods for maintaining topic models in a
+streaming scenario have been proposed in [49]. The work evaluates anumber of diﬀerent methods for adapting topic models to the streamingscenario. These include methods such as Gibbs sampling and varia-tional inference. In addition, a method is also proposed, which is basedon text classiﬁcation. The latter has the advantage of requiring only
+a single matrix multiplication, and is therefore much more eﬃcient. A
+method called SparseLDA is proposed, which is an eﬀective method for
+evaluating Gibbs sampling distributions. The results in [49] show thatthis method is 20 times faster than traditional LDA.
+In some applications, it is desirable to have clusters of approximately
+balanced size, in which a particular cluster is not signiﬁcantly largerthan the others. A competitive online learning for determining such
+balanced clusters have been proposed in [9]. The essential approach in
+[9] is to design a model in which it is harder for new data points to joinlarger clusters. This is achieved by penalizing the imbalance into theobjective function criterion. It was shown in [9] that such an approachcan determine well balanced clusters.
+2.1 Topic Detection and Tracking in Text
+Streams
+A closely related problem to clustering is that of topic detection and
+tracking [5, 11, 24, 46, 47, 51]. In this problem, we create unsupervised308 MINING TEXT DATA
+clustersfromatextstream, andthendeterminethesetsofclusterswhich
+match real events. These real events may correspond to documentswhich are identiﬁed by a human. Since the problem of online topic
+detection is closely related to that of clustering, we will discuss this
+problem as a subsection of our broader discussion on clustering, thoughnot all methods for topic detection use clustering techniques. In thissubsection, we will discuss all the methods for topic detection, whetherthey use clustering or not.
+The earliest work on topic detection and tracking was performed in
+[5, 47]. The work arose out of a DARPA initiative [55] which formally
+deﬁned this problem and proposed the initial set of algorithms for the
+task. An interesting technique in [47] designs methods which can beused for both retrospective and online topic tracking and detection. Inretrospective event detection, we create groups from a corpus of docu-ments (or stories), and each group corresponds to an event. The onlineversion is applicable to the case of data streams, and in this case, we pro-cess documents sequentially in order to determine whether an incoming
+document corresponds to a new event. An online clustering algorithm
+can also be used in order to track the diﬀerent events in the data in theform of clusters. For each incoming document
+Xwe compute its simi-
+larity to the last mdocuments Yt−1...Yt−m. The score for the incoming
+document Xis computed as follows:
+score(X) = max i∈{t−m...t−1}(1−sim(X,Yi)) (9.2)
+A document is considered novel, when its score is above a pre-deﬁned
+threshold. In addition, a decay-weighted version is designed in which the
+weight of documents depends upon its recency. The idea here is that a
+document is considered to be a new event when the last occurrence ofa similar document did not occur recently “enough”. In this case, thecorresponding score is designed as follows:
+score(
+X) = max i∈{t−m...t−1}(1−(m+i−t+1)
+m·sim(X,Yi)) (9.3)
+We note that each Yineed not necessarily represent a single document,
+but may also represent a cluster or a larger grouping. We also note
+that the method for detecting a new event can be combined with acluster tracking task. This is because the determination of a new eventis indicative of a new event (or singleton cluster) in the data.
+Theworkin[5]addressedtheproblemofneweventdetectionbyexam-
+ining the relationship of a current document to the previous documentsin the data. The key idea is to use feature extraction and selection
+techniques in order to design a query representation of the documentMining Text Streams 309
+content. We determine the query’s initial threshold by comparing the
+document content with the query, and set it as the triggering threshold.Then, we determine if the document triggers any queries from the pre-
+vious documents in the collection. If no queries are triggered, then the
+document is deemed to be a new event. Otherwise, this document is nota new event.
+One general observation about the online topic detection and track-
+ing problem [6, 48] is that this problem is quite hard in general, andthe performance of ﬁrst event detection can degrade under a variety ofscenarios. In order to improve the eﬀectiveness of ﬁrst event detection,
+the work in [48] proposes to use the training data of old events in order
+to learn useful statistics for the prediction of new events. The broadapproach in [48] contains the following components:
+The documents are classiﬁed into broad topics, each of which con-sists of multiple events.
+Named entities are identiﬁed, optimizing their weight relative tonormal words for each topic, and computing a stopword list foreach topic.
+Measuring the novelty of a new document conditioned on thesystem-predicted topic for that document.
+Clearly such an approach has the tradeoﬀ that it requires prior knowl-
+edge about the collection in the form of training data, but providesbetter accuracy. More details on the approach may be found in [48].
+A method proposed in [11] is quite similar to that proposed in [47], ex-
+cept that it proposes a number of improvements in how the tf–idf model
+is incrementally maintained for computation of similarity. For example,
+asource-speciﬁc tf–idf model is maintained in which the statistics are
+speciﬁc to each news source. Similarly, the approach normalizes for thefact that documents which come from the same source tend to have ahigher similarity because of the vocabulary conventions which are oftenused in the similarity computation. In order to achieve this goal, theapproach computes the average similarity between the documents from
+a particular pair of sources and subtracts this average value while com-
+puting the similarity between a pair of documents for the purpose of newevent detection. A number of other techniques for improving the qualityof event detection (such as using inverse event frequencies) are discussedin [11]. A method for online topic detection and tracking is presentedin [51] as an application of stream clustering. This work uses a prob-abilistic LDA model in order to create an online model for estimating
+the growing number of clusters. The general approach in this work is310 MINING TEXT DATA
+similar to the concepts already proposed in [47]. The main novelty of
+the work is the design of an online approach for probabilistic clustering.
+Another method for fast and parameter-free bursty event detection
+is proposed in [24]. This approach focusses on ﬁnding bursty featureswhich characterize the presence of an event. In order to achieve thisgoal, the technique in [24] proposes a feature-pivot clustering, which
+groups features on the basis of bursty co-occurrence. The approach is
+designed to be parameter-free, which gives it an advantage in a numberof scenarios.
+The problem of event detection has also been studied with the use of
+keyword graphs in [39]. The work in [39] builds a keywords graph from
+a text stream in which a node corresponds to a keyword, and an edge isadded to the keyword graphs when a pair of words occur together in the
+document. Events are characterized as communities of keywords in this
+network. This broad approach is used in the context of a window-based
+technique for the case of social streams.
+In the context of social network streams, a natural question arises, as
+to whether one can use any of the social dimensions of the underlying
+stream in order to improve the underlying event detection process. Suchan approach has been proposed in [53], in which events are determined
+by combining text clustering, social network structure clustering, and
+temporal segmentation. In addition, a multi-dimensional visualizationtool is provided, which discusses ways of visualizing the relationshipsbetween the events along the three dimensions. In this case, an event isdeﬁned as a set of text documents which are semantically coherent, andare structurally well connected both in terms of social network structureand time. These three diﬀerent characteristics are used in the following
+ways:
+First, the content is used in order to create a hierarchy of topics
+from the social text stream.
+While the topical patterns are useful for distinguishing content,the temporal segmentation is used in order to distinguish diﬀer-ent events. The assumption is that the communication betweendiﬀerent parties happen during a short contiguous time period.
+Since it is assumed that the events occur between connected enti-ties, we use the connectivity between the diﬀerent events in orderto further segment the events. An edge between a pair of nodescorresponds to a communication between the social entities. Mul-tiple edges are allowed between pairs of nodes. This structure is
+used in order to determine the event-dependent communities.Mining Text Streams 311
+Another method [36] has been proposed in the context of the Twit-
+tersocial network data set. In this paper, a locality sensitive hashing
+method (LSH) is used in order to keep track of the diﬀerent documents.The idea in LSH [14] is to use a hashing scheme in which the probabil-ity of hashing two documents into the same bucket is proportional tothe cosine of the angle between the two documents. For a given query
+document, we check all the documents in the same bucket, and then
+perform the similarity calculation explicitly with all documents in thesame bucket. The closest document is returned as the nearest neighbor.We note that the problem of ﬁrst-story detection can be considered anapplication of repeated nearest neighbor querying in which an incomingdocument is compared to the previously seen documents from the datastream. While LSH can be used directly in conjunction with a near-
+est neighbor search for ﬁrst story detection, such an approach typically
+leads to poor results. This is because LSH works eﬀectively only if thetrue nearest neighbor is close to the query point. Otherwise, such anapproach is unable to ﬁnd the true nearest neighbor. Therefore, theapproach in [36] uses the strategy of using LSH only for declaring a doc-ument to be suﬃciently new on an aggregate basis. For such cases, thedocument is compared against a ﬁxed number of the most recent doc-
+uments. In the event that the corresponding distance is above a given
+threshold, we can declare the underlying story as novel. The main ad-vantage of this technique over many of the aforementioned techniquesis that of speed, which is especially important, when dealing with social
+streams of very high volume. This speed is achieved because of the useof the LSH technique, though there is some loss in accuracy because ofthe approximation process. This technique was compared [36] against
+theUMass system [7], and it was found that more than an order of
+magnitude improvement in speed was obtained with only a minor lossin accuracy.
+Most of the work in text stream mining and topic detection is per-
+formed in the context of a single news stream . In many cases, we have
+multiple text streams [44], which are indexed by the same set of timepoints (called coordinated text streams). For example, when a major
+event happens, all the news articles published by diﬀerent agencies in
+diﬀerent languages cover the same event in that period. This is re-f e r r e dt oa sa correlated bursty topic pattern in the diﬀerent news article
+streams. In some cases, when the correlated streams are multi-lingual,they may even have completely diﬀerent vocabulary. The discovery ofbursty topic patterns can determine the interesting events and associa-tions between diﬀerent streams. Such an approach can also determine312 MINING TEXT DATA
+interesting local and stream-speciﬁc patterns by factoring out the global
+noise which is common to the diﬀerent streams.
+In order to achieve this goal, the technique in [44] aligns the text sam-
+ples from diﬀerent streams on the basis of the shared time-stamps. This
+is used in order to discover topics from multiple streams simultaneouslywith a single probabilistic mixture model. The approach of construct-ing independent topic models from diﬀerent streams is that the topicmodels from the diﬀerent streams may not match each other very well,or at least, create a challenge in matching the diﬀerent topic models, ifit is done at the end of the process of model construction. Therefore,
+it is important to make the mixture models for the diﬀerent streams
+communicate with one another during the modeling process, so that asingle mixture model is constructed across the diﬀerent streams. In or-der to achieve this goal, the stream samples at a given point are mergedtogether, while keeping the stream identities. In order to achieve this,we align the topic models from diﬀerent streams while keeping theiridentities. While the topic models from diﬀerent streams are separate,
+the global mixture model is designed for the overall text stream sam-
+ple. Such a mixture model is coordinated, because it would emphasizetopics which tend to occur across multiple streams. Once the coordi-nated mixture model is obtained, the topical models for the diﬀerentstreams can be extracted by ﬁtting the mixture model to the diﬀerentstreams. As the topic models for the diﬀerent streams ate aligned withone another, we can obtained a correlated bursty topic pattern, when
+the corresponding topic is bursty during the same period. A key aspect
+of this approach is that it does not require the diﬀerent streams to sharevocabulary. Rather it is assumed the topics involved in a correlatedbursty topic pattern tend to have the same distribution across streams,and this can be used in order to match topics from diﬀerent streams.More details on the approach may be found in [44].
+3. Classiﬁcation of Text Streams
+The problem of classiﬁcation of data streams has been widely studied
+by the data mining community in the context of diﬀerent kinds of data
+[1, 2, 43, 50]. Many of the methods for classifying numerical data can beeasily extended to the case of text data, just as the numerical clusteringmethod in [4] has been extended to a text clustering method in [3].In particular, the classiﬁcation method of [2] can be extended to thetext domain, by adapting the concept of numerical micro-clusters tocondensed droplets as discussed in [3]. With the use of the condensed
+droplet data structure, it is possible to extend all the methods discussedMining Text Streams 313
+in [2] to the text stream scenario. Similarly, the core idea in [43] uses
+an ensemble based approach on chunks of the data stream. This broadapproach is essentially a meta-algorithm which is not too dependent
+upon the speciﬁcs of the underlying data format. Therefore, the broadmethod can also be easily extended to the case of text streams.
+The problem of text stream classiﬁcation arises in the context of a
+number of diﬀerent IR tasks. The most important of these is news
+ﬁltering [30], in which it is desirable to automatically assign incoming
+documents to pre-deﬁned categories. A second application is that ofemail spam ﬁltering [8], in which it is desirable to determine whetherincoming email messages are spam or not. We note that the problem oftext stream classiﬁcation can arise in two diﬀerent contexts, dependingupon whether the training or the test data arrives in the form of a
+stream:
+In the ﬁrst case, the training data may be available for batch learn-
+ing, but the test data may arrive in the form of a stream.
+In the second case, both the training and the test data may arrivein the form of a stream. The patterns in the training data maycontinuously change over time, as a result of which the modelsneed to be updated dynamically.
+The ﬁrst scenario is usually easy to handle, because most classiﬁer
+models are compact and classify individual test instances eﬃciently. Onthe other hand, in the second scenario, the training model needs to beconstantly updated in order to account for changes in the patterns ofthe underlying training data. The easiest approach to such a problemis to incorporate temporal decay factors into model construction algo-
+rithms, so as to age out the old data. This ensures that the new (and
+more timely data) is weighted more signiﬁcantly in the classiﬁcationmodel. An interesting technique along this direction has been proposedin [38], in which a temporal weighting factor is introduced in order tomodify the classiﬁcation algorithms. Speciﬁcally, the approach has beenapplied to the Naive Bayes, Rocchio, and k-nearest neighbor classiﬁca-
+tion algorithms. It has been shown that the incorporation of temporal
+weighting factors is useful in improving the classiﬁcation accuracy, when
+the underlying data is evolving over time.
+A number of methods have also been designed speciﬁcally for the
+case of text streams. In particular, the method discussed in [23] studiesmethods for classifying text streams in which the classiﬁcation modelmay evolve over time. This problem has been studied extensively inthe literature in the context of multi-dimensional data streams [2, 43].
+For example, in a spam ﬁltering application, a user may generally delete314 MINING TEXT DATA
+the spam emails for a particular topic, such as those corresponding to
+political advertisements. However, in a particular period such as thepresidential elections, the user may be interested in the emails for that
+topic, it may not be appropriate to continue to classify that email as
+spam.
+The work in [23] looks at the particular problem of classiﬁcation in
+the context of user-interests. In this problem, the label of a documentis considered either interesting ornon-interesting . I no r d e rt oa c h i e v e
+this goal, the work in [23] maintains the interesting and non-interestingtopics in a text stream together with the evolution of the theme of the
+interesting topics. A document collection is classiﬁed into multiple top-
+ics, each of which is labeled either interesting or non-interesting at agiven point. A concept refers to the main theme of interesting topics.A concept drift refers to the fact that the main theme of the interestingtopic has changed.
+The main goals of the work are to maximize the accuracy of classi-
+ﬁcation and minimize the cost of re-classiﬁcation. In order to achieve
+this goal, the method in [23] designs methods for detecting both concept
+driftas well as model adaptation . The former refers to the change in
+the theme of user-interests, whereas the latter refers to the detection ofbrand new concepts. In order to detect concept drifts, the method in[23] measures the classiﬁcation error-rates in the data stream in termsof true and false positives. When the stream evolves, these error rateswill increase, if the change in the concepts are not detection. In order
+to determine the change in concepts, techniques from statistical quality
+control are used, in which we determine the mean μand standard devia-
+tionσof the error rates, and determine whether this error rate remains
+within a particular tolerance which is [ μ−k·σ,μ+k·σ]. Here the
+tolerance is regulated by the parameter k. When the error rate changes,
+we determine when the concepts should be dropped or included. In ad-dition, the drift rate is measured in order to determine the rate at which
+the concepts should be changed for classiﬁcation purposes. In addition,
+methods for dynamic construction and removal of sketches are discussedin [23].
+Another related work is that of one-class classiﬁcation of text streams
+[52], in which only training data for the positive class is available, butthere is no training data available for the negative class. This is quitecommon in many real applications in which it easy to ﬁnd representa-
+tive documents for a particular topic, but it is hard to ﬁnd the repre-
+sentative documents in order to model the background collection. Themethod works by designing an ensemble of classiﬁers in which some ofthe classiﬁers corresponds to a recent model, whereas others correspondMining Text Streams 315
+to a long-term model. This is done in order to incorporate the fact that
+the classiﬁcation should be performed with a combination of short-termand long-term trends.
+A rule-based technique, which can learn classiﬁers incrementally from
+data streams is the sleeping-experts systems [15, 21]. One characteristic
+of this rule-based system is that it uses the position of the words ingeneratingtheclassiﬁcationrules. Typically, therulescorrespond tosetsofwordswhichareplacedclosetogetherinagiventextdocument. Thesesets of words are related to a class label. For a given test document, it isdetermined whether these sets of words occur in the document, and are
+used for classiﬁcation. This system essentially learns a set of rules (or
+sleeping experts), which can be updated incrementally by the system.While the technique was proposed prior to the advent of data streamtechnology, its online nature ensures that it can be eﬀectively used forthe stream scenario.
+One of the classes of methods which can be easily adapted to stream
+classiﬁcation is the broad category of neural networks [41, 45]. This
+is because neural networks are essentially designed as a classiﬁcation
+model with a network of perceptrons and corresponding weights asso-ciated with the term-class pairs. Such an incremental update processcan be naturally adapted to the streaming context. These weights areincrementally learned as new examples arrive. The ﬁrst neural networkmethods for online learning were proposed in [41, 45]. In these methods,the classiﬁer starts oﬀ by setting all the weights in the neural network
+to the same value. The incoming training example is classiﬁed with the
+neural network. In the event that the result of the classiﬁcation processis correct, then the weights are not modiﬁed. On the other hand, if theclassiﬁcation is incorrect, then the weights for the terms are either in-creased or decreased depending upon which class the training examplebelongs to. Speciﬁcally, if class to which the training example belongsis a positive instance, the weights of the corresponding terms (in the
+training document) are increased by α. Otherwise, the weights of these
+terms are reduced by α. The value of αis also known as the learning
+rate. Many other variations are possible in terms of how the weights
+may be modiﬁed. For example, the method in [18] uses a multiplicativeupdate rule, in which two multiplicative constants α
+1>1a n dα2<1
+are used for the classiﬁcation process. The weights are multiplied by α1,
+when the example belongs to the positive class, and is multiplied by α2
+otherwise. Anothervariation[31]alsoallowsthemodiﬁcationofweights,
+when the classiﬁcation process is correct. A number of other online neu-ral network methods for text classiﬁcation (together with backgroundon the topic) may be found in [16, 22, 34, 35]. A Bayesian method for316 MINING TEXT DATA
+classiﬁcation of text streams is discussed in [13]. The method in [13]
+constructs a Bayesian model of the text which can be used for onlineclassiﬁcation. The key components of this approach are the design ofa Bayesian online perceptron and a Bayesian online Gaussian process,which can be used eﬀectively for online learning.
+4. Evolution Analysis in Text Streams
+Akeyprobleminthecaseoftextistodetermineevolutionarypatterns
+in temporal text streams. An early survey on the topic of evolution anal-
+ysis in text streams may be found in [28]. Such evolutionary patternscan be very useful in a wide variety of applications, such as summariz-ing events in news articles and revealing research trends in the scientiﬁcliterature. For example, an event may have a life cycle in the underlyingtheme patterns such as the beginning, duration, and end of a particu-lar event. Similarly, the evolution of a particular topic in the research
+literature may have a life-cycle in terms of how the diﬀerent topics af-
+fect one another. This problem was deﬁned in [33], and contains threemain parts: (a) Discovering the themes in text; (b) creating an evolutiongraph of themes; and (c) studying the life cycle of themes.
+Athemeis deﬁned as a semantically related set of words, with a corre-
+sponding probability distribution, which coherently representsa particu-lar topic or sub-topic. This corresponds to a model, which is represented
+byθ.T h espanof such a theme represents the starting and end point
+of the corresponding theme in terms of the time-interval ( s,t). Thus,
+the theme span is denoted by the triple γ=(θ,s,t). As time passes,
+a particular theme γ
+1may perform a transition into another theme γ2.
+A theme γ1is said to have evolved into another theme γ2, if there is
+suﬃcient similarity between their corresponding spans. It is possible tocreate a theme evolution graph G=(N,A), in which each node in N
+corresponds to a theme, and each edge in Acorresponds to a transition
+between two themes. The overall approach requires three steps:
+In the ﬁrst step, we segment the text stream into a number of pos-sibly overlapping sub-collections with ﬁxed or variable time spans.This is done in an application-speciﬁc way.
+The salient themes are determined from each collection with the
+use of a probabilistic mixture model. A standard mixture model
+technique [19] was used for this purpose.
+Finally, all the evolution transitions are determined from thesetheme patterns. This is done with the use of the KL-divergence
+measure in order to compute the evolution distance between twoMining Text Streams 317
+themes. In the event that the similarity is above a given threshold,
+the transition is considered valid.
+In addition, a method is proposed in [33] for analyzing the entire theme
+life cycle by measuring the strength of the theme over diﬀerent periods.
+A method based on HMM is proposed to measure the theme-shifts overthe entire period as well.
+The problem of tracking new topics, ideas, and memes across the Web
+has been studied in [29]. This problem is related to that of the topicdetection and tracking discussed earlier. However, the rate of evolutionin the web and blog scenario is signiﬁcantly greater than the models
+which have been discussed in earlier work. In the context of the web
+and social networks, the content spreads widely and then fades overtime scales on the order of days. The work is [29] develops a frameworkfor tracking short, distinctive phrases that persistently appear in on-line text over time. In addition, scalable algorithms were proposed forclustering textual variants of such phrases. In addition, the approachis able to perform local analysis for speciﬁc threads. This includes the
+determination of peak intensity and the rise and decay in the intensity
+of speciﬁc threads. The relationship between the news cycle and blogs isexamined in terms of how events propagate from one to the other, andthe corresponding time-lag for the propagation process.
+5. Conclusions
+This chapter studies the problem of mining text streams. The chal-
+lenge in the case of text stream arises because of its temporal and dy-namic nature in which the patterns and trends of the stream may vary
+rapidly over time. The determination of the changes in the underlying
+patterns and trends is very useful in the context of a wide variety ofapplications. A variety of problems in text stream mining are examinedsuch as clustering, classiﬁcation, evolution analysis, and event detection.In addition, we studied the applications of some of these techniques inthecontextof newapplicationssuchassocial networks. Alotof interest-ing avenues for research remain in the context of social media analytics,
+and the use of social dimensions in order to enhance text stream mining.
+In particular, the incorporation of network structure into the miningof social streams such as Twitterremains a relatively unexplored area,
+which can be a fruitful avenue for future research.318 MINING TEXT DATA
+References
+[1] C. C. Aggarwal. Data Streams: Models and Algorithms, Springer,
+2007.
+[2] C. C. Aggarwal, J. Han, J. Wang, P. Yu. On Demand Classiﬁcation
+of Data Streams, KDD Conference , 2004.
+[3] C. C. Aggarwal, P. S. Yu. A Framework for Clustering Massive Text
+and Categorical Data Streams, SIAM Conference on Data Mining ,
+2006.
+[4] C. C. Aggarwal, J. Han. J. Wang, P. Yu. A Framework for Cluster-
+ing Evolving Data Streams, VLDB Conference , 2003.
+[5] J. Allan, R. Papka, V. Lavrenko. On-line new event detection and
+tracking. ACM SIGIR Conference , 1998.
+[6] J. Allan, V. Lavrenko, H. Jin. First story detection in tdt is hard.
+ACM CIKM Conference , 2000.
+[7] J. Allan, V. Lavrenko, D. Malin, R. Swan. Detections, bounds and
+timelines: Umass and tdt3, Proceedings of the Topic Detection and
+Tracking Workshop , 2000.
+[8] I.Androutsopoulos,J.Koutsias,K.V.Chandrinos,C.D.Spyropou-
+los. An experimental comparison of naive Bayesian and keyword-basedanti-spamﬁlteringwithpersonale-mailmessages. Proceedings
+of the ACM SIGIR Conference , 2000.
+[9] A. Banerjee, J. Ghosh. Competitive learning mechanisms for scal-
+able, balanced and incremental clustering of streaming texts, NIPS
+Conference , 2003.
+[10] D. Blei, J. Laﬀerty. Dynamic topic models. ICML Conference , 2006.
+[11] T. Brants, F. Chen, A. Farahat. A system for new event detection.
+ACM SIGIR Conference , 2003.
+[12] L. O’Callaghan, A. Meyerson, R. Motwani, N. Mishra, S. Guha.
+Streaming-Data Algorithms for High-Quality Clustering. ICDE
+Conference , 2002.
+[13] K. Chai, H. Ng, H. Chiu. Bayesian Online Classiﬁers for Text Clas-
+siﬁcation and Filtering, ACM SIGIR Conference , 2002.
+[14] M. Charikar. Similarity Estimation Techniques from Rounding Al-
+gorithms, STOC Conference , 2002.
+[15] W. Cohen, Y. Singer. Context-sensitive learning methods for text
+categorization. ACM Transactions on Information Systems , 17(2),
+pp. 141–173, 1999.Mining Text Streams 319
+[16] K. Crammer, Y. Singer. A New Family of Online Algorithms for
+category ranking, ACM SIGIR Conference , 2002.
+[17] D. Cutting, D. Karger, J. Pedersen, J. Tukey. Scatter/Gather: A
+Cluster-based Approach to Browsing Large Document Collections.
+Proceedings of the S IGIR, 1992.
+[18] I. Dagan, Y. Karov, D. Roth. Mistake-driven learning in text cate-
+gorization. Conference Empirical Methods in Natural Language Pro-
+cessing, 1997.
+[19] A. P. Dempster, N. M. Laird, D. B. Rubin. Maximum likelihood
+from incomplete data via the EM algorithm. Journal of Royal Sta-
+tistical Society 39: pp. 1–38, 1977.
+[20] D. Fisher. Knowledge Acquisition via incremental conceptual clus-
+tering.Machine Learning , 2: pp. 139–172, 1987.
+[21] Y. Freund, R. Schapire, Y. Singer, M. Warmuth. Using and combin-
+ing predictors that specialize. Proceedings of the 29th Annual ACM
+Symposium on Theory of Computing , pp. 334–343, 1997.
+[22] Y. Freund, R. Schapire. Large Margin Classiﬁcation using the per-
+ceptron Algorithm, COLT, 1998.
+[23] G. P. C. Fung, J. X. Yu, H. Lu. Classifying text streams in the
+presence of concept drifts. PAKDD Conference , 2004.
+[24] G.P.C.Fung,J.X.Yu,P.Yu,H.Lu.ParameterFreeBurstyEvents
+Detection in Text Streams, VLDB Conference , 2005.
+[25] J. H. Gennari, P. Langley, D. Fisher. Models of incremental concept
+formation. Journal of Artiﬁcial Intelligence , 40: pp. 11–61, 1989.
+[26] Q.He,K.Chang,E.-P.Lim,J.Zhang.Burstyfeaturerepresentation
+for clustering text streams. SDM Conference , 2007.
+[27] J. Kleinberg, Bursty and hierarchical structure in streams, ACM
+KDD Conference , pp. 91–101, 2002.
+[28] A.Kontostathis,L.Galitsky,W.M.Pottenger,S.Roy,D.J.Phelps.
+Asurveyofemergingtrenddetectionintextualdatamining. Survey
+of Text Mining , pp. 185–224, 2003.
+[29] J. Leskovec, L. Backstrom, J. Kleinberg. Meme Tracking and the
+Dynamics of the News Cycle, KDD Conference , 2009.
+[30] D. Lewis. The TREC-4 ﬁltering track: description and analysis.
+Proceedings of TREC-4, 4th Text Retri eval Conference , pp. 165–
+180, 1995.
+[31] D. Lewis, R. E. Schapire, J. P. Callan, R. Papka. Training algo-
+rithms for linear text classiﬁers. ACM SIGIR Conference , 1996.320 MINING TEXT DATA
+[32] Y.-B. Liu, J.-R. Cai, J. Yin, A. W.-C. Fu. Clustering Text Data
+Streams, Journal of Computer Science and Technology , Vol. 23(1),
+pp. 112–128, 2008.
+[33] Q. Mei, C.-X. Zhai. Discovering Evolutionary Theme Patterns from
+Text- An Exploration of Temporal Text Mining, ACM KDD Con-
+ference, 2005.
+[34] H. T. Ng, W. B. Goh, K. L. Low. Feature selection, perceptron
+learning, and a usability case study for text categorization. SIGIR
+Conference , 1997.
+[35] F. Rosenblatt. The perceptron: A probabilistic model for informa-
+tion and storage organization in the brain, Psychological Review ,
+65: pp. 386–407, 1958.
+[36] S. Petrovic, M. Osborne, V. Lavrenko. Streaming First Story De-
+tection with Application to Twitter. Proceedings of the ACL Con-
+ference, pp. 181–189, 2010.
+[37] N. Sahoo, J. Callan, R. Krishnan, G. Duncan, R. Padman. Incre-
+mental Hierarchical Clustering of Text Documents, ACM CIKM
+Conference , 2006.
+[38] T. Salles, L. Rocha, G. Pappa, G. Mourao, W. Meira Jr., M.
+Goncalves. Temporally-aware algorithms for document classiﬁca-tion.ACM SIGIR Conference , 2010.
+[39] H. Sayyadi, M. Hurst, A. Maykov. Event Detection in Social
+Streams, AAAI, 2009.
+[40] H. Schutze, C. Silverstein. Projections for Eﬃcient Document Clus-
+tering,ACM SIGIR Conference , 1997.
+[41] H. Schutze, D. Hull, J. Pedersen. A comparison of classiﬁers and
+document representations for the routing problem. ACM SIGIR
+Conference , 1995.
+[42] A. Surendran, S. Sra. Incremental Aspect Models for Mining Doc-
+ument Streams. PKDD Conference , 2006.
+[43] H. Wang, W. Fan, P. Yu, J. Han, Mining Concept-Drifting Data
+Streams with Ensemble Classiﬁers, KDD Conference , 2003.
+[44] X. Wang, C.-X. Zhai, X. Hu, R. Sproat. Mining Correlated Bursty
+Topic Patterns from Correlated Text Streams, ACM KDD Confer-
+ence, 2007.
+[45] E. Wiener, J. O. Pedersen, A. S. Weigend. A Neural Network Ap-
+proach to Topic Spotting. SDAIR, pp. 317–332, 1995.
+[46] Y. Yang, J. Carbonell, R. Brown, T. Pierce, B. T. Archibald, X.
+Liu. Learning approaches for detecting and tracking news events.
+IEEE Intelligent Systems , 14(4):32–43, 1999.Mining Text Streams 321
+[47] Y. Yang, T. Pierce, J. Carbonell. A study on retrospective and on-
+line event detection. ACM SIGIR Conference , 1998.
+[48] Y.Yang, J. Carbonell, C. Jin. Topic-conditioned Novelty Detection.
+ACM KDD Conference , 2002.
+[49] L. Yao, D. Mimno, A. McCallum. Eﬃcient methods for topic model
+inference on streaming document collections, ACM KDD Confer-
+ence, 2009.
+[50] K. L. Yu, W. Lam. A new on-line learning algorithm for adaptive
+text ﬁltering. ACM CIKM Conference , 1998.
+[51] J. Zhang, Z. Ghahramani, Y. Yang. A probabilistic model for on-
+line document clustering with application to novelty detection. In
+Saul L., Weiss Y., Bottou L. (eds) Advances in Neural Information
+Processing Letters , 17, 2005.
+[52] Y. Zhang, X. Li, M. Orlowska. One Class Classiﬁcation of Text
+Streams with Concept Drift, ICDMW Workshop , 2008.
+[53] Q. Zhao, P. Mitra. Event Detection and Visualization for Social
+Text Streams, ICWSM, 2007.
+[54] S. Zhong. Eﬃcient Streaming Text Clustering. Neural Networks ,
+Volume 18, Issue 5-6, 2005.
+[55]http://projects.ldc.upenn.edu/TDT/Chapter 10
+TRANSLINGUAL MINING FROM TEXT
+DATA
+Jian-Yun Nie
+University of Montreal
+Montreal, H3C 3J7, Quebec, Canada
+nie@iro.umontreal.ca
+Jianfeng Gao
+Microsoft Corporation
+Redmond, WA, USA
+jfgao@microsoft.com
+Guihong Cao
+Microsoft Corporation
+Redmond, WA, USA
+gucao@microsoft.com
+Abstract Like full-text translation, cross-language information retrieval (CLIR)
+is a task that requires some form of knowledge transfer across languages.
+Although robust translation resources are critical for constructing high
+quality translation tools, manually constructed resources are limited
+both in their coverage and in their adaptability to a wide range of ap-
+plications. Automatic mining of translingual knowledge makes it pos-
+sible to complement hand-curated resources. This chapter describes a
+growing body of work that seeks to mine translingual knowledge from
+text data, in particular, data found on the Web. We review a number
+of mining and ﬁltering strategies, and consider them in the context of
+statistical machine translation, showing that these techniques can be ef-
+fective in collecting large quantities of translingual knowledge necessary
+for CLIR.
+ 
+© Springer Science+Business Media, LLC 2012  323  C.C. Aggarwal and C.X. Zhai(eds.),Mining Text Data , DOI 10.1007/978-1-4614-3223-4_10,
