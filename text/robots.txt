@@ -1,3 +1,34 @@
-User-agent: *
-Disallow: /*?
+# robots.txt for http://www.cl.cam.ac.uk/
 
+User-agent: *
+Disallow: /~aac10/sentiment/
+Disallow: /research/nl/nl-download/
+Disallow: /RPM/
+Disallow: /cgi-bin/
+
+User-agent: University of Cambridge search (search-support@ucs.cam.ac.uk)
+Disallow: /~aac10/sentiment/
+Disallow: /research/nl/nl-download/
+Disallow: /RPM/
+Disallow: /users/
+Disallow: /~
+Disallow: /cgi-bin/
+
+User-agent: Ultraseek (webmaster@ucs.cam.ac.uk)  # old University search engine
+Disallow: /~aac10/sentiment/
+Disallow: /research/nl/nl-download/
+Disallow: /RPM/
+Disallow: /users/
+Disallow: /~
+Disallow: /cgi-bin/
+
+User-agent: Ultraseek (internal search; webmaster@ucs.cam.ac.uk)  # old University search engine
+Disallow: /~aac10/sentiment/
+Disallow: /research/nl/nl-download/
+Disallow: /RPM/
+Disallow: /users/
+Disallow: /~
+Disallow: /cgi-bin/
+
+User-agent: linkchecker
+Disallow: /cgi-bin/
