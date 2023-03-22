@@ -45,7 +45,7 @@
 <!--###### script #####-->
 <script>
 export default {
-    name: 'BookRecommender',
+    name: 'ChapterRecommender',
     data() {
         return {
             file1: null,

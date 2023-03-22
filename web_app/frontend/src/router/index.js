@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import TextSummarizer from '../views/TextSummarizer.vue'
-import BookRecommender from '../views/BookRecommender.vue'
+import ChapterRecommender from '../views/ChapterRecommender.vue'
 
 const routes = [
     {
@@ -13,11 +13,11 @@ const routes = [
     },
 
     {
-        path: '/book-recommender',
-        name: 'BookRecommender',
-        component: BookRecommender,
+        path: '/chapter-recommender',
+        name: 'ChapterRecommender',
+        component: ChapterRecommender,
         meta: {
-            title: 'Book Recommender',
+            title: 'Chapter Recommender',
         }
     }
 ]

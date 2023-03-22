@@ -12,7 +12,7 @@
                         <a class="nav-link mx-3" href="/text-summarizer">Text Summarizer</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link mx-3" href="/book-recommender">Book Recommender</a>
+                        <a class="nav-link mx-3" href="/chapter-recommender">Chapter Recommender</a>
                     </li>
                 </ul>
 
