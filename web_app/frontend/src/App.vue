@@ -1,5 +1,6 @@
 <template>
   <TopNavigation />
+  <router-view/>
 </template>
 
 <script>
