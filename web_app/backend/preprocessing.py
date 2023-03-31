@@ -206,3 +206,11 @@ def savecleanBooks(text, id):
     with open (f'./{folder}/{id}.txt', "w", encoding='utf-8') as f:
         f.write(text)
         f.close()
+
+######################################################################################################
+
+def make_bigrams(bigram_mod, texts):
+    return [bigram_mod[doc] for doc in texts]
+
+def make_trigrams(bigram_mod, trigram_mod, texts):
+    return [trigram_mod[bigram_mod[doc]] for doc in texts]

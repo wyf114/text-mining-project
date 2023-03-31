@@ -28,21 +28,37 @@
                     </div>
                     -->
                     <!-- Create button -->
-                    <button type="submit" class="btn btn-primary" id="submitFile" @click="preprocessBook()">Submit</button>
+                    <button type="submit" class="btn btn-primary" id="submitFile" @click="preprocessBook()">Upload</button>
                 </div>
             </div>
             <hr>
             <div class="my-4">
                 <h1>Required Inputs</h1>
-                
+                <div class="my-3">
+                    <label for="selected_chap" class="form-label"><h4>Select a chapter</h4></label><br>
+                    <select id="selected_chap" v-model="selected_chap" class="form-select form-select-lg mb-3" aria-label="Default select example">
+                        <option v-for="(value, index) in chapters_list" :key=value :value=index>{{value}}</option>
+                    </select>
+                </div>
+                <div class="my-3">
+                    <h4>Select the type of keywords you would like to see: </h4>
+                    <div class="form-check">
+                        <input v-model="keyword_type" value='unigrams' class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+                        <label class="form-check-label" for="flexRadioDefault1">
+                            Unigrams
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input v-model="keyword_type" value='bigrams' class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked>
+                        <label class="form-check-label" for="flexRadioDefault2">
+                            Bigrams
+                        </label>
+                    </div>
+                </div>
 
-                <label for="selected_chap" class="form-label">Select a chapter</label><br>
-                <select id="selected_chap" v-model="selected_chap" class="form-select form-select-lg mb-3" aria-label="Default select example">
-                    <option v-for="(value, index) in chapters_list" :key=value :value=index>{{value}}</option>
-                    <option value="0" >I</option>
-                </select>
-                <br>
-                <button type="button" class="btn btn-primary" id="submitInput" @click="showResults()">Submit</button>
+
+                <button type="button" class="btn btn-primary" id="submitInput" @click="showResults()">Generate Results</button>
+                <p v-if="error_message" class="text-danger">{{ error_message }}</p>
             </div>
             <hr>
 
@@ -75,18 +91,20 @@ export default {
             // file2: null,
             // chapters_name: null,
             // test_vecs: null,
-            value: null,
+            filevalue: null,
             lastline: 'the critics and the answers to these objections.',
             selected_chap: 0,
             key_words: null,
             recommended_chapters: null,
-            chap_folder: 'test_data/Chapters/4339',
+            chap_folder: 'test_data/Chapters/1974',
             books_directory: 'test_data',
-            filename: '4339',
+            filename: '1974',
             book_name: null,
             book_text: null,
             chapters_list: [],
-            dir: 'test_data/Chapters2'
+            dir: 'test_data/Chapters2',
+            keyword_type: null,
+            error_message: null
 
 
         }
@@ -98,8 +116,8 @@ export default {
     },
     methods: {
         uploadFile(){
-            this.value = document.getElementById('formFile')
-            print(this.value)
+            this.filevalue = document.getElementById('formFile').value
+            // console.log(this.filevalue)
         },
         checkInput(){
             if(this.selected_chap != null){
@@ -139,12 +157,25 @@ export default {
             })
         },
         async showResults(){
-            await axios.get('http://localhost:3000/loadmodel?selected_chap=' + this.selected_chap + '&folder=' + this.chap_folder)
+            await axios.get('http://localhost:3000/loadmodel', {
+                params: {
+                    selected_chap: this.selected_chap,
+                    folder: this.chap_folder,
+                    keyword_type: this.keyword_type
+                }
+            })
             .then(response => {
                 console.log("testing", response)
                 this.key_words = response.data.key_words
                 this.recommended_chapters = response.data.recommendation
                 console.log(this.recommended_chapters)
+
+                if(this.key_words.length == 0){
+                    this.error_message = 'No valid ' + this.keyword_type + ' found in selected chapter.'
+                }
+                else{
+                    this.error_message = null
+                }
 
             })
         },
