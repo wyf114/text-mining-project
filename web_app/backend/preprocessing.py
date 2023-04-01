@@ -36,12 +36,13 @@ def corpus2docs(corpus):
     docs_lower = [[w.lower() for w in doc] for doc in docs_token]
     docs_alpha = [[w for w in doc if re.search('^[a-z]+$', w)] for doc in docs_lower]
 
+    docs_stop = [[w for w in doc if w not in stop_list] for doc in docs_alpha]
+
     lemmatizer = WordNetLemmatizer()
-    docs_lem = [[lemmatizer.lemmatize(w) for w in doc] for doc in docs_alpha]
+    docs_lem = [[lemmatizer.lemmatize(w) for w in doc] for doc in docs_stop]
 #     docs_lem = [lemmatizer.lemmatize(word, tag[0].lower()) for word, tag in pos_tag(word_tokenize(sen), tagset='universal') if tag[0].lower() in ['a', 'r', 'n', 'v']]
 
-    docs_stop = [[w for w in doc if w not in stop_list] for doc in docs_lem]
-    doc_cleaned = [[w for w in doc if len(w)>3] for doc in docs_stop]
+    doc_cleaned = [[w for w in doc if len(w)>3] for doc in docs_lem]
     return doc_cleaned
 
 
@@ -94,7 +95,8 @@ roman_chap_fullstop = []
 num_fullstop = []
 roman_only_space = []
 roman_short = []
-cap_word = ['\n[A-Z ]+[.]\n']
+regex = ['\n[A-Z ]+[.]\n', 
+         'Chapter \d+|CHAPTER \d+|Chapters \d+|CHAPTER [IVXLCDMivxlcdm]+|Chapter [IVXLCDMivxlcdm]+|Book [IVXLC]+|BOOK [IVXLC]+']
 
 for i in range(1, 100):
     num.append('\nChapter ' + str(i))
@@ -112,7 +114,8 @@ for i in range(1, 100):
     num_fullstop.append('\n\n' + str(i) + '[.]\n')
     roman_short.append('  CHAP.   ' + printRoman(i) + '[.]\n')
     
-header_list = num + num_word + cap_roman + roman_num + roman_book + cap_roman_book + prop_roman + num_only + roman_fullstop + roman_only + roman_chap_fullstop + num_fullstop + roman_only_space + roman_short
+header_list = num + num_word + cap_roman + roman_num + roman_book + cap_roman_book + prop_roman + num_only + roman_fullstop + roman_only \
+            + roman_chap_fullstop + num_fullstop + roman_only_space + roman_short
 header = "|".join(header_list)
 
 def remove_end(text, last_line):
@@ -147,7 +150,7 @@ def chapIndexes(text):
 def chapIndexesbyCapWord(text):
     chap_index = []
     indexes = [
-        match.start() for match in re.finditer(cap_word[0], text)
+        match.start() for match in re.finditer(regex[0], text)
     ]
     if(len(indexes) > 1):
         for i in range(len(indexes)-1):
