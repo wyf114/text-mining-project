@@ -3,7 +3,7 @@
     <div class="container-fluid">
 
         <div class="container">
-            <div class="row justify-content-center">
+            <div class="row">
                 <div class="col-md-6">
                     <h1 class="mt-4 mb-4">Chapter Recommender</h1>
                     <!-- Upload pdf file -->
