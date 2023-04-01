@@ -16,7 +16,7 @@
                             <input class="form-control" type="file" id="formFile">
                         </div>
                         <div class="mb-4 p-0">
-                            <label for="lastline" class="form-label">Enter last line of book</label>
+                            <label for="lastline" class="form-label">Enter last line of last chapter</label>
                             <input v-model="lastline" type="" class="form-control" id="lastline" aria-describedby="lastline">
                         </div>
 
