@@ -20,5 +20,15 @@ npm run build
 npm run lint
 ```
 
+### Install dependencies
+```
+frontend:
+npm install axios
+
+backend:
+pip install nltk
+pip install num2words
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
