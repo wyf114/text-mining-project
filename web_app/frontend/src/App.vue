@@ -15,6 +15,11 @@ export default {
 </script>
 
 <style>
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -23,6 +28,7 @@ export default {
   background-color: rgb(245, 245, 245);
   color: #2c3e50;
   margin-top: 60px;
+  height: 100%;
 }
 
 button { 
@@ -36,9 +42,9 @@ button:active, button:hover {
   background-color: #8a5636 !important;
 } 
 
-#main {
+/* #main {
   background-color: white;
   border-radius: 0.5cm;
-}
+} */
 
 </style>
