@@ -128,5 +128,15 @@ def preprocessBook():
 
     return jsonify({'book_name': book_name, 'chapters': chapter_list})
 
+# receive the .txt file from frontend
+@app.route('/upload', methods=['POST'])
+def upload():
+   filename = request.files['file'].filename
+   last_line = request.form['lastline']
+   
+   return jsonify({'filename': filename,
+                   'lastline': last_line})
+
+
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port='3000', debug=True)

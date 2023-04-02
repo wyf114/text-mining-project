@@ -34,9 +34,14 @@
                         </div>
                                 -->
                         <!-- Create button -->
+                        <!-- original
                         <div class="p-0">
                             <button type="submit" class="btn btn-primary" id="submitFile"
-                                @click="preprocessBook()">Upload</button>
+                                @click="preprocessBook(); sendFile()">Upload</button>
+                        </div> -->
+                        <div class="p-0">
+                            <button type="submit" class="btn btn-primary" id="submitFile"
+                                @click="sendFile()">Upload</button>
                         </div>
                     </div>
 
@@ -96,6 +101,18 @@
                         <h3 class="fs-6 fw-semibold mb-4">Summarisation</h3>
                         <p>{display summary here}</p>
                     </div>
+
+
+
+                    <div class="form-floating mb-3">
+                        <h3 class="fs-6 fw-semibold mb-4">Book Name</h3>
+                        <p>{{ filename }}</p>
+                        <p>{{ lastline }}</p>
+                    </div>
+
+
+
+
                 </div>
             </div>
 
@@ -117,13 +134,17 @@ export default {
             // test_vecs: null,
             file: null,
             filevalue: null,
-            lastline: 'the critics and the answers to these objections.',
+
+            //lastline: 'the critics and the answers to these objections.',
+            lastline: null,
+
             selected_chap: 0,
             key_words: null,
             recommended_chapters: null,
             chap_folder: 'test_data/Chapters/5827',
             books_directory: 'test_data',
-            filename: '5827',
+            //filename: '5827',
+            filename: null,
             book_name: null,
             book_text: null,
             chapters_list: [],
@@ -144,8 +165,24 @@ export default {
             //this.filevalue = document.getElementById('formFile').value
             // console.log(this.filevalue)
             this.file = this.$refs.file.files[0];
-
         },
+
+        async sendFile() {
+            const formData = new FormData();
+            formData.append('file', this.file);
+            formData.append('filename', this.filename);
+            formData.append('lastline', this.lastline);
+
+            await axios.post('http://localhost:3000/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+                .then(response => {
+                    this.filename = response.data.filename
+                })
+        },
+
         checkInput() {
             if (this.selected_chap != null) {
                 this.showResults()
