@@ -7,14 +7,13 @@ api.py
 # from flask import Blueprint, request, jsonify
 # from models import db
 
-# api = Blueprint('api', __name__)
 
 ###################################################
 """
 API 1 - 
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 
 import gensim
@@ -27,6 +26,8 @@ import preprocessing
 import pandas as pd
 import os
 from os import path
+
+api = Blueprint('api', __name__)
 
 app = Flask(__name__)
 CORS(app)
@@ -120,6 +121,16 @@ def preprocessBook():
           chapter_list = preprocessing.saveChapters(dir, split_text, book_name)
 
     return jsonify({'book_name': book_name, 'chapters': chapter_list})
+
+# receive the .txt file from frontend
+@app.route('/upload', methods=['POST'])
+def upload():
+   filename = request.files['file'].filename
+   last_line = request.form['lastline']
+   
+   return jsonify({'filename': filename,
+                   'lastline': last_line})
+
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port='3000', debug=True)
