@@ -7,14 +7,13 @@ api.py
 # from flask import Blueprint, request, jsonify
 # from models import db
 
-# api = Blueprint('api', __name__)
 
 ###################################################
 """
 API 1 - 
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 
 import gensim
@@ -27,6 +26,8 @@ import preprocessing
 import pandas as pd
 import os
 from os import path
+
+api = Blueprint('api', __name__)
 
 app = Flask(__name__)
 CORS(app)
