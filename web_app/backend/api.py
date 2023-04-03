@@ -161,6 +161,9 @@ def upload():
   # pass the dir to frontend, cos need this data in next step 'showResult'
   chap_folder = f"test_data/Chapters3/{book_name}"
 
+  # test
+  print(chap_folder)
+
   # return chapter-list to frontend
   return jsonify({
     'chap_folder': chap_folder,

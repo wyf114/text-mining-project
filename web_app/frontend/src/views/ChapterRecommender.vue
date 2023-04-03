@@ -147,12 +147,11 @@ export default {
 
             books_directory: 'test_data',
             dir: 'test_data/Chapters2/',
-            filename: '1974',
+            filename: null,
             //filename: '5827',
             book_name: null,
             book_text: null,
             chapters_list: [],
-            dir: 'test_data/Chapters2',
             keyword_type: null,
             error_message: null,
             cleaned_content: null,
