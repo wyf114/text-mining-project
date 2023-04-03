@@ -1,12 +1,12 @@
 <!--###### template #####-->
 <template>
-    <div class="container-fluid">
+    <div class="container-fluid h-100">
 
-        <div class="container my-4" id="main">
-            <div class="row px-3">
-
+        <div class="container my-4 py-4 h-100" id="main">
+            <div class="row p-3 bg-white rounded-4">
+                
                 <!-- Chapter Recommender -->
-                <div class="col-6 pe-5">
+                <div class="col-6 px-5">
                     <div class="row">
                         <h1 class="fs-6 fw-bold my-4 p-0">Chapter Recommender</h1>
                         <hr>
@@ -94,8 +94,7 @@
                     </div>
                     <div class="form-floating mb-3">
                         <h3 class="fs-6 fw-semibold mb-4">Recommended Chapters</h3>
-                        <p style="display: inline-block;" v-for="chap in recommended_chapters" :key="chap">{{ chap }},&nbsp;
-                        </p>
+                        <p class="text-break" style="display: inline-block;" v-for="chap in recommended_chapters" :key="chap">{{ chap }},&nbsp;</p>
                     </div>
                     <div class="form-floating mb-3">
                         <h3 class="fs-6 fw-semibold mb-4">Summarisation</h3>
@@ -147,8 +146,9 @@ export default {
             chap_folder: null,
 
             books_directory: 'test_data',
+            dir: 'test_data/Chapters2/',
+            filename: '1974',
             //filename: '5827',
-            filename: null,
             book_name: null,
             book_text: null,
             chapters_list: [],
@@ -214,25 +214,11 @@ export default {
 
                 })
         },
-        async splitBook() {
-            await axios.get('http://localhost:3000/splitbook', {
-                params: {
-                    book_name: this.book_name,
-                    lastline: this.lastline
-                },
-
-            })
-                .then(response => {
-                    this.chapters_list = response.data.chapters
-                    console.log(this.chapters_list)
-
-                })
-        },
-        async showResults() {
+        async showResults(){
             await axios.get('http://localhost:3000/loadmodel', {
                 params: {
                     selected_chap: this.selected_chap,
-                    folder: this.chap_folder,
+                    folder: this.dir + this.filename,
                     keyword_type: this.keyword_type
                 }
             })

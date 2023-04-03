@@ -30,21 +30,13 @@ def corpus2docs(corpus):
         doc = nltk.word_tokenize(doc_raw)
         docs_token.append(doc)
 
-#     for doc in corpus:
-#         doc1 = nltk.word_tokenize(doc)
-#         docs_token.append(doc1)
-
     docs_lower = [[w.lower() for w in doc] for doc in docs_token]
     docs_alpha = [[w for w in doc if re.search('^[a-z]+$', w)] for doc in docs_lower]
 
-    docs_stop = [[w for w in doc if w not in stop_list] for doc in docs_alpha]
-
     lemmatizer = WordNetLemmatizer()
-    docs_lem = [[lemmatizer.lemmatize(w) for w in doc] for doc in docs_stop]
-#     docs_lem = [lemmatizer.lemmatize(word, tag[0].lower()) for word, tag in pos_tag(word_tokenize(sen), tagset='universal') if tag[0].lower() in ['a', 'r', 'n', 'v']]
+    docs_lem = [[lemmatizer.lemmatize(word, tag[0].lower()) for word, tag in pos_tag(doc, tagset='universal') if tag[0].lower() in ['a', 'r', 'n', 'v']] for doc in docs_alpha]
 
-    doc_cleaned = [[w for w in doc if len(w)>3] for doc in docs_lem]
-    return doc_cleaned
+    return docs_lem
 
 
 def docs2vecs(docs, dictionary):
@@ -164,8 +156,6 @@ def chapIndexesbyCapWord(text):
 
 def splitbyChapters(text, chap_index):
     split_text = []
-#     numOfchapters = []
-#     numOfchapters = chapIndexes(text, header)
     
     if (len(chap_index) > 1):
         for i in range(len(chap_index) - 1):
@@ -217,7 +207,13 @@ def savecleanBooks(text, id):
 ######################################################################################################
 
 def make_bigrams(bigram_mod, texts):
-    return [bigram_mod[doc] for doc in texts]
+    bigram = [bigram_mod[doc] for doc in texts]
+    docs_stop = [[w for w in doc if w not in stop_list] for doc in bigram] 
+    bigram_cleaned = [[w for w in doc if len(w)>3] for doc in docs_stop]
+    return bigram_cleaned
 
 def make_trigrams(bigram_mod, trigram_mod, texts):
-    return [trigram_mod[bigram_mod[doc]] for doc in texts]
+    trigram = [trigram_mod[bigram_mod[doc]] for doc in texts]
+    docs_stop = [[w for w in doc if w not in stop_list] for doc in trigram] 
+    trigram_cleaned = [[w for w in doc if len(w)>3] for doc in docs_stop]
+    return trigram_cleaned

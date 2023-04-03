@@ -32,8 +32,8 @@ api = Blueprint('api', __name__)
 app = Flask(__name__)
 CORS(app)
 
-lda_disk=gensim.models.ldamodel.LdaModel.load("model/model_5Topics")
-id2word = corpora.Dictionary.load('model/model_Dictionary')
+lda_disk=gensim.models.ldamodel.LdaModel.load("model/finalmodel_5Topics")
+id2word = corpora.Dictionary.load('model/finalmodel_Dictionary')
 
 @app.route('/loadmodel', methods=['GET'])
 def load_model():
@@ -57,11 +57,8 @@ def load_model():
   docs_bigrams = preprocessing.make_bigrams(bigram_mod, test_docs)
   data_bigrams_trigrams = preprocessing.make_trigrams(bigram_mod, trigram_mod, docs_bigrams)
   test_vecs = preprocessing.docs2vecs(data_bigrams_trigrams, id2word)
-  # lst_bigram = [word for word in test_vecs if '_' in word]
-  # print(docs_bigrams)
 
   # get topic distribution of chapter
-  # selected_chap = 0
   vector = lda_disk[test_vecs[selected_chap]]
   sim_topic = max(vector,key=lambda item:item[1])
   top_topic = sim_topic[0]
@@ -78,17 +75,13 @@ def load_model():
       else:
         if ('_' in word[0]) & (len(key_words) < 5) & (word [0] in selected_words):
           key_words.append(word)
-      
-
-  # chosen_chapter = chapters_name[chap_num]
+ 
   recommendation_scores = []
 
   similarity = similarities.MatrixSimilarity(lda_disk[test_vecs])
 
   for i in range(0,len(test_vecs)):
       vector = lda_disk[test_vecs[i]]
-      # sim_topic = max(vector,key=lambda item:item[1])
-      
       if(i == selected_chap):
           sims = similarity[vector]
           sims = list(enumerate(sims))
@@ -112,7 +105,7 @@ def preprocessBook():
     last_line = request.args.get('lastline')
     dir = books_directory + "/Chapters2" #test_data/Chapters
     chapter_list = []
-    book_name = ""
+    
 
     if filename.endswith('.txt'):
       with open(os.path.join(books_directory, filename), "r", encoding="utf8", errors='ignore') as file:
