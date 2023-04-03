@@ -101,7 +101,7 @@ for i in range(1, 100):
     prop_roman.append('\nPROP. ' + printRoman(i) + '[.]')
     num_only.append('\n' + str(i) + '\n\n')
     roman_fullstop.append('\n\n' + printRoman(i) + '[.] ')
-    roman_only.append('\n\n' + printRoman(i) + '\n')
+    roman_only.append('\n' + printRoman(i) + '\r\n')
     roman_chap_fullstop.append('\nCHAPTER. ' + printRoman(i) + '[.]')
     roman_only_space.append('\n\n' + printRoman(i) + '\n')
     num_fullstop.append('\n\n' + str(i) + '[.]\n')
@@ -182,7 +182,7 @@ def saveChapters(dir, split_text, id):
     chapter_list = []
     for i in split_text:
         if i != '':
-            name = i.split("\n")
+            name = i.split("\r\n")
             name = [x for x in name if x != '']
             form_name = name[0].replace(".", "_").replace(" ", "_").replace(":", "").replace("?", "").replace('"', "").replace('\x00', "")
             form_name = form_name.strip()

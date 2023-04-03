@@ -46,7 +46,7 @@
                     </div>
 
                     <!-- User input - Chapter -->
-                    <div class="row mt-4 my-4">
+                    <div v-show="chapters_list.length != 0" class="row mt-4 my-4">
                         <!-- <h1 class="fs-3 p-0">Required Inputs</h1> -->
                         <div class="mt-2 p-0">
                             <label for="selected_chap" class="form-label">
