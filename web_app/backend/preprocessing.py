@@ -185,7 +185,10 @@ def directory(input_name):
 
 
 
-def saveChapters(dir, split_text, id):
+def saveChapters(dir, split_text, id): 
+    # dir: test_data/Chapters3
+    # split_text: list of chapters
+    # id: 31671
     dir = directory(dir)
     folder = os.path.join(dir,id)
     os.mkdir(folder)
@@ -195,7 +198,7 @@ def saveChapters(dir, split_text, id):
             name = i.split("\n")
             name = [x for x in name if x != '']
             form_name = name[0].replace(".", "_").replace(" ", "_").replace(":", "").replace("?", "").replace('"', "").replace('\x00', "")
-            
+            form_name = form_name.strip()
             if(form_name not in remove_list):
                 with open (f'./{folder}/{form_name}.txt', "w", encoding='utf-8') as f:
                     f.write(i)

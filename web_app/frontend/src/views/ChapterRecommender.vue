@@ -108,6 +108,7 @@
                         <h3 class="fs-6 fw-semibold mb-4">Book Name</h3>
                         <p>{{ filename }}</p>
                         <p>{{ lastline }}</p>
+                        <p>{{ cleaned_content }}</p>
                     </div>
 
 
@@ -141,7 +142,10 @@ export default {
             selected_chap: 0,
             key_words: null,
             recommended_chapters: null,
-            chap_folder: 'test_data/Chapters/5827',
+
+            //chap_folder: 'test_data/Chapters/5827',
+            chap_folder: null,
+
             books_directory: 'test_data',
             //filename: '5827',
             filename: null,
@@ -150,7 +154,8 @@ export default {
             chapters_list: [],
             dir: 'test_data/Chapters2',
             keyword_type: null,
-            error_message: null
+            error_message: null,
+            cleaned_content: null,
 
 
         }
@@ -179,7 +184,10 @@ export default {
                 }
             })
                 .then(response => {
-                    this.filename = response.data.filename
+                    //this.filename = response.data.filename
+                    //this.cleaned_content = response.data.cleaned_text
+                    this.chapters_list = response.data.chapters
+                    this.chap_folder = response.data.chap_folder
                 })
         },
 

@@ -107,10 +107,10 @@ def load_model():
 
 @app.route('/preprocessbook', methods=['GET'])
 def preprocessBook():
-    books_directory = request.args.get('books_directory')
+    books_directory = request.args.get('books_directory') #test_data
     filename = request.args.get('filename') + '.txt'
     last_line = request.args.get('lastline')
-    dir = books_directory + "/Chapters2"
+    dir = books_directory + "/Chapters2" #test_data/Chapters
     chapter_list = []
     book_name = ""
 
@@ -128,14 +128,51 @@ def preprocessBook():
 
     return jsonify({'book_name': book_name, 'chapters': chapter_list})
 
+########################################################################
 # receive the .txt file from frontend
+# Things it does:
+# 1. split chapters and save to folder
+# 2. get chapter name for frontend to put inside the dropdown
+# Output:
+# 1. chapter_list
+########################################################################
+
 @app.route('/upload', methods=['POST'])
 def upload():
-   filename = request.files['file'].filename
-   last_line = request.form['lastline']
-   
-   return jsonify({'filename': filename,
-                   'lastline': last_line})
+
+  # get whatever passed from frontend
+  filename = request.files['file'].filename
+  last_line = request.form['lastline']
+  content = request.files['file'].read()
+
+  # get the filename: e.g.4339
+  book_name = filename.replace('.txt','')
+
+  # remove the content of the last line
+  content_lastline_removed = preprocessing.remove_end(content.decode("utf-8"), last_line)
+
+  # save the cleaned book to folder
+  preprocessing.savecleanBooks(content_lastline_removed, book_name)
+
+  # get the indexes of the chapters
+  chap_index = preprocessing.chapIndexes(content_lastline_removed)
+
+  # split the book into chapters
+  splitted_text = preprocessing.splitbyChapters(content_lastline_removed, chap_index)
+
+  # save each chapters to folder
+  chapter_list = []
+  if ((type(splitted_text) == list) & (len(splitted_text)>1)):
+    chapter_list = preprocessing.saveChapters('test_data/Chapters3', splitted_text, book_name)
+  
+  # pass the dir to frontend, cos need this data in next step 'showResult'
+  chap_folder = f"test_data/Chapters3/{book_name}"
+
+  # return chapter-list to frontend
+  return jsonify({
+    'chap_folder': chap_folder,
+    'chapters': chapter_list
+    })
 
 
 if __name__ == '__main__':
