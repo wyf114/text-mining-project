@@ -170,6 +170,11 @@ export default {
             //this.filevalue = document.getElementById('formFile').value
             // console.log(this.filevalue)
             this.file = this.$refs.file.files[0];
+            this.chapters_list = []
+            this.error_message = null
+            this.recommended_chapters = null
+            this.lastline = null
+            this.key_words = null
         },
 
         async sendFile() {
