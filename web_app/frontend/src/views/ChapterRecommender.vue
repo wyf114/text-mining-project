@@ -54,7 +54,7 @@
                             </label><br>
                             <select id="selected_chap" v-model="selected_chap" class="form-select form-select-lg mb-3"
                                 aria-label="Default select example">
-                                <option v-for="(value, index) in chapters_list" :key=value :value=index>{{ value }}</option>
+                                <option v-for="chap in chapters_list" :key=chap :value=chap>{{ chap }}</option>
                             </select>
                         </div>
                         <div class="my-2 p-0">
@@ -153,7 +153,7 @@ export default {
             book_name: null,
             book_text: null,
             chapters_list: [],
-            keyword_type: null,
+            keyword_type: 'bigrams',
             error_message: null,
             cleaned_content: null,
 

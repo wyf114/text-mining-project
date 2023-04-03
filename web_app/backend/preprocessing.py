@@ -88,8 +88,8 @@ roman_chap_fullstop = []
 num_fullstop = []
 roman_only_space = []
 roman_short = []
-regex = ['\n[A-Z ]+[.]\n', 
-         'Chapter \d+|CHAPTER \d+|Chapters \d+|CHAPTER [IVXLCDMivxlcdm]+|Chapter [IVXLCDMivxlcdm]+|Book [IVXLC]+|BOOK [IVXLC]+']
+regex = ['\n[A-Z ]+[.]\n', 'Chapter \d+|CHAPTER \d+|Chapters \d+|CHAPTER [IVXLCDMivxlcdm]+|Chapter [IVXLCDMivxlcdm]+|Book [IVXLC]+|BOOK [IVXLC]+']
+
 
 for i in range(1, 100):
     num.append('\nChapter ' + str(i))
@@ -103,12 +103,11 @@ for i in range(1, 100):
     roman_fullstop.append('\n\n' + printRoman(i) + '[.] ')
     roman_only.append('\n\n' + printRoman(i) + '\n')
     roman_chap_fullstop.append('\nCHAPTER. ' + printRoman(i) + '[.]')
-    roman_only_space.append('\n\n  ' + printRoman(i) + '\n')
+    roman_only_space.append('\n\n' + printRoman(i) + '\n')
     num_fullstop.append('\n\n' + str(i) + '[.]\n')
     roman_short.append('  CHAP.   ' + printRoman(i) + '[.]\n')
     
-header_list = num + num_word + cap_roman + roman_num + roman_book + cap_roman_book + prop_roman + num_only + roman_fullstop + roman_only \
-            + roman_chap_fullstop + num_fullstop + roman_only_space + roman_short
+header_list = num + num_word + cap_roman + roman_num + roman_book + cap_roman_book + prop_roman + num_only + roman_fullstop + roman_only + roman_chap_fullstop + num_fullstop + roman_only_space + roman_short
 header = "|".join(header_list)
 
 def remove_end(text, last_line):
@@ -172,8 +171,6 @@ def directory(input_name):
         shutil.rmtree(dir)
     os.makedirs(dir)
     return dir
-
-
 
 def saveChapters(dir, split_text, id): 
     # dir: test_data/Chapters3

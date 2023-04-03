@@ -37,7 +37,7 @@ id2word = corpora.Dictionary.load('model/finalmodel_Dictionary')
 
 @app.route('/loadmodel', methods=['GET'])
 def load_model():
-  selected_chap = int(request.args.get('selected_chap'))
+  selected_chap = request.args.get('selected_chap')
   folder = request.args.get('folder')
   keyword_type = request.args.get('keyword_type')
 
@@ -45,6 +45,7 @@ def load_model():
   test_corpus = preprocessing.load_corpus(folder)
   test_ids = test_corpus.fileids()
   chapters_name = [id.replace('.txt','') for id in test_ids]
+  selected_chap_index = chapters_name.index(selected_chap)
 
   test_docs = preprocessing.corpus2docs(test_corpus)
   
@@ -59,12 +60,12 @@ def load_model():
   test_vecs = preprocessing.docs2vecs(data_bigrams_trigrams, id2word)
 
   # get topic distribution of chapter
-  vector = lda_disk[test_vecs[selected_chap]]
+  vector = lda_disk[test_vecs[selected_chap_index]]
   sim_topic = max(vector,key=lambda item:item[1])
   top_topic = sim_topic[0]
   topic_word = lda_disk.show_topic(top_topic, topn=len(id2word))
 
-  selected_words = [id2word[i[0]] for i in test_vecs[selected_chap]]
+  selected_words = [id2word[i[0]] for i in test_vecs[selected_chap_index]]
   selected_words[0:20]
 
   key_words = []
@@ -82,7 +83,7 @@ def load_model():
 
   for i in range(0,len(test_vecs)):
       vector = lda_disk[test_vecs[i]]
-      if(i == selected_chap):
+      if(i == selected_chap_index):
           sims = similarity[vector]
           sims = list(enumerate(sims))
           for sim in sims:
@@ -106,12 +107,12 @@ def preprocessBook():
     dir = books_directory + "/Chapters2" #test_data/Chapters
     chapter_list = []
     
-
+    book_text = ''
     if filename.endswith('.txt'):
       with open(os.path.join(books_directory, filename), "r", encoding="utf8", errors='ignore') as file:
           book_name = filename.replace('.txt','')
           book_text = file.read()
-    
+
       cleaned_text = preprocessing.remove_end(book_text, last_line)
       preprocessing.savecleanBooks(cleaned_text, book_name)
       chap_index = preprocessing.chapIndexes(cleaned_text)
@@ -149,14 +150,16 @@ def upload():
 
   # get the indexes of the chapters
   chap_index = preprocessing.chapIndexes(content_lastline_removed)
-
+  
   # split the book into chapters
   splitted_text = preprocessing.splitbyChapters(content_lastline_removed, chap_index)
+  
 
   # save each chapters to folder
   chapter_list = []
   if ((type(splitted_text) == list) & (len(splitted_text)>1)):
     chapter_list = preprocessing.saveChapters('test_data/Chapters3', splitted_text, book_name)
+  
   
   # pass the dir to frontend, cos need this data in next step 'showResult'
   chap_folder = f"test_data/Chapters3/{book_name}"
