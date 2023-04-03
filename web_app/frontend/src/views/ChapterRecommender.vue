@@ -218,7 +218,8 @@ export default {
             await axios.get('http://localhost:3000/loadmodel', {
                 params: {
                     selected_chap: this.selected_chap,
-                    folder: this.dir + this.filename,
+                    //folder: this.dir + this.filename,
+                    folder: this.chap_folder,
                     keyword_type: this.keyword_type
                 }
             })
