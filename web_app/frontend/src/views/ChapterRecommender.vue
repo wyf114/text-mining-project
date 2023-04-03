@@ -146,7 +146,6 @@ export default {
             chap_folder: null,
 
             books_directory: 'test_data',
-            dir: 'test_data/Chapters2/',
             filename: '1974',
             //filename: '5827',
             book_name: null,
