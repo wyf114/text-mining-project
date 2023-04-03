@@ -98,21 +98,8 @@
                     </div>
                     <div class="form-floating mb-3">
                         <h3 class="fs-6 fw-semibold mb-4">Summarisation</h3>
-                        <p>{display summary here}</p>
+                        <p>{{ summary_1 }}</p>
                     </div>
-
-
-
-                    <div class="form-floating mb-3">
-                        <h3 class="fs-6 fw-semibold mb-4">Book Name</h3>
-                        <p>{{ filename }}</p>
-                        <p>{{ lastline }}</p>
-                        <p>{{ cleaned_content }}</p>
-                    </div>
-
-
-
-
                 </div>
             </div>
 
@@ -156,6 +143,9 @@ export default {
             keyword_type: null,
             error_message: null,
             cleaned_content: null,
+
+            summary_1: null,
+            summary_2: null,
 
 
         }
@@ -218,7 +208,6 @@ export default {
             await axios.get('http://localhost:3000/loadmodel', {
                 params: {
                     selected_chap: this.selected_chap,
-                    // folder: this.dir + this.filename,
                     folder: this.chap_folder,
                     keyword_type: this.keyword_type
                 }
@@ -227,6 +216,7 @@ export default {
                     console.log("testing", response)
                     this.key_words = response.data.key_words
                     this.recommended_chapters = response.data.recommendation
+                    this.summary_1 = response.data.summary_1
                     console.log(this.recommended_chapters)
 
                     if (this.key_words.length == 0) {

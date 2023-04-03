@@ -23,6 +23,7 @@ from gensim import models
 from gensim.models import CoherenceModel
 from gensim.models.ldamodel import LdaModel
 import preprocessing
+import summarisation
 import pandas as pd
 import os
 from os import path
@@ -91,10 +92,41 @@ def load_model():
               recommendation_scores.append(recommendation_score)
           
   recommendation_scores = sorted(recommendation_scores, key=lambda x: x[1], reverse=True) 
+  
+  ########################################
+  # summarizer portion method 1
+  ########################################
+
+  # loan all chapters inside the folder into book_texts
+  book_texts = summarisation.load_chapters(folder)
+
+  # get the selected chapter content
+  chapter_content = book_texts[selected_chap]
+
+  # tokenize the chapter_content into sentences
+  sentences = summarisation.tokenize_chapter(chapter_content)
+
+  # clean the sentences
+  new_sentences = summarisation.clean_sentences(sentences)
+
+  # get the summary
+  summary_1 = summarisation.generate_summary(new_sentences)
+
+
+  print(summary_1)
+
+  
+  
+  
+  
+  
+  
+  
   return jsonify(
      {
         'key_words': [word[0] for word in key_words],
-        "recommendation": [chapter[0] for chapter in recommendation_scores[1:4]]
+        "recommendation": [chapter[0] for chapter in recommendation_scores[1:4]],
+        "summary_1": summary_1
      }
   )
 
