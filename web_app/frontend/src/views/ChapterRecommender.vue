@@ -70,7 +70,7 @@
                                 <input v-model="keyword_type" value='bigrams' class="form-check-input" type="radio"
                                     name="flexRadioDefault" id="flexRadioDefault2" checked>
                                 <label class="form-check-label" for="flexRadioDefault2">
-                                    Bigrams
+                                    Bigrams/Trigrams
                                 </label>
                             </div>
                         </div>
@@ -219,6 +219,8 @@ export default {
                 params: {
                     selected_chap: this.selected_chap,
                     //folder: this.dir + this.filename,
+                    folder: this.chap_folder,
+                    // folder: this.dir + this.filename,
                     folder: this.chap_folder,
                     keyword_type: this.keyword_type
                 }
