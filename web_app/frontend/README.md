@@ -23,18 +23,10 @@ npm run lint
 ```
 cd web_app\backend
 
+pip install -r requirements.txt
+
 python api.py
-```
 
-### Install dependencies
-```
-frontend:
-npm install axios
-
-backend:
-pip install nltk
-pip install num2words
-pip install networkx
 ```
 
 ### Customize configuration
