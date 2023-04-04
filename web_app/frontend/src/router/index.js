@@ -13,7 +13,7 @@ const routes = [
     },
 
     {
-        path: '/chapter-recommender',
+        path: '/',
         name: 'ChapterRecommender',
         component: ChapterRecommender,
         meta: {

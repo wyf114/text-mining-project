@@ -2,9 +2,8 @@ from datetime import datetime
 import nltk
 from nltk.corpus import stopwords
 from nltk.corpus import PlaintextCorpusReader
-from nltk.corpus import stopwords
 from nltk.stem.porter import *
-from nltk import pos_tag, word_tokenize
+from nltk import pos_tag
 from nltk.stem import WordNetLemmatizer
 from nltk.probability import FreqDist
 from nltk.tokenize import sent_tokenize
@@ -29,22 +28,13 @@ def corpus2docs(corpus):
         doc = nltk.word_tokenize(doc_raw)
         docs_token.append(doc)
 
-#     for doc in corpus:
-#         doc1 = nltk.word_tokenize(doc)
-#         docs_token.append(doc1)
-
     docs_lower = [[w.lower() for w in doc] for doc in docs_token]
     docs_alpha = [[w for w in doc if re.search('^[a-z]+$', w)] for doc in docs_lower]
 
-    docs_stop = [[w for w in doc if w not in stop_list] for doc in docs_alpha]
-    
     lemmatizer = WordNetLemmatizer()
-    docs_lem = [[lemmatizer.lemmatize(w) for w in doc] for doc in docs_stop]
-#     docs_lem = [lemmatizer.lemmatize(word, tag[0].lower()) for word, tag in pos_tag(word_tokenize(sen), tagset='universal') if tag[0].lower() in ['a', 'r', 'n', 'v']]
+    docs_lem = [[lemmatizer.lemmatize(word, tag[0].lower()) for word, tag in pos_tag(doc, tagset='universal') if tag[0].lower() in ['a', 'r', 'n', 'v']] for doc in docs_alpha]
 
-    
-    doc_cleaned = [[w for w in doc if len(w)>3] for doc in docs_lem]
-    return doc_cleaned
+    return docs_lem
 
 
 def docs2vecs(docs, dictionary):
@@ -96,7 +86,7 @@ roman_chap_fullstop = []
 num_fullstop = []
 roman_only_space = []
 roman_short = []
-cap_word = ['\n[A-Z ]+[.]\n']
+regex = ['\n[A-Z ]+[.]\n', 'Chapter \d+|CHAPTER \d+|Chapters \d+|CHAPTER [IVXLCDMivxlcdm]+|Chapter [IVXLCDMivxlcdm]+|Book [IVXLC]+|BOOK [IVXLC]+']
 
 for i in range(1, 100):
     num.append('\nChapter ' + str(i))
@@ -149,7 +139,7 @@ def chapIndexes(text):
 def chapIndexesbyCapWord(text):
     chap_index = []
     indexes = [
-        match.start() for match in re.finditer(cap_word[0], text)
+        match.start() for match in re.finditer(regex[0], text)
     ]
     if(len(indexes) > 1):
         for i in range(len(indexes)-1):
@@ -162,9 +152,7 @@ def chapIndexesbyCapWord(text):
 
 def splitbyChapters(text, chap_index):
     split_text = []
-#     numOfchapters = []
-#     numOfchapters = chapIndexes(text, header)
-    
+
     if (len(chap_index) > 1):
         for i in range(len(chap_index) - 1):
             split_text.append(text[chap_index[i]:chap_index[i + 1]])
@@ -180,8 +168,6 @@ def directory(input_name):
         shutil.rmtree(dir)
     os.makedirs(dir)
     return dir
-
-
 
 def saveChapters(dir, split_text, id):
     dir = directory(dir)
@@ -212,7 +198,13 @@ def savecleanBooks(text, id):
 ######################################################################################################
 
 def make_bigrams(bigram_mod, texts):
-    return [bigram_mod[doc] for doc in texts]
+    bigram = [bigram_mod[doc] for doc in texts]
+    docs_stop = [[w for w in doc if w not in stop_list] for doc in bigram] 
+    bigram_cleaned = [[w for w in doc if len(w)>3] for doc in docs_stop]
+    return bigram_cleaned
 
 def make_trigrams(bigram_mod, trigram_mod, texts):
-    return [trigram_mod[bigram_mod[doc]] for doc in texts]
+    trigram = [trigram_mod[bigram_mod[doc]] for doc in texts]
+    docs_stop = [[w for w in doc if w not in stop_list] for doc in trigram] 
+    trigram_cleaned = [[w for w in doc if len(w)>3] for doc in docs_stop]
+    return trigram_cleaned
