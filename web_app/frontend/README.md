@@ -28,6 +28,7 @@ npm install axios
 backend:
 pip install nltk
 pip install num2words
+pip install networkx
 ```
 
 ### Customize configuration
