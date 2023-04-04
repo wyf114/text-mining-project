@@ -98,7 +98,7 @@
                     </div>
                     <div class="form-floating mb-3">
                         <h3 class="fs-6 fw-semibold mb-4">Summarisation</h3>
-                        <p>{display summary here}</p>
+                        <p>{{ summary }}</p>
                     </div>
 
 
@@ -141,6 +141,7 @@ export default {
             selected_chap: 0,
             key_words: null,
             recommended_chapters: null,
+            summary: null,
 
             //chap_folder: 'test_data/Chapters/5827',
             chap_folder: null,
@@ -232,6 +233,7 @@ export default {
                     console.log("testing", response)
                     this.key_words = response.data.key_words
                     this.recommended_chapters = response.data.recommendation
+                    this.summary = response.data.summary
                     console.log(this.recommended_chapters)
 
                     if (this.key_words.length == 0) {

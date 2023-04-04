@@ -45,7 +45,6 @@ def docs2vecs(docs, dictionary):
     vecs1 = [dictionary.doc2bow(doc) for doc in docs]
     return vecs1
 
-
 #####################################################################
 from num2words import num2words
 import os
@@ -88,7 +87,7 @@ roman_chap_fullstop = []
 num_fullstop = []
 roman_only_space = []
 roman_short = []
-regex = ['\n[A-Z ]+[.]\n', 'Chapter \d+|CHAPTER \d+|Chapters \d+|CHAPTER [IVXLCDMivxlcdm]+|Chapter [IVXLCDMivxlcdm]+|Book [IVXLC]+|BOOK [IVXLC]+']
+regex = ['\n[A-Z ]+[.]\r\n', 'Chapter \d+|CHAPTER \d+|Chapters \d+|CHAPTER [IVXLCDMivxlcdm]+|Chapter [IVXLCDMivxlcdm]+|Book [IVXLC]+|BOOK [IVXLC]+']
 
 
 for i in range(1, 100):
@@ -214,3 +213,70 @@ def make_trigrams(bigram_mod, trigram_mod, texts):
     docs_stop = [[w for w in doc if w not in stop_list] for doc in trigram] 
     trigram_cleaned = [[w for w in doc if len(w)>3] for doc in docs_stop]
     return trigram_cleaned
+######################################################################################################
+# Summarisation
+from nltk.cluster.util import cosine_distance
+import numpy as np
+
+
+def splitbySentences(books_directory, selected_chap):
+    # Create a list to store the text data of each book
+    book_texts = []
+    chapters_name = []
+
+    # Loop through each file in the directory
+    for filename in os.listdir(books_directory):
+        if filename.endswith('.txt'):
+            with open(os.path.join(books_directory, filename), "r", encoding="utf8", errors='ignore') as file:
+                book_text = file.read()
+                book_texts.append(book_text)
+                chapters_name.append(filename.replace('.txt',''))
+    
+    selected_chap_index = chapters_name.index(selected_chap)
+
+    sentences = nltk.sent_tokenize(book_texts[selected_chap_index])
+    book_sentences = []
+    for sen in sentences:
+        cleaned_sen = sen.replace("\n", " ")
+        book_sentences.append(cleaned_sen.split(" "))
+    new_sentences = [[x for x in sentence if x] for sentence in book_sentences]
+    return new_sentences
+
+def sentence_similarity(sent1, sent2, stopwords=None):
+    if stopwords is None:
+        stopwords = []
+ 
+    sent1 = [w.lower() for w in sent1]
+    sent2 = [w.lower() for w in sent2]
+ 
+    all_words = list(set(sent1 + sent2))
+ 
+    vector1 = [0] * len(all_words)
+    vector2 = [0] * len(all_words)
+ 
+    # build the vector for the first sentence
+    for w in sent1:
+        if w in stopwords:
+            continue
+        vector1[all_words.index(w)] += 1
+ 
+    # build the vector for the second sentence
+    for w in sent2:
+        if w in stopwords:
+            continue
+        vector2[all_words.index(w)] += 1
+        
+    if np.isnan(1 - cosine_distance(vector1, vector2)):
+        return 0
+    return 1 - cosine_distance(vector1, vector2)
+
+def build_similarity_matrix(sentences, stop_words):
+    # Create an empty similarity matrix
+    similarity_matrix = np.zeros((len(sentences), len(sentences)))
+ 
+    for idx1 in range(len(sentences)):
+        for idx2 in range(len(sentences)):
+            if idx1 == idx2: #ignore if both are same sentences
+                continue 
+            similarity_matrix[idx1][idx2] = sentence_similarity(sentences[idx1], sentences[idx2], stop_words)
+    return similarity_matrix
