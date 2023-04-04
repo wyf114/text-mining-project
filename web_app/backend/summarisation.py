@@ -5,7 +5,7 @@ from gensim import similarities
 from gensim import models
 from gensim.models import CoherenceModel
 
-import preprocess
+import preprocessing
 import os
 import re
 
