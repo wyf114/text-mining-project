@@ -2,6 +2,7 @@
 # web_app
 
 ## Frontend setup 
+### Run the following first
 ```
 cd web_app\frontend
 ```
@@ -17,7 +18,8 @@ npm run serve
 npm run build
 ```
 
-### Backend setup 
+## Backend setup 
+### Run the following first
 ```
 cd web_app\backend
 ```
