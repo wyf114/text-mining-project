@@ -1,10 +1,11 @@
 # text-mining-project
 # web_app
 
-## Frontend setup --------------------------------------------------
+## Frontend setup 
 ```
 cd web_app\frontend
-
+```
+```
 npm install
 ```
 ### Compiles and hot-reloads for development
@@ -16,14 +17,16 @@ npm run serve
 npm run build
 ```
 
-### Backend setup --------------------------------------------------
+### Backend setup 
 ```
 cd web_app\backend
+```
 
+```
 pip install -r requirements.txt
-
+```
+```
 python api.py
-
 ```
 
 ### Customize configuration
