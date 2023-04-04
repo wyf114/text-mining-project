@@ -1,5 +1,6 @@
 <!--###### template #####-->
 <template>
+    <Loading v-show="loading" />
     <div class="container-fluid h-100">
 
         <div class="container my-4 py-4 h-100" id="main">
@@ -101,17 +102,12 @@
                         <p>{{ summary }}</p>
                     </div>
 
-
-
-                    <div class="form-floating mb-3">
+                    <!-- <div class="form-floating mb-3">
                         <h3 class="fs-6 fw-semibold mb-4">Book Name</h3>
                         <p>{{ filename }}</p>
                         <p>{{ lastline }}</p>
                         <p>{{ cleaned_content }}</p>
-                    </div>
-
-
-
+                    </div> -->
 
                 </div>
             </div>
@@ -124,6 +120,7 @@
 <script>
 
 import axios from 'axios'
+import Loading from "../components/Loading";
 export default {
     name: 'ChapterRecommender',
     data() {
@@ -157,10 +154,13 @@ export default {
             keyword_type: 'bigrams',
             error_message: null,
             cleaned_content: null,
+            loading: false
 
 
         }
     },
+
+    components: {Loading},
 
     created() {
 
@@ -175,10 +175,12 @@ export default {
             this.error_message = null
             this.recommended_chapters = null
             this.lastline = null
-            this.key_words = null
+            this.key_words = null,
+            this.summary = null
         },
 
         async sendFile() {
+            this.loading = true
             const formData = new FormData();
             formData.append('file', this.file);
             formData.append('filename', this.filename);
@@ -194,6 +196,7 @@ export default {
                     //this.cleaned_content = response.data.cleaned_text
                     this.chapters_list = response.data.chapters
                     this.chap_folder = response.data.chap_folder
+                    this.loading = false
                 })
         },
 
@@ -221,6 +224,7 @@ export default {
                 })
         },
         async showResults(){
+            this.loading = true
             await axios.get('http://localhost:3000/loadmodel', {
                 params: {
                     selected_chap: this.selected_chap,
@@ -242,6 +246,7 @@ export default {
                     else {
                         this.error_message = null
                     }
+                    this.loading = false
 
                 })
         },

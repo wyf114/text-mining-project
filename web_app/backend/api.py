@@ -122,7 +122,7 @@ def load_model():
      {
         'key_words': [word[0] for word in key_words],
         "recommendation": [chapter[0] for chapter in recommendation_scores[1:4]],
-        'summary': ". ".join(summarize_text)
+        'summary': ". ".join(summarize_text).replace('..', '.')
      }
   )
 

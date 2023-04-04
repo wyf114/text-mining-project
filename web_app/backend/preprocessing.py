@@ -98,13 +98,13 @@ for i in range(1, 100):
     roman_book.append('\nBook ' + printRoman(i))
     cap_roman_book.append('\nBOOK ' + printRoman(i))
     prop_roman.append('\nPROP. ' + printRoman(i) + '[.]')
-    num_only.append('\n' + str(i) + '\n\n')
-    roman_fullstop.append('\n\n' + printRoman(i) + '[.] ')
+    num_only.append('\n' + str(i) + '\r\n\r\n')
+    roman_fullstop.append('\r\n' + printRoman(i) + '[.] ')
     roman_only.append('\n' + printRoman(i) + '\r\n')
     roman_chap_fullstop.append('\nCHAPTER. ' + printRoman(i) + '[.]')
-    roman_only_space.append('\n\n' + printRoman(i) + '\n')
-    num_fullstop.append('\n\n' + str(i) + '[.]\n')
-    roman_short.append('  CHAP.   ' + printRoman(i) + '[.]\n')
+    roman_only_space.append('\r\n' + printRoman(i) + '\r\n')
+    num_fullstop.append('\r\n' + str(i) + '[.]')
+    roman_short.append('  CHAP.   ' + printRoman(i) + '[.]\r\n')
     
 header_list = num + num_word + cap_roman + roman_num + roman_book + cap_roman_book + prop_roman + num_only + roman_fullstop + roman_only + roman_chap_fullstop + num_fullstop + roman_only_space + roman_short
 header = "|".join(header_list)
