@@ -1,33 +1,32 @@
 # web_app
 
-## Project setup
+## Frontend setup --------------------------------------------------
 ```
+cd web_app\frontend
+
 npm install
 ```
-
 ### Compiles and hot-reloads for development
 ```
 npm run serve
 ```
-
 ### Compiles and minifies for production
 ```
 npm run build
 ```
-
 ### Lints and fixes files
 ```
 npm run lint
 ```
 
-### Install dependencies
+### Backend setup --------------------------------------------------
 ```
-frontend:
-npm install axios
+cd web_app\backend
 
-backend:
-pip install nltk
-pip install num2words
+pip install -r requirements.txt
+
+python api.py
+
 ```
 
 ### Customize configuration

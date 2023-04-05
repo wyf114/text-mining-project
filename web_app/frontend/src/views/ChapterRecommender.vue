@@ -1,5 +1,6 @@
 <!--###### template #####-->
 <template>
+    <Loading v-show="loading" />
     <div class="container-fluid h-100">
 
         <div class="container my-4 py-4 h-100" id="main">
@@ -19,7 +20,7 @@
                         </div>
                         <div class="mb-4 p-0">
                             <label for="lastline" class="form-label">Enter last line of last chapter</label>
-                            <input v-model="lastline" type="" class="form-control" id="lastline"
+                            <input v-model="lastline" type="text" class="form-control" id="lastline"
                                 aria-describedby="lastline">
                         </div>
 
@@ -46,7 +47,7 @@
                     </div>
 
                     <!-- User input - Chapter -->
-                    <div class="row mt-4 my-4">
+                    <div v-show="chapters_list.length != 0" class="row mt-4 my-4">
                         <!-- <h1 class="fs-3 p-0">Required Inputs</h1> -->
                         <div class="mt-2 p-0">
                             <label for="selected_chap" class="form-label">
@@ -54,25 +55,36 @@
                             </label><br>
                             <select id="selected_chap" v-model="selected_chap" class="form-select form-select-lg mb-3"
                                 aria-label="Default select example">
-                                <option v-for="(value, index) in chapters_list" :key=value :value=index>{{ value }}</option>
+                                <option v-for="chap in chapters_list" :key=chap :value=chap>{{ chap }}</option>
                             </select>
                         </div>
-                        <div class="my-2 p-0">
-                            <h4 class="fs-6">Type of keywords </h4>
-                            <div class="form-check">
-                                <input v-model="keyword_type" value='unigrams' class="form-check-input" type="radio"
-                                    name="flexRadioDefault" id="flexRadioDefault1">
-                                <label class="form-check-label" for="flexRadioDefault1">
-                                    Unigrams
-                                </label>
+                        <div class="mb-4 p-0 row my-2 p-0">
+                            <div class="col-6">
+                                <label for="noOfSen" class="form-label">Enter number of sentences for summary</label>
+                                <input v-model="noOfSen" type="number" class="form-control" id="noOfSen"
+                                    aria-describedby="noOfSen" min="1" max="5">
                             </div>
-                            <div class="form-check">
-                                <input v-model="keyword_type" value='bigrams' class="form-check-input" type="radio"
-                                    name="flexRadioDefault" id="flexRadioDefault2" checked>
-                                <label class="form-check-label" for="flexRadioDefault2">
-                                    Bigrams/Trigrams
-                                </label>
+                            <div class="col-1">
+
                             </div>
+                            <div class="col-5">
+                                <h4 class="fs-6">Type of keywords </h4>
+                                <div class="form-check">
+                                    <input v-model="keyword_type" value='unigrams' class="form-check-input" type="radio"
+                                        name="flexRadioDefault" id="flexRadioDefault1">
+                                    <label class="form-check-label" for="flexRadioDefault1">
+                                        Unigrams
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input v-model="keyword_type" value='bigrams' class="form-check-input" type="radio"
+                                        name="flexRadioDefault" id="flexRadioDefault2" checked>
+                                    <label class="form-check-label" for="flexRadioDefault2">
+                                        Bigrams/Trigrams
+                                    </label>
+                                </div>
+                            </div>
+                            
                         </div>
 
                         <div class="mt-2 p-0">
@@ -98,20 +110,8 @@
                     </div>
                     <div class="form-floating mb-3">
                         <h3 class="fs-6 fw-semibold mb-4">Summarisation</h3>
-                        <p>{display summary here}</p>
+                        <p>{{ summary }}</p>
                     </div>
-
-
-
-                    <div class="form-floating mb-3">
-                        <h3 class="fs-6 fw-semibold mb-4">Book Name</h3>
-                        <p>{{ filename }}</p>
-                        <p>{{ lastline }}</p>
-                        <p>{{ cleaned_content }}</p>
-                    </div>
-
-
-
 
                 </div>
             </div>
@@ -124,6 +124,7 @@
 <script>
 
 import axios from 'axios'
+import Loading from "../components/Loading";
 export default {
     name: 'ChapterRecommender',
     data() {
@@ -139,8 +140,11 @@ export default {
             lastline: null,
 
             selected_chap: 0,
+            noOfSen: 3,
+
             key_words: null,
             recommended_chapters: null,
+            summary: null,
 
             //chap_folder: 'test_data/Chapters/5827',
             chap_folder: null,
@@ -153,13 +157,16 @@ export default {
             book_name: null,
             book_text: null,
             chapters_list: [],
-            keyword_type: null,
+            keyword_type: 'bigrams',
             error_message: null,
             cleaned_content: null,
+            loading: false
 
 
         }
     },
+
+    components: {Loading},
 
     created() {
 
@@ -170,9 +177,16 @@ export default {
             //this.filevalue = document.getElementById('formFile').value
             // console.log(this.filevalue)
             this.file = this.$refs.file.files[0];
+            this.chapters_list = []
+            this.error_message = null
+            this.recommended_chapters = null
+            this.lastline = null
+            this.key_words = null,
+            this.summary = null
         },
 
         async sendFile() {
+            this.loading = true
             const formData = new FormData();
             formData.append('file', this.file);
             formData.append('filename', this.filename);
@@ -188,6 +202,7 @@ export default {
                     //this.cleaned_content = response.data.cleaned_text
                     this.chapters_list = response.data.chapters
                     this.chap_folder = response.data.chap_folder
+                    this.loading = false
                 })
         },
 
@@ -215,18 +230,21 @@ export default {
                 })
         },
         async showResults(){
+            this.loading = true
             await axios.get('http://localhost:3000/loadmodel', {
                 params: {
                     selected_chap: this.selected_chap,
                     // folder: this.dir + this.filename,
                     folder: this.chap_folder,
-                    keyword_type: this.keyword_type
+                    keyword_type: this.keyword_type,
+                    number_of_sentences: this.noOfSen
                 }
             })
                 .then(response => {
                     console.log("testing", response)
                     this.key_words = response.data.key_words
                     this.recommended_chapters = response.data.recommendation
+                    this.summary = response.data.summary
                     console.log(this.recommended_chapters)
 
                     if (this.key_words.length == 0) {
@@ -235,6 +253,7 @@ export default {
                     else {
                         this.error_message = null
                     }
+                    this.loading = false
 
                 })
         },
