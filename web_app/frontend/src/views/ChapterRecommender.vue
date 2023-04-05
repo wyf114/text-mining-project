@@ -20,7 +20,7 @@
                         </div>
                         <div class="mb-4 p-0">
                             <label for="lastline" class="form-label">Enter last line of last chapter</label>
-                            <input v-model="lastline" type="" class="form-control" id="lastline"
+                            <input v-model="lastline" type="text" class="form-control" id="lastline"
                                 aria-describedby="lastline">
                         </div>
 
@@ -58,22 +58,33 @@
                                 <option v-for="chap in chapters_list" :key=chap :value=chap>{{ chap }}</option>
                             </select>
                         </div>
-                        <div class="my-2 p-0">
-                            <h4 class="fs-6">Type of keywords </h4>
-                            <div class="form-check">
-                                <input v-model="keyword_type" value='unigrams' class="form-check-input" type="radio"
-                                    name="flexRadioDefault" id="flexRadioDefault1">
-                                <label class="form-check-label" for="flexRadioDefault1">
-                                    Unigrams
-                                </label>
+                        <div class="mb-4 p-0 row my-2 p-0">
+                            <div class="col-6">
+                                <label for="noOfSen" class="form-label">Enter number of sentences for summary</label>
+                                <input v-model="noOfSen" type="number" class="form-control" id="noOfSen"
+                                    aria-describedby="noOfSen" min="1" max="5">
                             </div>
-                            <div class="form-check">
-                                <input v-model="keyword_type" value='bigrams' class="form-check-input" type="radio"
-                                    name="flexRadioDefault" id="flexRadioDefault2" checked>
-                                <label class="form-check-label" for="flexRadioDefault2">
-                                    Bigrams/Trigrams
-                                </label>
+                            <div class="col-1">
+
                             </div>
+                            <div class="col-5">
+                                <h4 class="fs-6">Type of keywords </h4>
+                                <div class="form-check">
+                                    <input v-model="keyword_type" value='unigrams' class="form-check-input" type="radio"
+                                        name="flexRadioDefault" id="flexRadioDefault1">
+                                    <label class="form-check-label" for="flexRadioDefault1">
+                                        Unigrams
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input v-model="keyword_type" value='bigrams' class="form-check-input" type="radio"
+                                        name="flexRadioDefault" id="flexRadioDefault2" checked>
+                                    <label class="form-check-label" for="flexRadioDefault2">
+                                        Bigrams/Trigrams
+                                    </label>
+                                </div>
+                            </div>
+                            
                         </div>
 
                         <div class="mt-2 p-0">
@@ -102,13 +113,6 @@
                         <p>{{ summary }}</p>
                     </div>
 
-                    <!-- <div class="form-floating mb-3">
-                        <h3 class="fs-6 fw-semibold mb-4">Book Name</h3>
-                        <p>{{ filename }}</p>
-                        <p>{{ lastline }}</p>
-                        <p>{{ cleaned_content }}</p>
-                    </div> -->
-
                 </div>
             </div>
 
@@ -136,6 +140,8 @@ export default {
             lastline: null,
 
             selected_chap: 0,
+            noOfSen: 3,
+
             key_words: null,
             recommended_chapters: null,
             summary: null,
@@ -230,7 +236,8 @@ export default {
                     selected_chap: this.selected_chap,
                     // folder: this.dir + this.filename,
                     folder: this.chap_folder,
-                    keyword_type: this.keyword_type
+                    keyword_type: this.keyword_type,
+                    number_of_sentences: this.noOfSen
                 }
             })
                 .then(response => {

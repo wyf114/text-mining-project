@@ -42,6 +42,7 @@ def load_model():
   selected_chap = request.args.get('selected_chap')
   folder = request.args.get('folder')
   keyword_type = request.args.get('keyword_type')
+  number_of_sentences = int(request.args.get('number_of_sentences'))
 
   # test_corpus = preprocessing.load_corpus('test_data/Chapters/1974')
   test_corpus = preprocessing.load_corpus(folder)
@@ -114,7 +115,7 @@ def load_model():
   ranked_sentence = sorted(((scores[i],s) for i,s in enumerate(sentences)), reverse=True)    
  
   # number of sentences to combine
-  for i in range(3):
+  for i in range(number_of_sentences):
       summarize_text.append(" ".join(ranked_sentence[i][1]))
 
   
