@@ -3,6 +3,9 @@ Flask-Cors==3.0.10
 Flask-SQLAlchemy==2.5.1
 
 gensim==4.3.1
+pyLDAvis==3.4.0
 networkx==3.0
 nltk==3.8.1
 num2words==0.5.12
+wordcloud==1.8.2.2
+seaborn==0.12.2
