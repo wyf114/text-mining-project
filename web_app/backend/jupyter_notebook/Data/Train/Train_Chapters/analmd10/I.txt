@@ -1,0 +1,201 @@
+
+
+I. We may regard a human being as an instrument, which makes
+various responses to various stimuli. If we observe these
+responses from outside, we shall regard them as showing knowledge
+when they display two characteristics, ACCURACY and
+APPROPRIATENESS. These two are quite distinct, and even sometimes
+incompatible. If I am being pursued by a tiger, accuracy is
+furthered by turning round to look at him, but appropriateness by
+running away without making any search for further knowledge of
+the beast. I shall return to the question of appropriateness
+later; for the present it is accuracy that I wish to consider.
+
+When we are viewing a man from the outside, it is not his
+beliefs, but his bodily movements, that we can observe. His
+knowledge must be inferred from his bodily movements, and
+especially from what he says and writes. For the present we may
+ignore beliefs, and regard a man's knowledge as actually
+consisting in what he says and does. That is to say, we will
+construct, as far as possible, a purely behaviouristic account of
+truth and falsehood.
+
+If you ask a boy "What is twice two?" and the boy says "four,"
+you take that as prima facie evidence that the boy knows what
+twice two is. But if you go on to ask what is twice three, twice
+four, twice five, and so on, and the boy always answers "four,"
+you come to the conclusion that he knows nothing about it.
+Exactly similar remarks apply to scientific instruments. I know a
+certain weather-cock which has the pessimistic habit of always
+pointing to the north-east. If you were to see it first on a cold
+March day, you would think it an excellent weather-cock; but with
+the first warm day of spring your confidence would be shaken. The
+boy and the weather-cock have the same defect: they do not vary
+their response when the stimulus is varied. A good instrument, or
+a person with much knowledge, will give different responses to
+stimuli which differ in relevant ways. This is the first point in
+defining accuracy of response.
+
+We will now assume another boy, who also, when you first question
+him, asserts that twice two is four. But with this boy, instead
+of asking him different questions, you make a practice of asking
+him the same question every day at breakfast. You find that he
+says five, or six, or seven, or any other number at random, and
+you conclude that he also does not know what twice two is, though
+by good luck he answered right the first time. This boy is like a
+weather-cock which, instead of being stuck fast, is always going
+round and round, changing without any change of wind. This boy
+and weather-cock have the opposite defect to that of the previous
+pair: they give different responses to stimuli which do not
+differ in any relevant way.
+
+In connection with vagueness in memory, we already had occasion
+to consider the definition of accuracy. Omitting some of the
+niceties of our previous discussion, we may say that an
+instrument is ACCURATE when it avoids the defects of the two boys
+and weather-cocks, that is to say, when--
+
+(a) It gives different responses to stimuli which differ in
+relevant ways;
+
+(b) It gives the same response to stimuli which do not differ in
+relevant ways.
+
+What are relevant ways depends upon the nature and purpose of the
+instrument. In the case of a weather-cock, the direction of the
+wind is relevant, but not its strength; in the case of the boy,
+the meaning of the words of your question is relevant, but not
+the loudness of your voice, or whether you are his father or his
+schoolmaster If, however, you were a boy of his own age, that
+would be relevant, and the appropriate response would be
+different.
+
+It is clear that knowledge is displayed by accuracy of response
+to certain kinds of stimuli, e.g. examinations. Can we say,
+conversely, that it consists wholly of such accuracy of response?
+I do not think we can; but we can go a certain distance in this
+direction. For this purpose we must define more carefully the
+kind of accuracy and the kind of response that may be expected
+where there is knowledge.
+
+From our present point of view, it is difficult to exclude
+perception from knowledge; at any rate, knowledge is displayed by
+actions based upon perception. A bird flying among trees avoids
+bumping into their branches; its avoidance is a response to
+visual sensations. This response has the characteristic of
+accuracy, in the main, and leads us to say that the bird "knows,"
+by sight, what objects are in its neighbourhood. For a
+behaviourist, this must certainly count as knowledge, however it
+may be viewed by analytic psychology. In this case, what is
+known, roughly, is the stimulus; but in more advanced knowledge
+the stimulus and what is known become different. For example, you
+look in your calendar and find that Easter will be early next
+year. Here the stimulus is the calendar, whereas the response
+concerns the future. Even this can be paralleled among
+instruments: the behaviour of the barometer has a present
+stimulus but foretells the future, so that the barometer might be
+said, in a sense, to know the future. However that may be, the
+point I am emphasizing as regards knowledge is that what is known
+may be quite different from the stimulus, and no part of the
+cause of the knowledge-response. It is only in sense-knowledge
+that the stimulus and what is known are, with qualifications,
+identifiable. In knowledge of the future, it is obvious that they
+are totally distinct, since otherwise the response would precede
+the stimulus. In abstract knowledge also they are distinct, since
+abstract facts have no date. In knowledge of the past there are
+complications, which we must briefly examine.
+
+Every form of memory will be, from our present point of view, in
+one sense a delayed response. But this phrase does not quite
+clearly express what is meant. If you light a fuse and connect it
+with a heap of dynamite, the explosion of the dynamite may be
+spoken of, in a sense, as a delayed response to your lighting of
+the fuse. But that only means that it is a somewhat late portion
+of a continuous process of which the earlier parts have less
+emotional interest. This is not the case with habit. A display of
+habit has two sorts of causes: (a) the past occurrences which
+generated the habit, (b) the present occurrence which brings it
+into play. When you drop a weight on your toe, and say what you
+do say, the habit has been caused by imitation of your
+undesirable associates, whereas it is brought into play by the
+dropping of the weight. The great bulk of our knowledge is a
+habit in this sense: whenever I am asked when I was born, I reply
+correctly by mere habit. It would hardly be correct to say that
+getting born was the stimulus, and that my reply is a delayed
+response But in cases of memory this way of speaking would have
+an element of truth. In an habitual memory, the event remembered
+was clearly an essential part of the stimulus to the formation of
+the habit. The present stimulus which brings the habit into play
+produces a different response from that which it would produce if
+the habit did not exist. Therefore the habit enters into the
+causation of the response, and so do, at one remove, the causes
+of the habit. It follows that an event remembered is an essential
+part of the causes of our remembering.
+
+In spite, however, of the fact that what is known is SOMETIMES an
+indispensable part of the cause of the knowledge, this
+circumstance is, I think, irrelevant to the general question with
+which we are concerned, namely What sort of response to what sort
+of stimulus can be regarded as displaying knowledge? There is one
+characteristic which the response must have, namely, it must
+consist of voluntary movements. The need of this characteristic
+is connected with the characteristic of APPROPRIATENESS, which I
+do not wish to consider as yet. For the present I wish only to
+obtain a clearer idea of the sort of ACCURACY that a
+knowledge-response must have. It is clear from many instances
+that accuracy, in other cases, may be purely mechanical. The most
+complete form of accuracy consists in giving correct answers to
+questions, an achievement in which calculating machines far
+surpass human beings. In asking a question of a calculating
+machine, you must use its language: you must not address it in
+English, any more than you would address an Englishman in
+Chinese. But if you address it in the language it understands. it
+will tell you what is 34521 times 19987, without a moment's
+hesitation or a hint of inaccuracy. We do not say the machine
+KNOWS the answer, because it has no purpose of its own in giving
+the answer: it does not wish to impress you with its cleverness,
+or feel proud of being such a good machine. But as far as mere
+accuracy goes, the machine leaves nothing to be desired.
+
+Accuracy of response is a perfectly clear notion in the case of
+answers to questions, but in other cases it is much more obscure.
+We may say generally that an object whether animate or inanimate,
+is "sensitive" to a certain feature of the environment if it
+behaves differently according to the presence or absence of that
+feature. Thus iron is sensitive to anything magnetic. But
+sensitiveness does not constitute knowledge, and knowledge of a
+fact which is not sensible is not sensitiveness to that fact, as
+we have seen in distinguishing the fact known from the stimulus.
+As soon as we pass beyond the simple case of question and answer,
+the definition of knowledge by means of behaviour demands the
+consideration of purpose. A carrier pigeon flies home, and so we
+say it "knows" the way. But if it merely flew to some place at
+random, we should not say that it "knew" the way to that place,
+any more than a stone rolling down hill knows the way to the
+valley.
+
+On the features which distinguish knowledge from accuracy of
+response in general, not much can be said from a behaviourist
+point of view without referring to purpose. But the necessity of
+SOMETHING besides accuracy of response may be brought out by the
+following consideration: Suppose two persons, of whom one
+believed whatever the other disbelieved, and disbelieved whatever
+the other believed. So far as accuracy and sensitiveness of
+response alone are concerned, there would be nothing to choose
+between these two persons. A thermometer which went down for warm
+weather and up for cold might be just as accurate as the usual
+kind; and a person who always believes falsely is just as
+sensitive an instrument as a person who always believes truly.
+The observable and practical difference between them would be
+that the one who always believed falsely would quickly come to a
+bad end. This illustrates once more that accuracy of response to
+stimulus does not alone show knowledge, but must be reinforced by
+appropriateness, i.e. suitability for realizing one's purpose.
+This applies even in the apparently simple case of answering
+questions: if the purpose of the answers is to deceive, their
+falsehood, not their truth, will be evidence of knowledge. The
+proportion of the combination of appropriateness with accuracy in
+the definition of knowledge is difficult; it seems that both
+enter in, but that appropriateness is only required as regards
+the general type of response, not as regards each individual
+instance.

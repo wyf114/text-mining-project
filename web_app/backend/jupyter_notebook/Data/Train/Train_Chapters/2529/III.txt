@@ -1,0 +1,89 @@
+
+
+III. Many difficult problems arise as regards the verifiability of
+beliefs. We believe various things, and while we believe them we think
+we know them. But it sometimes turns out that we were mistaken, or at
+any rate we come to think we were. We must be mistaken either in our
+previous opinion or in our subsequent recantation; therefore our beliefs
+are not all correct, and there are cases of belief which are not cases
+of knowledge. The question of verifiability is in essence this: can we
+discover any set of beliefs which are never mistaken or any test which,
+when applicable, will always enable us to discriminate between true
+and false beliefs? Put thus broadly and abstractly, the answer must be
+negative. There is no way hitherto discovered of wholly eliminating the
+risk of error, and no infallible criterion. If we believe we have found
+a criterion, this belief itself may be mistaken; we should be begging
+the question if we tried to test the criterion by applying the criterion
+to itself.
+
+But although the notion of an absolute criterion is chimerical, there
+may be relative criteria, which increase the probability of truth.
+Common sense and science hold that there are. Let us see what they have
+to say.
+
+One of the plainest cases of verification, perhaps ultimately the only
+case, consists in the happening of something expected. You go to the
+station believing that there will be a train at a certain time; you
+find the train, you get into it, and it starts at the expected time This
+constitutes verification, and is a perfectly definite experience. It is,
+in a sense, the converse of memory instead of having first sensations
+and then images accompanied by belief, we have first images accompanied
+by belief and then sensations. Apart from differences as to the
+time-order and the accompanying feelings, the relation between image and
+sensation is closely similar in the two cases of memory and expectation;
+it is a relation of similarity, with difference as to causal
+efficacy--broadly, the image has the psychological but not the physical
+effects that the sensation would have. When an image accompanied by
+an expectation-belief is thus succeeded by a sensation which is the
+"meaning" of the image, we say that the expectation-belief has been
+verified. The experience of verification in this sense is exceedingly
+familiar; it happens every time that accustomed activities have results
+that are not surprising, in eating and walking and talking and all our
+daily pursuits.
+
+But although the experience in question is common, it is not wholly easy
+to give a theoretical account of it. How do we know that the sensation
+resembles the previous image? Does the image persist in presence of the
+sensation, so that we can compare the two? And even if SOME image does
+persist, how do we know that it is the previous image unchanged? It does
+not seem as if this line of inquiry offered much hope of a successful
+issue. It is better, I think, to take a more external and causal view of
+the relation of expectation to expected occurrence. If the occurrence,
+when it comes, gives us the feeling of expectedness, and if the
+expectation, beforehand, enabled us to act in a way which proves
+appropriate to the occurrence, that must be held to constitute the
+maximum of verification. We have first an expectation, then a sensation
+with the feeling of expectedness related to memory of the expectation.
+This whole experience, when it occurs, may be defined as verification,
+and as constituting the truth of the expectation. Appropriate action,
+during the period of expectation, may be regarded as additional
+verification, but is not essential. The whole process may be illustrated
+by looking up a familiar quotation, finding it in the expected words,
+and in the expected part of the book. In this case we can strengthen
+the verification by writing down beforehand the words which we expect to
+find.
+
+I think all verification is ultimately of the above sort. We verify a
+scientific hypothesis indirectly, by deducing consequences as to the
+future, which subsequent experience confirms. If somebody were to doubt
+whether Caesar had crossed the Rubicon, verification could only be
+obtained from the future. We could proceed to display manuscripts to our
+historical sceptic, in which it was said that Caesar had behaved in this
+way. We could advance arguments, verifiable by future experience, to
+prove the antiquity of the manuscript from its texture, colour, etc. We
+could find inscriptions agreeing with the historian on other points,
+and tending to show his general accuracy. The causal laws which our
+arguments would assume could be verified by the future occurrence of
+events inferred by means of them. The existence and persistence of
+causal laws, it is true, must be regarded as a fortunate accident, and
+how long it will continue we cannot tell. Meanwhile verification remains
+often practically possible. And since it is sometimes possible, we
+can gradually discover what kinds of beliefs tend to be verified by
+experience, and what kinds tend to be falsified; to the former kinds
+we give an increased degree of assent, to the latter kinds a diminished
+degree. The process is not absolute or infallible, but it has been
+found capable of sifting beliefs and building up science. It affords
+no theoretical refutation of the sceptic, whose position must remain
+logically unassailable; but if complete scepticism is rejected, it gives
+the practical method by which the system of our beliefs grows gradually
+towards the unattainable ideal of impeccable knowledge.

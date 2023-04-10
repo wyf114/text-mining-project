@@ -1,13 +1,9 @@
-from datetime import datetime
 import nltk
 from nltk.corpus import stopwords
 from nltk.corpus import PlaintextCorpusReader
 from nltk.stem.porter import *
 from nltk import pos_tag
 from nltk.stem import WordNetLemmatizer
-from nltk.probability import FreqDist
-from nltk.tokenize import sent_tokenize
-from nltk.tokenize import word_tokenize
 
 import re
 
@@ -17,7 +13,7 @@ stop_list += ['project', 'gutenberg', 'ebook', 'www.gutenberg.org', 'from', 'sub
 
 def load_corpus(dir):
     # dir is a directory with plain text files to load.
-    corpus = nltk.corpus.PlaintextCorpusReader(dir, '.+\.txt')
+    corpus = PlaintextCorpusReader(dir, '.+\.txt')
     return corpus
 
 def corpus2docs(corpus):
@@ -163,7 +159,7 @@ def splitbyChapters(text, chap_index):
     return text
 
 def directory(input_name):
-    dir = input_name #+ ' ' + datetime.now().strftime("Day-%d %m %y_Time-%H %M %S")
+    dir = input_name
     if os.path.exists(dir):
         shutil.rmtree(dir)
     os.makedirs(dir)

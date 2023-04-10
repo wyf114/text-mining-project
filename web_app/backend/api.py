@@ -19,8 +19,6 @@ from flask_cors import CORS
 import gensim
 from gensim import corpora
 from gensim import similarities
-from gensim import models
-from gensim.models import CoherenceModel
 from gensim.models.ldamodel import LdaModel
 import preprocessing
 import pandas as pd
@@ -34,7 +32,7 @@ api = Blueprint('api', __name__)
 app = Flask(__name__)
 CORS(app)
 
-lda_disk=gensim.models.ldamodel.LdaModel.load("model/finalmodel_5Topics")
+lda_disk=LdaModel.load("model/finalmodel_5Topics")
 id2word = corpora.Dictionary.load('model/finalmodel_Dictionary')
 
 @app.route('/loadmodel', methods=['GET'])
@@ -69,7 +67,6 @@ def load_model():
   topic_word = lda_disk.show_topic(top_topic, topn=len(id2word))
 
   selected_words = [id2word[i[0]] for i in test_vecs[selected_chap_index]]
-  selected_words[0:20]
 
   key_words = []
   for word in topic_word:
@@ -126,30 +123,6 @@ def load_model():
         'summary': ". ".join(summarize_text).replace('..', '.')
      }
   )
-
-@app.route('/preprocessbook', methods=['GET'])
-def preprocessBook():
-    books_directory = request.args.get('books_directory') #test_data
-    filename = request.args.get('filename') + '.txt'
-    last_line = request.args.get('lastline')
-    dir = books_directory + "/Chapters2" #test_data/Chapters
-    chapter_list = []
-    
-    book_text = ''
-    if filename.endswith('.txt'):
-      with open(os.path.join(books_directory, filename), "r", encoding="utf8", errors='ignore') as file:
-          book_name = filename.replace('.txt','')
-          book_text = file.read()
-
-      cleaned_text = preprocessing.remove_end(book_text, last_line)
-      preprocessing.savecleanBooks(cleaned_text, book_name)
-      chap_index = preprocessing.chapIndexes(cleaned_text)
-      split_text = preprocessing.splitbyChapters(cleaned_text, chap_index)
-      if ((type(split_text) == list) & (len(split_text)>1)):
-          chapter_list = preprocessing.saveChapters(dir, split_text, book_name)
-
-    return jsonify({'book_name': book_name, 'chapters': chapter_list})
-
 ########################################################################
 # receive the .txt file from frontend
 # Things it does:
@@ -164,6 +137,7 @@ def upload():
 
   # get whatever passed from frontend
   filename = request.files['file'].filename
+  first_line = request.form['firstline']
   last_line = request.form['lastline']
   content = request.files['file'].read()
 
@@ -171,10 +145,10 @@ def upload():
   book_name = filename.replace('.txt','')
 
   # remove the content of the last line
-  content_lastline_removed = preprocessing.remove_end(content.decode("utf-8"), last_line)
+  content_lastline_removed = preprocessing.remove_end(content.decode("utf-8"), first_line, last_line)
 
   # save the cleaned book to folder
-  preprocessing.savecleanBooks(content_lastline_removed, book_name)
+  preprocessing.savecleanBooks('test_data/cleaned', content_lastline_removed, book_name)
 
   # get the indexes of the chapters
   chap_index = preprocessing.chapIndexes(content_lastline_removed)
@@ -185,12 +159,12 @@ def upload():
 
   # save each chapters to folder
   chapter_list = []
-  if ((type(splitted_text) == list) & (len(splitted_text)>1)):
-    chapter_list = preprocessing.saveChapters('test_data/Chapters3', splitted_text, book_name)
+  if ((type(splitted_text) == list) & (len(splitted_text)>0)):
+    chapter_list = preprocessing.saveChapters('test_data/Chapters', splitted_text, book_name)
   
   
   # pass the dir to frontend, cos need this data in next step 'showResult'
-  chap_folder = f"test_data/Chapters3/{book_name}"
+  chap_folder = f"test_data/Chapters/{book_name}"
 
   # test
   print(chap_folder)

@@ -19,27 +19,17 @@
                             <input @change="selectFile" ref="file" class="form-control" type="file" id="formFile">
                         </div>
                         <div class="mb-4 p-0">
+                            <label for="firstline" class="form-label">Enter first line of first line chapter</label>
+                            <input v-model="firstline" type="text" class="form-control" id="firstline"
+                                aria-describedby="firstline">
+                        </div>
+                        <div class="mb-4 p-0">
+                            
                             <label for="lastline" class="form-label">Enter last line of last chapter</label>
                             <input v-model="lastline" type="text" class="form-control" id="lastline"
                                 aria-describedby="lastline">
                         </div>
 
-                    <!-- ##FIX THE UPLOAD FILE BUTTON WHEN FREE ONLY##
-                        <div>
-                            <b-form-file v-model="file1" :state="Boolean(file1)" placeholder="Choose a file or drop it here..."
-                                drop-placeholder="Drop file here..."></b-form-file>
-                            <div class="mt-3">Selected file: {{ file1 ? file1.name : '' }}</div>
-
-                            <b-form-file v-model="file2" class="mt-3" plain></b-form-file>
-                            <div class="mt-3">Selected file: {{ file2 ? file2.name : '' }}</div>
-                        </div>
-                                -->
-                        <!-- Create button -->
-                        <!-- original
-                        <div class="p-0">
-                            <button type="submit" class="btn btn-primary" id="submitFile"
-                                @click="preprocessBook(); sendFile()">Upload</button>
-                        </div> -->
                         <div class="p-0">
                             <button type="submit" class="btn btn-primary" id="submitFile"
                                 @click="sendFile()">Upload</button>
@@ -129,14 +119,10 @@ export default {
     name: 'ChapterRecommender',
     data() {
         return {
-            // file1: null,
-            // file2: null,
-            // chapters_name: null,
-            // test_vecs: null,
             file: null,
             filevalue: null,
 
-            //lastline: 'the critics and the answers to these objections.',
+            firstline: null,
             lastline: null,
 
             selected_chap: 0,
@@ -146,14 +132,11 @@ export default {
             recommended_chapters: null,
             summary: null,
 
-            //chap_folder: 'test_data/Chapters/5827',
             chap_folder: null,
 
             books_directory: 'test_data',
-            dir: 'test_data/Chapters2/',
+            dir: 'test_data/Chapters/',
             filename: null,
-            // filename: '1974',
-            //filename: '5827',
             book_name: null,
             book_text: null,
             chapters_list: [],
@@ -161,8 +144,6 @@ export default {
             error_message: null,
             cleaned_content: null,
             loading: false
-
-
         }
     },
 
@@ -174,8 +155,6 @@ export default {
     },
     methods: {
         selectFile() {
-            //this.filevalue = document.getElementById('formFile').value
-            // console.log(this.filevalue)
             this.file = this.$refs.file.files[0];
             this.chapters_list = []
             this.error_message = null
@@ -190,6 +169,7 @@ export default {
             const formData = new FormData();
             formData.append('file', this.file);
             formData.append('filename', this.filename);
+            formData.append('firstline', this.firstline);
             formData.append('lastline', this.lastline);
 
             await axios.post('http://localhost:3000/upload', formData, {
@@ -198,8 +178,6 @@ export default {
                 }
             })
                 .then(response => {
-                    //this.filename = response.data.filename
-                    //this.cleaned_content = response.data.cleaned_text
                     this.chapters_list = response.data.chapters
                     this.chap_folder = response.data.chap_folder
                     this.loading = false
@@ -214,27 +192,12 @@ export default {
                 alert("Please select a chapter")
             }
         },
-        async preprocessBook() {
-            await axios.get('http://localhost:3000/preprocessbook', {
-                params: {
-                    books_directory: this.books_directory,
-                    filename: this.filename,
-                    lastline: this.lastline
-                }
-            })
-                .then(response => {
-                    this.book_name = response.data.book_name
-                    this.chapters_list = response.data.chapters
-                    console.log(response)
-
-                })
-        },
+        
         async showResults(){
             this.loading = true
             await axios.get('http://localhost:3000/loadmodel', {
                 params: {
                     selected_chap: this.selected_chap,
-                    // folder: this.dir + this.filename,
                     folder: this.chap_folder,
                     keyword_type: this.keyword_type,
                     number_of_sentences: this.noOfSen
