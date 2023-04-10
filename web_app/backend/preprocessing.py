@@ -1,13 +1,9 @@
-from datetime import datetime
 import nltk
 from nltk.corpus import stopwords
 from nltk.corpus import PlaintextCorpusReader
 from nltk.stem.porter import *
 from nltk import pos_tag
 from nltk.stem import WordNetLemmatizer
-from nltk.probability import FreqDist
-from nltk.tokenize import sent_tokenize
-from nltk.tokenize import word_tokenize
 
 import re
 
@@ -17,7 +13,7 @@ stop_list += ['project', 'gutenberg', 'ebook', 'www.gutenberg.org', 'from', 'sub
 
 def load_corpus(dir):
     # dir is a directory with plain text files to load.
-    corpus = nltk.corpus.PlaintextCorpusReader(dir, '.+\.txt')
+    corpus = PlaintextCorpusReader(dir, '.+\.txt')
     return corpus
 
 def corpus2docs(corpus):
@@ -86,7 +82,7 @@ num_fullstop = []
 roman_only_space = []
 roman_short = []
 regex = ['\n[A-Z ]+[.]\r\n', 'Chapter \d+|CHAPTER \d+|Chapters \d+|CHAPTER [IVXLCDMivxlcdm]+|Chapter [IVXLCDMivxlcdm]+|Book [IVXLC]+|BOOK [IVXLC]+']
-
+regex_list = "|".join(regex)
 
 for i in range(1, 100):
     num.append('\nChapter ' + str(i))
@@ -107,13 +103,14 @@ for i in range(1, 100):
 header_list = num + num_word + cap_roman + roman_num + roman_book + cap_roman_book + prop_roman + num_only + roman_fullstop + roman_only + roman_chap_fullstop + num_fullstop + roman_only_space + roman_short
 header = "|".join(header_list)
 
-def remove_end(text, last_line):
+def remove_end(text, start_line, last_line):
+    start = text.find(start_line)
     end = text.find(last_line)
-    if (end > 0):
+    if (start >= 0):
+        text = text[start:]
+    if (end >= 0):
         text = text[:end + len(last_line)]
     return text
-
-
 
 def chapIndexes(text):
     chap_index = []
@@ -139,7 +136,7 @@ def chapIndexes(text):
 def chapIndexesbyCapWord(text):
     chap_index = []
     indexes = [
-        match.start() for match in re.finditer(regex[0], text)
+        match.start() for match in re.finditer(regex_list, text)
     ]
     if(len(indexes) > 1):
         for i in range(len(indexes)-1):
@@ -163,7 +160,7 @@ def splitbyChapters(text, chap_index):
     return text
 
 def directory(input_name):
-    dir = input_name #+ ' ' + datetime.now().strftime("Day-%d %m %y_Time-%H %M %S")
+    dir = input_name
     if os.path.exists(dir):
         shutil.rmtree(dir)
     os.makedirs(dir)
@@ -190,11 +187,10 @@ def saveChapters(dir, split_text, id):
                     chapter_list.append(form_name)
     return chapter_list
 
-def savecleanBooks(text, id):
-    folder = 'cleaned_text'
-    if(not path.exists("cleaned_text")):
-        os.mkdir(folder)
-    with open (f'./{folder}/{id}.txt', "w", encoding='utf-8') as f:
+def savecleanBooks(dir, text, id):
+    if(not path.exists(dir)):
+        os.mkdir(dir)
+    with open (f'./{dir}/{id}.txt', "w", encoding='utf-8') as f:
         f.write(text)
         f.close()
 

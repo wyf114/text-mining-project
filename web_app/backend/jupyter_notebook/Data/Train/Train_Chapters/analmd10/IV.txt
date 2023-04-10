@@ -1,0 +1,1121 @@
+
+
+IV. I come now to the purely formal definition of the truth or
+falsehood of a belief. For this definition it is necessary first
+of all to consider the derivation of the objective reference of a
+proposition from the meanings of its component words or images.
+
+Just as a word has meaning, so a proposition has an objective
+reference. The objective reference of a proposition is a function
+(in the mathematical sense) of the meanings of its component
+words. But the objective reference differs from the meaning of a
+word through the duality of truth and falsehood. You may believe
+the proposition "to-day is Tuesday" both when, in fact, to-day is
+Tuesday, and when to-day is not Tuesday. If to-day is not
+Tuesday, this fact is the objective of your belief that to-day is
+Tuesday. But obviously the relation of your belief to the fact is
+different in this case from what it is in the case when to-day is
+Tuesday. We may say, metaphorically, that when to-day is Tuesday,
+your belief that it is Tuesday points TOWARDS the fact, whereas
+when to-day is not Tuesday your belief points AWAY FROM the fact.
+Thus the objective reference of a belief is not determined by the
+fact alone, but by the direction of the belief towards or away
+from the fact.* If, on a Tuesday, one man believes that it is
+Tuesday while another believes that it is not Tuesday, their
+beliefs have the same objective, namely the fact that it is
+Tuesday but the true belief points towards the fact while the
+false one points away from it. Thus, in order to define the
+reference of a proposition we have to take account not only of
+the objective, but also of the direction of pointing, towards the
+objective in the case of a true proposition and away from it in
+the case of a false one.
+
+* I owe this way of looking at the matter to my friend Ludwig
+Wittgenstein.
+
+
+This mode of stating the nature of the objective reference of a
+proposition is necessitated by the circumstance that there are
+true and false propositions, but not true and false facts. If
+to-day is Tuesday, there is not a false objective "to-day is not
+Tuesday," which could be the objective of the false belief
+"to-day is not Tuesday." This is the reason why two beliefs which
+are each other's contradictories have the same objective. There
+is, however, a practical inconvenience, namely that we cannot
+determine the objective reference of a proposition, according to
+this definition, unless we know whether the proposition is true
+or false. To avoid this inconvenience, it is better to adopt a
+slightly different phraseology, and say: The "meaning" of the
+proposition "to-day is Tuesday" consists in pointing to the fact
+"to-day is Tuesday" if that is a fact, or away from the fact
+"to-day is not Tuesday" if that is a fact. The "meaning" of the
+proposition "to-day is not Tuesday" will be exactly the opposite.
+By this hypothetical form we are able to speak of the meaning of
+a proposition without knowing whether it is true or false.
+According to this definition, we know the meaning of a
+proposition when we know what would make it true and what would
+make it false, even if we do not know whether it is in fact true
+or false.
+
+The meaning of a proposition is derivative from the meanings of
+its constituent words. Propositions occur in pairs, distinguished
+(in simple cases) by the absence or presence of the word "not."
+Two such propositions have the same objective, but opposite
+meanings: when one is true, the other is false, and when one is
+false, the other is true.
+
+The purely formal definition of truth and falsehood offers little
+difficulty. What is required is a formal expression of the fact
+that a proposition is true when it points towards its objective,
+and false when it points away from it, In very simple cases we
+can give a very simple account of this: we can say that true
+propositions actually resemble their objectives in a way in which
+false propositions do not. But for this purpose it is necessary
+to revert to image-propositions instead of word-propositions. Let
+us take again the illustration of a memory-image of a familiar
+room, and let us suppose that in the image the window is to the
+left of the door. If in fact the window is to the left of the
+door, there is a correspondence between the image and the
+objective; there is the same relation between the window and the
+door as between the images of them. The image-memory consists of
+the image of the window to the left of the image of the door.
+When this is true, the very same relation relates the terms of
+the objective (namely the window and the door) as relates the
+images which mean them. In this case the correspondence which
+constitutes truth is very simple.
+
+In the case we have just been considering the objective consists
+of two parts with a certain relation (that of left-to-right), and
+the proposition consists of images of these parts with the very
+same relation. The same proposition, if it were false, would have
+a less simple formal relation to its objective. If the
+image-proposition consists of an image of the window to the left
+of an image of the door, while in fact the window is not to the
+left of the door, the proposition does not result from the
+objective by the mere substitution of images for their
+prototypes. Thus in this unusually simple case we can say that a
+true proposition "corresponds" to its objective in a formal sense
+in which a false proposition does not. Perhaps it may be possible
+to modify this notion of formal correspondence in such a way as
+to be more widely applicable, but if so, the modifications
+required will be by no means slight. The reasons for this must
+now be considered.
+
+To begin with, the simple type of correspondence we have been
+exhibiting can hardly occur when words are substituted for
+images, because, in word-propositions, relations are usually
+expressed by words, which are not themselves relations. Take such
+a proposition as "Socrates precedes Plato." Here the word
+"precedes" is just as solid as the words "Socrates" and "Plato";
+it MEANS a relation, but is not a relation. Thus the objective
+which makes our proposition true consists of TWO terms with a
+relation between them, whereas our proposition consists of THREE
+terms with a relation of order between them. Of course, it would
+be perfectly possible, theoretically, to indicate a few chosen
+relations, not by words, but by relations between the other
+words. "Socrates-Plato" might be used to mean "Socrates precedes
+Plato"; "PlaSocrates-to" might be used to mean "Plato was born
+before Socrates and died after him"; and so on. But the
+possibilities of such a method would be very limited. For aught I
+know, there may be languages that use it, but they are not among
+the languages with which I am acquainted. And in any case, in
+view of the multiplicity of relations that we wish to express, no
+language could advance far without words for relations. But as
+soon as we have words for relations, word-propositions have
+necessarily more terms than the facts to which they refer, and
+cannot therefore correspond so simply with their objectives as
+some image-propositions can.
+
+The consideration of negative propositions and negative facts
+introduces further complications. An image-proposition is
+necessarily positive: we can image the window to the left of the
+door, or to the right of the door, but we can form no image of
+the bare negative "the window not to the left of the door." We
+can DISBELIEVE the image-proposition expressed by "the window to
+the left of the door," and our disbelief will be true if the
+window is not to the left of the door. But we can form no image
+of the fact that the window is not to the left of the door.
+Attempts have often been made to deny such negative facts, but,
+for reasons which I have given elsewhere,* I believe these
+attempts to be mistaken, and I shall assume that there are
+negative facts.
+
+* "Monist," January, 1919, p. 42 ff.
+
+
+Word-propositions, like image-propositions, are always positive
+facts. The fact that Socrates precedes Plato is symbolized in
+English by the fact that the word "precedes" occurs between the
+words "Socrates" and "Plato." But we cannot symbolize the fact
+that Plato does not precede Socrates by not putting the word
+"precedes" between "Plato" and "Socrates." A negative fact is not
+sensible, and language, being intended for communication, has to
+be sensible. Therefore we symbolize the fact that Plato does not
+precede Socrates by putting the words "does not precede" between
+"Plato" and "Socrates." We thus obtain a series of words which is
+just as positive a fact as the series "Socrates precedes Plato."
+The propositions asserting negative facts are themselves positive
+facts; they are merely different positive facts from those
+asserting positive facts.
+
+We have thus, as regards the opposition of positive and negative,
+three different sorts of duality, according as we are dealing
+with facts, image-propositions, or word-propositions. We have,
+namely:
+
+(1) Positive and negative facts;
+
+(2) Image-propositions, which may be believed or disbelieved, but
+do not allow any duality of content corresponding to positive and
+negative facts;
+
+(3) Word-propositions, which are always positive facts, but are
+of two kinds: one verified by a positive objective, the other by
+a negative objective.
+
+Owing to these complications, the simplest type of correspondence
+is impossible when either negative facts or negative propositions
+are involved.
+
+Even when we confine ourselves to relations between two terms
+which are both imaged, it may be impossible to form an
+image-proposition in which the relation of the terms is
+represented by the same relation of the images. Suppose we say
+"Caesar was 2,000 years before Foch," we express a certain
+temporal relation between Caesar and Foch; but we cannot allow
+2,000 years to elapse between our image of Caesar and our image
+of Foch. This is perhaps not a fair example, since "2,000 years
+before" is not a direct relation. But take a case where the
+relation is direct, say, "the sun is brighter than the moon." We
+can form visual images of sunshine and moonshine, and it may
+happen that our image of the sunshine is the brighter of the two,
+but this is by no means either necessary or sufficient. The act
+of comparison, implied in our judgment, is something more than
+the mere coexistence of two images, one of which is in fact
+brighter than the other. It would take us too far from our main
+topic if we were to go into the question what actually occurs
+when we make this judgment. Enough has been said to show that the
+correspondence between the belief and its objective is more
+complicated in this case than in that of the window to the left
+of the door, and this was all that had to be proved.
+
+In spite of these complications, the general nature of the formal
+correspondence which makes truth is clear from our instances. In
+the case of the simpler kind of propositions, namely those that I
+call "atomic" propositions, where there is only one word
+expressing a relation, the objective which would verify our
+proposition, assuming that the word "not" is absent, is obtained
+by replacing each word by what it means, the word meaning a
+relation being replaced by this relation among the meanings of
+the other words. For example, if the proposition is "Socrates
+precedes Plato," the objective which verifies it results from
+replacing the word "Socrates" by Socrates, the word "Plato" by
+Plato, and the word "precedes" by the relation of preceding
+between Socrates and Plato. If the result of this process is a
+fact, the proposition is true; if not, it is false. When our
+proposition is "Socrates does not precede Plato," the conditions
+of truth and falsehood are exactly reversed. More complicated
+propositions can be dealt with on the same lines. In fact, the
+purely formal question, which has occupied us in this last
+section, offers no very formidable difficulties.
+
+I do not believe that the above formal theory is untrue, but I do
+believe that it is inadequate. It does not, for example, throw
+any light upon our preference for true beliefs rather than false
+ones. This preference is only explicable by taking account of the
+causal efficacy of beliefs, and of the greater appropriateness of
+the responses resulting from true beliefs. But appropriateness
+depends upon purpose, and purpose thus becomes a vital part of
+theory of knowledge.
+
+
+
+LECTURE XIV. EMOTIONS AND WILL
+
+On the two subjects of the present lecture I have nothing
+original to say, and I am treating them only in order to complete
+the discussion of my main thesis, namely that all psychic
+phenomena are built up out of sensations and images alone.
+
+Emotions are traditionally regarded by psychologists as a
+separate class of mental occurrences: I am, of course, not
+concerned to deny the obvious fact that they have characteristics
+which make a special investigation of them necessary. What I am
+concerned with is the analysis of emotions. It is clear that an
+emotion is essentially complex, and we have to inquire whether it
+ever contains any non-physiological material not reducible to
+sensations and images and their relations.
+
+Although what specially concerns us is the analysis of emotions,
+we shall find that the more important topic is the physiological
+causation of emotions. This is a subject upon which much valuable
+and exceedingly interesting work has been done, whereas the bare
+analysis of emotions has proved somewhat barren. In view of the
+fact that we have defined perceptions, sensations, and images by
+their physiological causation, it is evident that our problem of
+the analysis of the emotions is bound up with the problem of
+their physiological causation.
+
+Modern views on the causation of emotions begin with what is
+called the James-Lange theory. James states this view in the
+following terms ("Psychology," vol. ii, p. 449):
+
+"Our natural way of thinking about these coarser emotions, grief,
+fear, rage, love, is that the mental perception of some fact
+excites the mental affection called the emotion, and that this
+latter state of mind gives rise to the bodily expression. My
+theory, on the contrary, is that THE BODILY CHANGES FOLLOW
+DIRECTLY THE PERCEPTION OF THE EXCITING FACT, AND THAT OUR
+FEELING OF THE SAME CHANGES AS THEY OCCUR ~IS~ THE EMOTION
+(James's italics). Common sense says: we lose our fortune, are
+sorry and weep; we meet a bear, are frightened and run; we are
+insulted by a rival, are angry and strike. The hypothesis here to
+be defended says that this order of sequence is incorrect, that
+the one mental state is not immediately induced by the other,
+that the bodily manifestations must first be interposed between,
+and that the more rational statement is that we feel sorry
+because we cry, angry because we strike, afraid because we
+tremble, and not that we cry, strike, or tremble, because we are
+sorry, angry, or fearful, as the case may be. Without the bodily
+states following on the perception, the latter would be purely
+cognitive in form, pale, colourless, destitute of emotional
+warmth."
+
+Round this hypothesis a very voluminous literature has grown up.
+The history of its victory over earlier criticism, and its
+difficulties with the modern experimental work of Sherrington and
+Cannon, is well told by James R. Angell in an article called "A
+Reconsideration of James's Theory of Emotion in the Light of
+Recent Criticisms."* In this article Angell defends James's
+theory and to me--though I speak with diffidence on a question as
+to which I have little competence--it appears that his defence is
+on the whole successful.
+
+* "Psychological Review," 1916.
+
+
+Sherrington, by experiments on dogs, showed that many of the
+usual marks of emotion were present in their behaviour even when,
+by severing the spinal cord in the lower cervical region, the
+viscera were cut off from all communication with the brain,
+except that existing through certain cranial nerves. He mentions
+the various signs which "contributed to indicate the existence of
+an emotion as lively as the animal had ever shown us before the
+spinal operation had been made."* He infers that the
+physiological condition of the viscera cannot be the cause of the
+emotion displayed under such circumstances, and concludes: "We
+are forced back toward the likelihood that the visceral
+expression of emotion is SECONDARY to the cerebral action
+occurring with the psychical state.... We may with James accept
+visceral and organic sensations and the memories and associations
+of them as contributory to primitive emotion, but we must regard
+them as re-enforcing rather than as initiating the psychosis."*
+
+* Quoted by Angell, loc. cit.
+
+
+Angell suggests that the display of emotion in such cases may be
+due to past experience, generating habits which would require
+only the stimulation of cerebral reflex arcs. Rage and some forms
+of fear, however, may, he thinks, gain expression without the
+brain. Rage and fear have been especially studied by Cannon,
+whose work is of the greatest importance. His results are given
+in  his book, "Bodily Changes in Pain, Hunger, Fear and Rage" (D.
+Appleton and Co., 1916).
+
+The most interesting part of Cannon's book consists in the
+investigation of the effects produced by secretion of adrenin.
+Adrenin is a substance secreted into the blood by the adrenal
+glands. These are among the ductless glands, the functions of
+which, both in physiology and in connection with the emotions,
+have only come to be known during recent years. Cannon found that
+pain, fear and rage occurred in circumstances which affected the
+supply of adrenin, and that an artificial injection of adrenin
+could, for example, produce all the symptoms of fear. He studied
+the effects of adrenin on various parts of the body; he found
+that it causes the pupils to dilate, hairs to stand erect, blood
+vessels to be constricted, and so on. These effects were still
+produced if the parts in question were removed from the body and
+kept alive artificially.*
+
+* Cannon's work is not unconnected with that of Mosso, who
+maintains, as the result of much experimental work, that "the
+seat of the emotions lies in the sympathetic nervous system." An
+account of the work of both these men will be found in Goddard's
+"Psychology of the Normal and Sub-normal" (Kegan Paul, 1919),
+chap. vii and Appendix.
+
+
+Cannon's chief argument against James is, if I understand him
+rightly, that similar affections of the viscera may accompany
+dissimilar emotions, especially fear and rage. Various different
+emotions make us cry, and therefore it cannot be true to say, as
+James does, that we "feel sorry because we cry," since sometimes
+we cry when we feel glad. This argument, however, is by no means
+conclusive against James, because it cannot be shown that there
+are no visceral differences for different emotions, and indeed it
+is unlikely that this is the case.
+
+As Angell says (loc. cit.): "Fear and joy may both cause cardiac
+palpitation, but in one case we find high tonus of the skeletal
+muscles, in the other case relaxation and the general sense of
+weakness."
+
+Angell's conclusion, after discussing the experiments of
+Sherrington and Cannon, is: "I would therefore submit that, so
+far as concerns the critical suggestions by these two
+psychologists, James's essential contentions are not materially
+affected." If it were necessary for me to take sides on this
+question, I should agree with this conclusion; but I think my
+thesis as to the analysis of emotion can be maintained without
+coming to. a probably premature conclusion upon the doubtful
+parts of the physiological problem.
+
+According to our definitions, if James is right, an emotion may
+be regarded as involving a confused perception of the viscera
+concerned in its causation, while if Cannon and Sherrington are
+right, an emotion involves a confused perception of its external
+stimulus. This follows from what was said in Lecture VII. We
+there defined a perception as an appearance, however irregular,
+of one or more objects external to the brain. And in order to be
+an appearance of one or more objects, it is only necessary that
+the occurrence in question should be connected with them by a
+continuous chain, and should vary when they are varied
+sufficiently. Thus the question whether a mental occurrence can
+be called a perception turns upon the question whether anything
+can be inferred from it as to its causes outside the brain: if
+such inference is possible, the occurrence in question will come
+within our definition of a perception. And in that case,
+according to the definition in Lecture VIII, its non-mnemic
+elements will be sensations. Accordingly, whether emotions are
+caused by changes in the viscera or by sensible objects, they
+contain elements which are sensations according to our
+definition.
+
+An emotion in its entirety is, of course, something much more
+complex than a perception. An emotion is essentially a process,
+and it will be only what one may call a cross-section of the
+emotion that will be a perception, of a bodily condition
+according to James, or (in certain cases) of an external object
+according to his opponents. An emotion in its entirety contains
+dynamic elements, such as motor impulses, desires, pleasures and
+pains. Desires and pleasures and pains, according to the theory
+adopted in Lecture III, are characteristics of processes, not
+separate ingredients. An emotion--rage, for example--will be a
+certain kind of process, consisting of perceptions and (in
+general) bodily movements. The desires and pleasures and pains
+involved are properties of this process, not separate items in
+the stuff of which the emotion is composed. The dynamic elements
+in an emotion, if we are right in our analysis, contain, from our
+point of view, no ingredients beyond those contained in the
+processes considered in Lecture III. The ingredients of an
+emotion are only sensations and images and bodily movements
+succeeding each other according to a certain pattern. With this
+conclusion we may leave the emotions and pass to the
+consideration of the will.
+
+The first thing to be defined when we are dealing with Will is a
+VOLUNTARY MOVEMENT. We have already defined vital movements, and
+we have maintained that, from a behaviourist standpoint, it is
+impossible to distinguish which among such movements are reflex
+and which voluntary. Nevertheless, there certainly is a
+distinction. When we decide in the morning that it is time to get
+up, our consequent movement is voluntary. The beating of the
+heart, on the other hand, is involuntary: we can neither cause it
+nor prevent it by any decision of our own, except indirectly, as
+e.g. by drugs. Breathing is intermediate between the two: we
+normally breathe without the help of the will, but we can alter
+or stop our breathing if we choose.
+
+James ("Psychology," chap. xxvi) maintains that the only
+distinctive characteristic of a voluntary act is that it involves
+an idea of the movement to be performed, made up of memory-images
+of the kinaesthetic sensations which we had when the same
+movement occurred on some former occasion. He points out that, on
+this view, no movement can be made voluntarily unless it has
+previously occurred involuntarily.*
+
+* "Psychology," Vol. ii, pp. 492-3.
+
+
+I see no reason to doubt the correctness of this view. We shall
+say, then, that movements which are accompanied by kinaesthetic
+sensations tend to be caused by the images of those sensations,
+and when so caused are called VOLUNTARY.
+
+Volition, in the emphatic sense, involves something more than
+voluntary movement. The sort of case I am thinking of is decision
+after deliberation. Voluntary movements are a part of this, but
+not the whole. There is, in addition to them, a judgment: "This
+is what I shall do"; there is also a sensation of tension during
+doubt, followed by a different sensation at the moment of
+deciding. I see no reason whatever to suppose that there is any
+specifically new ingredient; sensations and images, with their
+relations and causal laws, yield all that seems to be wanted for
+the analysis of the will, together with the fact that
+kinaesthetic images tend to cause the movements with which they
+are connected. Conflict of desires is of course essential in the
+causation of the emphatic kind of will: there will be for a time
+kinaesthetic images of incompatible movements, followed by the
+exclusive image of the movement which is said to be willed. Thus
+will seems to add no new irreducible ingredient to the analysis
+of the mind.
+
+
+
+LECTURE XV. CHARACTERISTICS OF MENTAL PHENOMENA
+
+At the end of our journey it is time to return to the question
+from which we set out, namely: What is it that characterizes mind
+as opposed to matter? Or, to state the same question in other
+terms: How is psychology to be distinguished from physics? The
+answer provisionally suggested at the outset of our inquiry was
+that psychology and physics are distinguished by the nature of
+their causal laws, not by their subject matter. At the same time
+we held that there is a certain subject matter, namely images, to
+which only psychological causal laws are applicable; this subject
+matter, therefore, we assigned exclusively to psychology. But we
+found no way of defining images except through their causation;
+in their intrinsic character they appeared to have no universal
+mark by which they could be distinguished from sensations.
+
+In this last lecture I propose to pass in review various
+suggested methods of distinguishing mind from matter. I shall
+then briefly sketch the nature of that fundamental science which
+I believe to be the true metaphysic, in which mind and matter
+alike are seen to be constructed out of a neutral stuff, whose
+causal laws have no such duality as that of psychology, but form
+the basis upon which both physics and psychology are built.
+
+In search for the definition of "mental phenomena," let us begin
+with "consciousness," which is often thought to be the essence of
+mind. In the first lecture I gave various arguments against the
+view that consciousness is fundamental, but I did not attempt to
+say what consciousness is. We must find a definition of it, if we
+are to feel secure in deciding that it is not fundamental. It is
+for the sake of the proof that it is not fundamental that we must
+now endeavour to decide what it is.
+
+"Consciousness," by those who regard it as fundamental, is taken
+to be a character diffused throughout our mental life, distinct
+from sensations and images, memories, beliefs and desires, but
+present in all of them.* Dr. Henry Head, in an article which I
+quoted in Lecture III, distinguishing sensations from purely
+physiological occurrences, says: "Sensation, in the strict sense
+of the term, demands the existence of consciousness." This
+statement, at first sight, is one to which we feel inclined to
+assent, but I believe we are mistaken if we do so. Sensation is
+the sort of thing of which we MAY be conscious, but not a thing
+of which we MUST be conscious. We have been led, in the course of
+our inquiry, to admit unconscious beliefs and unconscious
+desires. There is, so far as I can see, no class of mental or
+other occurrences of which we are always conscious whenever they
+happen.
+
+* Cf. Lecture VI.
+
+
+The first thing to notice is that consciousness must be of
+something. In view of this, I should define "consciousness" in
+terms of that relation of an image of a word to an object which
+we defined, in Lecture XI, as "meaning." When a sensation is
+followed by an image which is a "copy" of it, I think it may be
+said that the existence of the image constitutes consciousness of
+the sensation, provided it is accompanied by that sort of belief
+which, when we reflect upon it, makes us feel that the image is a
+"sign" of something other than itself. This is the sort of belief
+which, in the case of memory, we expressed in the words "this
+occurred"; or which, in the case of a judgment of perception,
+makes us believe in qualities correlated with present sensations,
+as e.g., tactile and visual qualities are correlated. The
+addition of some element of belief seems required, since mere
+imagination does not involve consciousness of anything, and there
+can be no consciousness which is not of something. If images
+alone constituted consciousness of their prototypes, such
+imagination-images as in fact have prototypes would involve
+consciousness of them; since this is not the case, an element of
+belief must be added to the images in defining consciousness. The
+belief must be of that sort that constitutes objective reference,
+past or present. An image, together with a belief of this sort
+concerning it, constitutes, according to our definition,
+consciousness of the prototype of the image.
+
+But when we pass from consciousness of sensations to
+consciousness of objects of perception, certain further points
+arise which demand an addition to our definition. A judgment of
+perception, we may say, consists of a core of sensation, together
+with associated images, with belief in the present existence of
+an object to which sensation and images are referred in a way
+which is difficult to analyse. Perhaps we might say that the
+belief is not fundamentally in any PRESENT existence, but is of
+the nature of an expectation: for example. when we see an object,
+we expect certain sensations to result if we proceed to touch it.
+Perception, then, will consist of a present sensation together
+with expectations of future sensations. (This, of course, is a
+reflective analysis, not an account of the way perception appears
+to unchecked introspection.) But all such expectations are liable
+to be erroneous, since they are based upon correlations which are
+usual but not invariable. Any such correlation may mislead us in
+a particular case, for example, if we try to touch a reflection
+in a looking-glass under the impression that it is "real." Since
+memory is fallible, a similar difficulty arises as regards
+consciousness of past objects. It would seem odd to say that we
+can be "conscious" of a thing which does not or did not exist.
+The only way to avoid this awkwardness is to add to our
+definition the proviso that the beliefs involved in consciousness
+must be TRUE.
+
+In the second place, the question arises as to whether we can be
+conscious of images. If we apply our definition to this case, it
+seems to demand images of images. In order, for example, to be
+conscious of an image of a cat, we shall require, according to
+the letter of the definition, an image which is a copy of our
+image of the cat, and has this image for its prototype. Now, it
+hardly seems probable, as a matter of observation, that there are
+images of images, as opposed to images of sensations. We may meet
+this difficulty in two ways, either by boldly denying
+consciousness of images, or by finding a sense in which, by means
+of a different accompanying belief, an image, instead of meaning
+its prototype, can mean another image of the same prototype.
+
+The first alternative, which denies consciousness of images, has
+already been discussed when we were dealing with Introspection in
+Lecture VI. We then decided that there must be, in some sense,
+consciousness of images. We are therefore left with the second
+suggested way of dealing with knowledge of images. According to
+this second hypothesis, there may be two images of the same
+prototype, such that one of them means the other, instead of
+meaning the prototype. It will be remembered that we defined
+meaning by association a word or image means an object, we said,
+when it has the same associations as the object. But this
+definition must not be interpreted too absolutely: a word or
+image will not have ALL the same associations as the object which
+it means. The word "cat" may be associated with the word "mat,"
+but it would not happen except by accident that a cat would be
+associated with a mat. And in like manner an image may have
+certain associations which its prototype will not have, e.g. an
+association with the word "image." When these associations are
+active, an image means an image, instead of meaning its
+prototype. If I have had images of a given prototype many times,
+I can mean one of these, as opposed to the rest, by recollecting
+the time and place or any other distinctive association of that
+one occasion. This happens, for example, when a place recalls to
+us some thought we previously had in that place, so that we
+remember a thought as opposed to the occurrence to which it
+referred. Thus we may say that we think of an image A when we
+have a similar image B associated with recollections of
+circumstances connected with A, but not with its prototype or
+with other images of the same prototype. In this way we become
+aware of images without the need of any new store of mental
+contents, merely by the help of new associations. This theory, so
+far as I can see, solves the problems of introspective knowledge,
+without requiring heroic measures such as those proposed by
+Knight Dunlap, whose views we discussed in Lecture VI.
+
+According to what we have been saying, sensation itself is not an
+instance of consciousness, though the immediate memory by which
+it is apt to be succeeded is so. A sensation which is remembered
+becomes an object of consciousness as soon as it begins to be
+remembered, which will normally be almost immediately after its
+occurrence (if at all); but while it exists it is not an object
+of consciousness. If, however, it is part of a perception, say of
+some familiar person, we may say that the person perceived is an
+object of consciousness. For in this case the sensation is a SIGN
+of the perceived object in much the same way in which a
+memory-image is a sign of a remembered object. The essential
+practical function of "consciousness" and "thought" is that they
+enable us to act with reference to what is distant in time or
+space, even though it is not at present stimulating our senses.
+This reference to absent objects is possible through association
+and habit. Actual sensations, in themselves, are not cases of
+consciousness, because they do not bring in this reference to
+what is absent. But their connection with consciousness is very
+close, both through immediate memory, and through the
+correlations which turn sensations into perceptions.
+
+Enough has, I hope, been said to show that consciousness is far
+too complex and accidental to be taken as the fundamental
+characteristic of mind. We have seen that belief and images both
+enter into it. Belief itself, as we saw in an earlier lecture, is
+complex. Therefore, if any definition of mind is suggested by our
+analysis of consciousness, images are what would naturally
+suggest themselves. But since we found that images can only be
+defined causally, we cannot deal with this suggestion, except in
+connection with the difference between physical and psychological
+causal laws.
+
+I come next to those characteristics of mental phenomena which
+arise out of mnemic causation. The possibility of action with
+reference to what is not sensibly present is one of the things
+that might be held to characterize mind. Let us take first a very
+elementary example. Suppose you are in a familiar room at night,
+and suddenly the light goes out. You will be able to find your
+way to the door without much difficulty by means of the picture
+of the room which you have in your mind. In this case visual
+images serve, somewhat imperfectly it is true, the purpose which
+visual sensations would otherwise serve. The stimulus to the
+production of visual images is the desire to get out of the room,
+which, according to what we found in Lecture III, consists
+essentially of present sensations and motor impulses caused by
+them. Again, words heard or read enable you to act with reference
+to the matters about which they give information; here, again, a
+present sensible stimulus, in virtue of habits formed in the
+past, enables you to act in a manner appropriate to an object
+which is not sensibly present. The whole essence of the practical
+efficiency of "thought" consists in sensitiveness to signs: the
+sensible presence of A, which is a sign of the present or future
+existence of B, enables us to act in a manner appropriate to B.
+Of this, words are the supreme example, since their effects as
+signs are prodigious, while their intrinsic interest as sensible
+occurrences on their own account is usually very slight. The
+operation of signs may or may not be accompanied by
+consciousness. If a sensible stimulus A calls up an image of B,
+and we then act with reference to B, we have what may be called
+consciousness of B. But habit may enable us to act in a manner
+appropriate to B as soon as A appears, without ever having an
+image of B. In that case, although A operates as a sign, it
+operates without the help of consciousness. Broadly speaking, a
+very familiar sign tends to operate directly in this manner, and
+the intervention of consciousness marks an imperfectly
+established habit.
+
+The power of acquiring experience, which characterizes men and
+animals, is an example of the general law that, in mnemic
+causation, the causal unit is not one event at one time, but two
+or more events at two or more times.& A burnt child fears the
+fire, that is to say, the neighbourhood of fire has a different
+effect upon a child which has had the sensations of burning than
+upon one which has not. More correctly, the observed effect, when
+a child which has been burnt is put near a fire, has for its
+cause, not merely the neighbourhood of the fire, but this
+together with the previous burning. The general formula, when an
+animal has acquired experience through some event A, is that,
+when B occurs at some future time, the animal to which A has
+happened acts differently from an animal which A has not
+happened. Thus A and B together, not either separately, must be
+regarded as the cause of the animal's behaviour, unless we take
+account of the effect which A has had in altering the animal's
+nervous tissue, which is a matter not patent to external
+observation except under very special circumstances. With this
+possibility, we are brought back to causal laws,and to the
+suggestion that many things which seem essentially mental are
+really neural. Perhaps it is the nerves that acquire experience
+rather than the mind. If so, the possibility of acquiring
+experience cannot be used to define mind.*
+
+* Cf. Lecture IV.
+
+
+Very similar considerations apply to memory, if taken as the
+essence of mind. A recollection is aroused by something which is
+happening now, but is different from the effect which the present
+occurrence would have produced if the recollected event had not
+occurred. This may be accounted for by the physical effect of the
+past event on the brain, making it a different instrument from
+that which would have resulted from a different experience. The
+causal peculiarities of memory may, therefore, have a
+physiological explanation. With every special class of mental
+phenomena this possibility meets us afresh. If psychology is to
+be a separate science at all, we must seek a wider ground for its
+separateness than any that we have been considering hitherto.
+
+We have found that "consciousness" is too narrow to characterize
+mental phenomena, and that mnemic causation is too wide. I come
+now to a characteristic which, though difficult to define, comes
+much nearer to what we require, namely subjectivity.
+
+Subjectivity, as a characteristic of mental phenomena, was
+considered in Lecture VII, in connection with the definition of
+perception. We there decided that those particulars which
+constitute the physical world can be collected into sets in two
+ways, one of which makes a bundle of all those particulars that
+are appearances of a given thing from different places, while the
+other makes a bundle of all those particulars which are
+appearances of different things from a given place. A bundle of
+this latter sort, at a given time, is called a "perspective";
+taken throughout a period of time, it is called a "biography."
+Subjectivity is the characteristic of perspectives and
+biographies, the characteristic of giving the view of the world
+from a certain place. We saw in Lecture VII that this
+characteristic involves none of the other characteristics that
+are commonly associated with mental phenomena, such as
+consciousness, experience and memory. We found in fact that it is
+exhibited by a photographic plate, and, strictly speaking, by any
+particular taken in conjunction with those which have the same
+"passive" place in the sense defined in Lecture VII. The
+particulars forming one perspective are connected together
+primarily by simultaneity; those forming one biography, primarily
+by the existence of direct time-relations between them. To these
+are to be added relations derivable from the laws of perspective.
+In all this we are clearly not in the region of psychology, as
+commonly understood; yet we are also hardly in the region of
+physics. And the definition of perspectives and biographies,
+though it does not yet yield anything that would be commonly
+called "mental," is presupposed in mental phenomena, for example
+in mnemic causation: the causal unit in mnemic causation, which
+gives rise to Semon's engram, is the whole of one perspective--
+not of any perspective, but of a perspective in a place where
+there is nervous tissue, or at any rate living tissue of some
+sort. Perception also, as we saw, can only be defined in terms of
+perspectives. Thus the conception of subjectivity, i.e. of the
+"passive" place of a particular, though not alone sufficient to
+define mind, is clearly an essential element in the definition.
+
+I have maintained throughout these lectures that the data of
+psychology do not differ in, their intrinsic character from the
+data of physics. I have maintained that sensations are data for
+psychology and physics equally, while images, which may be in
+some sense exclusively psychological data, can only be
+distinguished from sensations by their correlations, not by what
+they are in themselves. It is now necessary, however, to examine
+the notion of a "datum," and to obtain, if possible, a definition
+of this notion.
+
+The notion of "data" is familiar throughout science, and is
+usually treated by men of science as though it were perfectly
+clear. Psychologists, on the other hand, find great difficulty in
+the conception. "Data" are naturally defined in terms of theory
+of knowledge: they are those propositions of which the truth is
+known without demonstration, so that they may be used as
+premisses in proving other propositions. Further, when a
+proposition which is a datum asserts the existence of something,
+we say that the something is a datum, as well as the proposition
+asserting its existence. Thus those objects of whose existence we
+become certain through perception are said to be data.
+
+There is some difficulty in connecting this epistemological
+definition of "data" with our psychological analysis of
+knowledge; but until such a connection has been effected, we have
+no right to use the conception "data."
+
+It is clear, in the first place, that there can be no datum apart
+from a belief. A sensation which merely comes and goes is not a
+datum; it only becomes a datum when it is remembered. Similarly,
+in perception, we do not have a datum unless we have a JUDGMENT
+of perception. In the sense in which objects (as opposed to
+propositions) are data, it would seem natural to say that those
+objects of which we are conscious are data. But consciousness, as
+we have seen, is a complex notion, involving beliefs, as well as
+mnemic phenomena such as are required for perception and memory.
+It follows that no datum is theoretically indubitable, since no
+belief is infallible; it follows also that every datum has a
+greater or less degree of vagueness, since there is always some
+vagueness in memory and the meaning of images.
+
+Data are not those things of which our consciousness is earliest
+in time. At every period of life, after we have become capable of
+thought, some of our beliefs are obtained by inference, while
+others are not. A belief may pass from either of these classes
+into the other, and may therefore become, or cease to be, a
+belief giving a datum. When, in what follows, I speak of data, I
+do not mean the things of which we feel sure before scientific
+study begins, but the things which, when a science is well
+advanced, appear as affording grounds for other parts of the
+science, without themselves being believed on any ground except
+observation. I assume, that is to say, a trained observer, with
+an analytic attention, knowing the sort of thing to look for, and
+the sort of thing that will be important. What he observes is, at
+the stage of science which he has reached, a datum for his
+science. It is just as sophisticated and elaborate as the
+theories which he bases upon it, since only trained habits and
+much practice enable a man to make the kind of observation that
+will be scientifically illuminating. Nevertheless, when once it
+has been observed, belief in it is not based on inference and
+reasoning, but merely upon its having been seen. In this way its
+logical status differs from that of the theories which are proved
+by its means.
+
+In any science other than psychology the datum is primarily a
+perception, in which only the sensational core is ultimately and
+theoretically a datum, though some such accretions as turn the
+sensation into a perception are practically unavoidable. But if
+we postulate an ideal observer, he will be able to isolate the
+sensation, and treat this alone as datum. There is, therefore, an
+important sense in which we may say that, if we analyse as much
+as we ought, our data, outside psychology, consist of sensations,
+which include within themselves certain spatial and temporal
+relations.
+
+Applying this remark to physiology, we see that the nerves and
+brain as physical objects are not truly data; they are to be
+replaced, in the ideal structure of science, by the sensations
+through which the physiologist is said to perceive them. The
+passage from these sensations to nerves and brain as physical
+objects belongs really to the initial stage in the theory of
+physics, and ought to be placed in the reasoned part, not in the
+part supposed to be observed. To say we see the nerves is like
+saying we hear the nightingale; both are convenient but
+inaccurate expressions. We hear a sound which we believe to be
+causally connected with the nightingale, and we see a sight which
+we believe to be causally connected with a nerve. But in each
+case it is only the sensation that ought, in strictness, to be
+called a datum. Now, sensations are certainly among the data of
+psychology. Therefore all the data of the physical sciences are
+also psychological data. It remains to inquire whether all the
+data of psychology are also data of physical science, and
+especially of physiology.
+
+If we have been right in our analysis of mind, the ultimate data
+of psychology are only sensations and images and their relations.
+Beliefs, desires, volitions, and so on, appeared to us to be
+complex phenomena consisting of sensations and images variously
+interrelated. Thus (apart from certain relations) the occurrences
+which seem most distinctively mental, and furthest removed from
+physics, are, like physical objects, constructed or inferred, not
+part of the original stock of data in the perfected science. From
+both ends, therefore, the difference between physical and
+psychological data is diminished. Is there ultimately no
+difference, or do images remain as irreducibly and exclusively
+psychological? In view of the causal definition of the difference
+between images and sensations, this brings us to a new question,
+namely: Are the causal laws of psychology different from those of
+any other science, or are they really physiological?
+
+Certain ambiguities must be removed before this question can be
+adequately discussed.
+
+First, there is the distinction between rough approximate laws
+and such as appear to be precise and general. I shall return to
+the former presently; it is the latter that I wish to discuss
+now.
+
+Matter, as defined at the end of Lecture V, is a logical fiction,
+invented because it gives a convenient way of stating causal
+laws. Except in cases of perfect regularity in appearances (of
+which we can have no experience), the actual appearances of a
+piece of matter are not members of that ideal system of regular
+appearances which is defined as being the matter in question. But
+the matter is. after all, inferred from its appearances, which
+are used to VERIFY physical laws. Thus, in so far as physics is
+an empirical and verifiable science, it must assume or prove that
+the inference from appearances to matter is, in general,
+legitimate, and it must be able to tell us, more or less, what
+appearances to expect. It is through this question of
+verifiability and empirical applicability to experience that we
+are led to a theory of matter such as I advocate. From the
+consideration of this question it results that physics, in so far
+as it is an empirical science, not a logical phantasy, is
+concerned with particulars of just the same sort as those which
+psychology considers under the name of sensations. The causal
+laws of physics, so interpreted, differ from those of psychology
+only by the fact that they connect a particular with other
+appearances in the same piece of matter, rather than with other
+appearances in the same perspective. That is to say, they group
+together particulars having the same "active" place, while
+psychology groups together those having the same "passive" place.
+Some particulars, such as images, have no "active" place, and
+therefore belong exclusively to psychology.
+
+We can now understand the distinction between physics and
+psychology. The nerves and brain are matter: our visual
+sensations when we look at them may be, and I think are, members
+of the system constituting irregular appearances of this matter,
+but are not the whole of the system. Psychology is concerned,
+inter alia, with our sensations when we see a piece of matter, as
+opposed to the matter which we see. Assuming, as we must, that
+our sensations have physical causes, their causal laws are
+nevertheless radically different from the laws of physics, since
+the consideration of a single sensation requires the breaking up
+of the group of which it is a member. When a sensation is used to
+verify physics, it is used merely as a sign of a certain material
+phenomenon, i.e. of a group of particulars of which it is a
+member. But when it is studied by psychology, it is taken away
+from that group and put into quite a different context, where it
+causes images or voluntary movements. It is primarily this
+different grouping that is characteristic of psychology as
+opposed to all the physical sciences, including physiology; a
+secondary difference is that images, which belong to psychology,
+are not easily to be included among the aspects which constitute
+a physical thing or piece of matter.
+
+There remains, however, an important question, namely: Are mental
+events causally dependent upon physical events in a sense in
+which the converse dependence does not hold? Before we can
+discuss the answer to this question, we must first be clear as to
+what our question means.
+
+When, given A, it is possible to infer B, but given B, it is not
+possible to infer A, we say that B is dependent upon A in a sense
+in which A is not dependent upon B. Stated in logical terms, this
+amounts to saying that, when we know a many-one relation of A to
+B, B is dependent upon A in respect of this relation. If the
+relation is a causal law, we say that B is causally dependent
+upon A. The illustration that chiefly concerns us is the system
+of appearances of a physical object. We can, broadly speaking,
+infer distant appearances from near ones, but not vice versa. All
+men look alike when they are a mile away, hence when we see a man
+a mile off we cannot tell what he will look like when he is only
+a yard away. But when we see him a yard away, we can tell what he
+will look like a mile away. Thus the nearer view gives us more
+valuable information, and the distant view is causally dependent
+upon it in a sense in which it is not causally dependent upon the
+distant view.
+
+It is this greater causal potency of the near appearance that
+leads physics to state its causal laws in terms of that system of
+regular appearances to which the nearest appearances increasingly
+approximate, and that makes it value information derived from the
+microscope or telescope. It is clear that our sensations,
+considered as irregular appearances of physical objects, share
+the causal dependence belonging to comparatively distant
+appearances; therefore in our sensational life we are in causal
+dependence upon physical laws.
+
+This, however, is not the most important or interesting part of
+our question. It is the causation of images that is the vital
+problem. We have seen that they are subject to mnenic causation,
+and that mnenic causation may be reducible to ordinary physical
+causation in nervous tissue. This is the question upon which our
+attitude must turn towards what may be called materialism. One
+sense of materialism is the view that all mental phenomena are
+causally dependent upon physical phenomena in the above-defined
+sense of causal dependence. Whether this is the case or not, I do
+not profess to know. The question seems to me the same as the
+question whether mnemic causation is ultimate, which we
+considered without deciding in Lecture IV. But I think the bulk
+of the evidence points to the materialistic answer as the more
+probable.
+
+In considering the causal laws of psychology, the distinction
+between rough generalizations and exact laws is important. There
+are many rough generalizations in psychology, not only of the
+sort by which we govern our ordinary behaviour to each other, but
+also of a more nearly scientific kind. Habit and association
+belong among such laws. I will give an illustration of the kind
+of law that can be obtained. Suppose a person has frequently
+experienced A and B in close temporal contiguity, an association
+will be established, so that A, or an image of A, tends to cause
+an image of B. The question arises: will the association work in
+either direction, or only from the one which has occurred earlier
+to the one which has occurred later? In an article by Mr.
+Wohlgemuth, called "The Direction of Associations" ("British
+Journal of Psychology," vol. v, part iv, March, 1913), it is
+claimed to be proved by experiment that, in so far as motor
+memory (i.e. memory of movements) is concerned, association works
+only from earlier to later, while in visual and auditory memory
+this is not the case, but the later of two neighbouring
+experiences may recall the earlier as well as the earlier the
+later. It is suggested that motor memory is physiological, while
+visual and auditory memory are more truly psychological. But that
+is not the point which concerns us in the illustration. The point
+which concerns us is that a law of association, established by
+purely psychological observation, is a purely psychological law,
+and may serve as a sample of what is possible in the way of
+discovering such laws. It is, however, still no more than a rough
+generalization, a statistical average. It cannot tell us what
+will result from a given cause on a given occasion. It is a law
+of tendency, not a precise and invariable law such as those of
+physics aim at being.
+
+If we wish to pass from the law of habit, stated as a tendency or
+average, to something more precise and invariable, we seem driven
+to the nervous system. We can more or less guess how an
+occurrence produces a change in the brain, and how its repetition
+gradually produces something analogous to the channel of a river,
+along which currents flow more easily than in neighbouring paths.
+We can perceive that in this way, if we had more knowledge, the
+tendency to habit through repetition might be replaced by a
+precise account of the effect of each occurrence in bringing
+about a modification of the sort from which habit would
+ultimately result. It is such considerations that make students
+of psychophysiology materialistic in their methods, whatever they
+may be in their metaphysics. There are, of course, exceptions,
+such as Professor J. S. Haldane,* who maintains that it is
+theoretically impossible to obtain physiological explanations of
+psychical phenomena, or physical explanations of physiological
+phenomena. But I think the bulk of expert opinion, in practice,
+is on the other side.
+
+*See his book, "The New Physiology and Other Addresses" (Charles
+Griffin & Co., 1919).
+
+
+The question whether it is possible to obtain precise causal laws
+in which the causes are psychological, not material, is one of
+detailed investigation. I have done what I could to make clear
+the nature of the question, but I do not believe that it is
+possible as yet to answer it with any confidence. It seems to be
+by no means an insoluble question, and we may hope that science
+will be able to produce sufficient grounds for regarding one
+answer as much more probable than the other. But for the moment I
+do not see how we can come to a decision.
+
+I think, however, on grounds of the theory of matter explained in
+Lectures V and VII, that an ultimate scientific account of what
+goes on in the world, if it were ascertainable, would resemble
+psychology rather than physics in what we found to be the
+decisive difference between them. I think, that is to say, that
+such an account would not be content to speak, even formally, as
+though matter, which is a logical fiction, were the ultimate
+reality. I think that, if our scientific knowledge were adequate
+to the task, which it neither is nor is likely to become, it
+would exhibit the laws of correlation of the particulars
+constituting a momentary condition of a material unit, and would
+state the causal laws* of the world in terms of these
+particulars, not in terms of matter. Causal laws so stated would,
+I believe, be applicable to psychology and physics equally; the
+science in which they were stated would succeed in achieving what
+metaphysics has vainly attempted, namely a unified account of
+what really happens, wholly true even if not the whole of truth,
+and free from all convenient fictions or unwarrantable
+assumptions of metaphysical entities. A causal law applicable to
+particulars would count as a law of physics if it could be stated
+in terms of those fictitious systems of regular appearances which
+are matter; if this were not the case, it would count as a law of
+psychology if one of the particulars were a sensation or an
+image, i.e. were subject to mnemic causation. I believe that the
+realization of the complexity of a material unit, and its
+analysis into constituents analogous to sensations, is of the
+utmost importance to philosophy, and vital for any understanding
+of the relations between mind and matter, between our perceptions
+and the world which they perceive. It is in this direction, I am
+convinced, that we must look for the solution of many ancient
+perplexities.
+
+* In a perfected science, causal laws will take the form of
+differential equations--or of finite-difference equations, if the
+theory of quanta should prove correct.
+
+
+It is probable that the whole science of mental occurrences,
+especially where its initial definitions are concerned, could be
+simplified by the development of the fundamental unifying science
+in which the causal laws of particulars are sought, rather than
+the causal laws of those systems of particulars that constitute
+the material units of physics. This fundamental science would
+cause physics to become derivative, in the sort of way in which
+theories of the constitution of the atom make chemistry
+derivative from physics; it would also cause psychology to appear
+less singular and isolated among sciences. If we are right in
+this, it is a wrong philosophy of matter which has caused many of
+the difficulties in the philosophy of mind--difficulties which a
+right philosophy of matter would cause to disappear.
+
+The conclusions at which we have arrived may be summed up as
+follows:
+
+I. Physics and psychology are not distinguished by their
+material. Mind and matter alike are logical constructions; the
+particulars out of which they are constructed, or from which they
+are inferred, have various relations, some of which are studied
+by physics, others by psychology. Broadly speaking, physics group
+particulars by their active places, psychology by their passive
+places.
+
+II. The two most essential characteristics of the causal laws
+which would naturally be called psychological are SUBJECTIVITY
+and MNEMIC CAUSATION; these are not unconnected, since the causal
+unit in mnemic causation is the group of particulars having a
+given passive place at a given time, and it is by this manner of
+grouping that subjectivity is defined.
+
+III. Habit, memory and thought are all developments of mnemic
+causation. It is probable, though not certain, that mnemic
+causation is derivative from ordinary physical causation in
+nervous (and other) tissue.
+
+IV. Consciousness is a complex and far from universal
+characteristic of mental phenomena.
+
+V. Mind is a matter of degree, chiefly exemplified in number and
+complexity of habits.
